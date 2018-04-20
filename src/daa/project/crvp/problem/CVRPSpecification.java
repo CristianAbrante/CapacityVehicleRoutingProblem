@@ -1,7 +1,7 @@
 /** 
  * File containing the ProblemSpecification class definition. 
  */
-package daa.project.crvp;
+package daa.project.crvp.problem;
 
 /**
  * Class which represents an instance of Capacity Routing Vehicle Problem.
@@ -10,10 +10,10 @@ package daa.project.crvp;
  * @version 1.0
  * @since 16 abr. 2018
  */
-public class ProblemSpecification {
+public class CVRPSpecification {
 
 	/** Clients. */
-	private Node[] clients;
+	private CVRPClient[] clients;
 	/** Depot identifier. */
 	private int depotID;
 	/** Maximum capacity of a vehicle. */
@@ -25,7 +25,7 @@ public class ProblemSpecification {
 	 * @param depotID Depot identifier.
 	 * @param capacity Maximum capacity of a vehicle.
 	 */
-	public ProblemSpecification(Node[] clients, int depotID, int capacity) {
+	public CVRPSpecification(CVRPClient[] clients, int depotID, int capacity) {
 		this.setCapacity(capacity);
 		this.setDepotID(depotID);
 		this.setClients(clients);
@@ -35,15 +35,29 @@ public class ProblemSpecification {
 	 * Getter method for the clients attribute.
 	 * @return Clients of the problem.
 	 */
-	public Node[] getClients() {
+	public CVRPClient[] getClients() {
 		return clients;
 	}
+	
+    /**
+     * Returns the client information for the specified client via its ID
+     * 
+     * @param clientId Client ID
+     * @return Client information
+     */
+    public CVRPClient getClient(int clientId) {
+        if (clientId < 0 || clientId >= getClients().length) {
+            throw new IllegalArgumentException("Invalid client ID \"" + clientId
+                    + "\" Expected client ID to be 0 <= clientId < " + getClients().length);
+        }
+        return getClients()[clientId];
+    }
 	
 	/**
 	 * Setter method for the clients attribute.
 	 * @param Clients of the problem.
 	 */
-	public void setClients(Node[] clients) {
+	public void setClients(CVRPClient[] clients) {
 		this.clients = clients;
 	}
 	

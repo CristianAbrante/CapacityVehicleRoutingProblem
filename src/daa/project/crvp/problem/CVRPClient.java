@@ -1,7 +1,7 @@
 /** 
  * File containing the Node class definition. 
  */
-package daa.project.crvp;
+package daa.project.crvp.problem;
 
 import java.awt.Point;
 
@@ -12,7 +12,7 @@ import java.awt.Point;
  * @version 1.0
  * @since 16 abr. 2018
  */
-public class Node extends Point {
+public class CVRPClient extends Point {
 	/** Demand of the node. */
 	private int demand;
 
@@ -26,7 +26,7 @@ public class Node extends Point {
 	 * @param demand
 	 *            Demand of the node.
 	 */
-	public Node(int xCoordinate, int yCoordinate, int demand) {
+	public CVRPClient(int xCoordinate, int yCoordinate, int demand) {
 		super(xCoordinate, yCoordinate);
 		this.setDemand(demand);
 	}
@@ -59,7 +59,7 @@ public class Node extends Point {
 	 *            Second node.
 	 * @return Distance between nodes.
 	 */
-	public static int euclideanDistance(Node firstNode, Node secondNode) {
+	public static int euclideanDistance(CVRPClient firstNode, CVRPClient secondNode) {
 		return (int) Point.distance(firstNode.getX(), firstNode.getY(), secondNode.getX(), secondNode.getY());
 	}
 }

@@ -31,13 +31,10 @@ public class CVRPSpecification {
 		this.setClients(clients);
 	}
 	
-<<<<<<< HEAD
 	public CVRPSpecification() {
 		
 	}
-	
-=======
->>>>>>> 2e29147d17fd42ec0dbdccaaca56e9227f8a05bf
+    
 	/**
 	 * Getter method for the clients attribute.
 	 * @return Clients of the problem.
@@ -58,6 +55,15 @@ public class CVRPSpecification {
                     + "\" Expected client ID to be 0 <= clientId < " + getClients().length);
         }
         return getClients()[clientId];
+    }
+    
+    /**
+     * Returns the depot information
+     * 
+     * @return the depot information
+     */
+    public CVRPClient getDepot() {
+        return getClients()[getDepotID()];
     }
 	
 	/**

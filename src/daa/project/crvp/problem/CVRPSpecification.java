@@ -20,8 +20,8 @@ public class CVRPSpecification {
 	private int depotID;
 	/** Maximum capacity of a vehicle. */
 	private int capacity;
-	/** Minimun vehicle number. */
-	private int minimunVehicles;
+	/** Minimum vehicle number. */
+	private int minimumVehicles;
 	
 	/**
 	 * Default constructor.
@@ -29,11 +29,11 @@ public class CVRPSpecification {
 	 * @param depotID Depot identifier.
 	 * @param capacity Maximum capacity of a vehicle.
 	 */
-	public CVRPSpecification(ArrayList<CVRPClient> clients, int depotID, int capacity, int minimunVehicles) {
+	public CVRPSpecification(ArrayList<CVRPClient> clients, int depotID, int capacity, int minimumVehicles) {
 		this.setCapacity(capacity);
 		this.setDepotID(depotID);
 		this.setClients(clients);
-		this.setMinimunVehicles(minimunVehicles);
+		this.setMinimunVehicles(minimumVehicles);
 		this.clients = new ArrayList<>();
 	}
 	
@@ -81,15 +81,15 @@ public class CVRPSpecification {
 	}
 	
 	public int getMinimunVehicles() {
-		return this.minimunVehicles;
+		return this.minimumVehicles;
 	}
 	
 	/**
 	 * Setter method for the minimum vehicles attribute.
 	 * @param Min vehicle for the problem.
 	 */
-	public void setMinimunVehicles(int minimunVehicles) {
-		this.minimunVehicles = minimunVehicles;
+	public void setMinimunVehicles(int minimumVehicles) {
+		this.minimumVehicles = minimumVehicles;
 	}
 	
 	/**

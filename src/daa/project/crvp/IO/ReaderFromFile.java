@@ -125,7 +125,7 @@ public class ReaderFromFile {
 							line = line.trim();
 							/** Takes the depots bigger than 0, because -1 is when the depots list ends */
 							if (Integer.valueOf(line) > 0) {
-								depots.add(Integer.valueOf(line));
+                                depots.add(Integer.valueOf(line) - 1);
 							}
 
 						}

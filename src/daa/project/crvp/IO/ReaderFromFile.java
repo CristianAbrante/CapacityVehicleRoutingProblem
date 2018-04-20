@@ -16,14 +16,14 @@ import daa.project.crvp.problem.CVRPSpecification;
 public class ReaderFromFile {
 	/** All possible problem params */
 	private final String[] PARAMS = {
-	      "NAME", "COMMENT", "TYPE", "DIMENSION", "EDGE_WEIGHT_TYPE",
-	      "CAPACITY"};
+			"NAME", "COMMENT", "TYPE", "DIMENSION", "EDGE_WEIGHT_TYPE",
+	"CAPACITY"};
 	/** Problem params we're interested on */
-	private final String[] INTERESTED_PARAMS = {"DIMENSION", "CAPACITY"};
+	private final String[] INTERESTED_PARAMS = {"Min no of trucks", "DIMENSION", "CAPACITY"};
 	/** Node information params that we're interested */
 	private final String[] INTERESTED_NODE_INFORMATION =
-	      {"NODE_COORD_SECTION", "DEMAND_SECTION", "DEPOT_SECTION"};
-	
+		{"NODE_COORD_SECTION", "DEMAND_SECTION", "DEPOT_SECTION"};
+
 	/** Represents the differents client coords */
 	private ArrayList<Point> clientCoords;
 	/** Represents the differents client demands */
@@ -35,7 +35,6 @@ public class ReaderFromFile {
 	/** Represents the problem */
 	private CVRPSpecification problemSpecification;
 
-	
 	/** 
 	 * Constructs a ReaderFile
 	 * @param fileName File to be readed
@@ -43,7 +42,7 @@ public class ReaderFromFile {
 	 * @throws IOException Exception that will be thrown if input operation fails
 	 */
 	public ReaderFromFile(String fileName)
-	      throws FileNotFoundException, IOException {
+			throws FileNotFoundException, IOException {
 		this.problemSpecification = new CVRPSpecification();
 		this.clientCoords = new ArrayList<Point>();
 		this.clientDemands = new ArrayList<>();
@@ -58,23 +57,25 @@ public class ReaderFromFile {
 				if (lineNumber < PARAMS.length) {
 					/** Finds the params we're interested on */
 					Pattern pattern = Pattern.compile(
-					      "(" + INTERESTED_PARAMS[lastIntestedParams]
-					            + ")\\s*:\\s*(\\d+)"
-					);
+							"(" + INTERESTED_PARAMS[lastIntestedParams]
+									+ ")\\s*:\\s*(\\d+)"
+							);
 					Matcher matcher = pattern.matcher(line);
 					/** If param is an interested param */
 					if (matcher.find()) {
 						switch (lastIntestedParams) {
 							case 0 :
+								/** Takes the minimun vehicle number */
+								problemSpecification.setMinimunVehicles(Integer.valueOf(matcher.group(2)));
+								break;
+							case 1 :
 								/** Takes the number after ':' and sets the numberOfClients */
 								this.numberOfClients = Integer.valueOf(matcher.group(2));
 								break;
-
-							case 1 :
+							case 2 :
 								/** Takes the number after ':' and sets the vehicle capacity */
 								problemSpecification
-								      .setCapacity(Integer.valueOf(matcher.group(2)));
-
+								.setCapacity(Integer.valueOf(matcher.group(2)));
 							default :
 								break;
 						}
@@ -93,8 +94,8 @@ public class ReaderFromFile {
 							if (matcher.find()) {
 								/** Adds the client coords */
 								clientCoords.add(
-								      new Point(Integer.valueOf(matcher.group(1).trim()), Integer.valueOf(matcher.group(2).trim()))
-								);
+										new Point(Integer.valueOf(matcher.group(1).trim()), Integer.valueOf(matcher.group(2).trim()))
+										);
 							}
 						}
 					}
@@ -108,8 +109,13 @@ public class ReaderFromFile {
 							matcher.matches();
 							/** Add the client capacity information */
 							if (matcher.find()) {
-								clientDemands
-								      .add(Integer.valueOf(matcher.group(1).trim()));
+								if(Integer.valueOf(matcher.group(1).trim()) < problemSpecification.getCapacity()) {
+									clientDemands
+									.add(Integer.valueOf(matcher.group(1).trim()));
+								}else {
+									throw new IllegalArgumentException("Invalid capacity for client " + (getClientDemands().size() + 1)
+											+ ". Expected client capacity to be less than " + problemSpecification.getCapacity());
+								}
 							}
 						}
 					}
@@ -132,55 +138,65 @@ public class ReaderFromFile {
 	}
 
 	/**
-	 * Sets the problem specification, adding the clients and demands information and depot
+	 * Sets the problem specification, adding the clients and demands information
+	 * and depot
 	 */
 	private void setProblemSpecification() {
 		for (int i = 0; i < clientCoords.size(); i++) {
 			problemSpecification.addClient(
-			      new CVRPClient((int) clientCoords.get(i).getX(), (int) clientCoords.get(i).getY(), clientDemands.get(i))
-			);
+					new CVRPClient((int) clientCoords.get(i).getX(), (int) clientCoords.get(i).getY(), clientDemands.get(i))
+					);
 		}
 		problemSpecification.setDepotID(depots.get(0));
 	}
 
 	/**
 	 * Gets the client coords
+	 * 
 	 * @return The clients array coords
 	 */
 	public ArrayList<Point> getClientCoords() {
+
 		return clientCoords;
 	}
 
 	/**
 	 * Get the client demands
+	 * 
 	 * @return Client demands
 	 */
 	public ArrayList<Integer> getClientDemands() {
+
 		return clientDemands;
 	}
 
 	/**
 	 * Get possible depots
+	 * 
 	 * @return Possible depots
 	 */
 	public ArrayList<Integer> getDepots() {
+
 		return depots;
 	}
 
 	/**
 	 * Get the number of clients
+	 * 
 	 * @return Number of clients
 	 */
 	public int getNumberOfClients() {
+
 		return numberOfClients;
 	}
 
 	/**
 	 * Get the problem specification
+	 * 
 	 * @return Problem
 	 */
 	public CVRPSpecification getProblemSpecification() {
+
 		return problemSpecification;
 	}
 }
-

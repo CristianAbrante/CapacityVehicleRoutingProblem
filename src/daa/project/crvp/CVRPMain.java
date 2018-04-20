@@ -26,6 +26,7 @@ public class CVRPMain {
 		System.out.println("Depot ID: " + problemSpecification.getDepotID());
 		System.out.println("Capacity: " + problemSpecification.getCapacity());
 		System.out.println("Client Number: " + problemSpecification.getClients().size());
+		System.out.println("Minum vehicles: " + problemSpecification.getMinimunVehicles());
 		
 		System.out.println("Client list: ");
 		int totalDemand = 0;

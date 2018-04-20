@@ -3,7 +3,8 @@ package daa.project.crvp.problem;
 import java.util.ArrayList;
 
 /**
- * TODO: DESCRIPTION
+ * Represents all the information of a solution for 
+ * a Capacitated Vehicle Routing Problem (CVRP)
  * 
  * @author Carlos Dominguez Garcia (alu0100966589)
  * @version 1.0.0
@@ -25,11 +26,11 @@ public class CVRPSolution {
 	private CVRPSpecification problemInfo;
 
 	/**
-	 * Solution representation. The codification is k sequences of numbers separated
-	 * by a SEPARATOR. The i-th sequence represents the sequence of clients that the
-	 * i-th vehicle have to send supplies to. Being each element of the sequence the
-	 * ID of the client to visit
-	 */
+     * Solution representation. The codification is k sequences of numbers ending
+     * by SEPARATOR. The i-th sequence represents the sequence of clients that the
+     * i-th vehicle have to send supplies to. Being each element of the sequence the
+     * ID of the client to visit
+     */
 	private ArrayList<Integer> vehicleRoutes = new ArrayList<>();
 
 	/**
@@ -55,8 +56,21 @@ public class CVRPSolution {
 	private boolean isFeasible;
 
 	/**
-	 * TODO: desc
-	 */
+     * Create a solution given the information of the problem and the solution
+     * codification. This constructor interpret the codification to extract
+     * more information: whether the solution is feasible or not, the
+     * total distance of the solution, the remaining capacities of the
+     * vehicles and the positions where the routes start.
+     * 
+     * Note that the codification of the solution is as follows: a list of
+     * routes with a SEPARATOR at the end of each route. Each route is in
+     * turn, a sequence of client IDs and represents the sequence of clients
+     * that the vehicle assigned to that route has to visit.
+     * 
+     * @param problemInfo  Data structure that has the information of the CVRP 
+     * that this solution is for
+     * @param vehicleRoutes    Codification of the solution
+     */
 	public CVRPSolution(CVRPSpecification problemInfo, ArrayList<Integer> vehicleRoutes) {
 		setProblemInfo(problemInfo);
 		setVehicleRoutes(vehicleRoutes);
@@ -218,13 +232,30 @@ public class CVRPSolution {
 		}
 	}
 
+    /**
+     * Each route represents a sequence of clients that a vehicle has to visit
+     * to satisfy their demands. Each vehicle can carry a maximum
+     * number of items (the capacity).
+     * 
+     * This method returns the remaining capacity of the vehicle
+     * associated to the given route.
+     * 
+     * @param route Route whose vehicle remaining capacity has to be returned
+     * @return  Remaining capacity of the vehicle of the given route
+     */
+    public int getVehicleRemainingCapacity(int route) {
+        return getVehicleRemainingCapacities().get(route);
+    }
+    
 	/**
-	 * @return Number of clients in all the routes.
-	 */
+     * Returns the total number of clients considering every route.
+     * 
+     * @return Total number of clients
+     */
 	public int getNumberOfClients() {
-		return getVehicleRoutes().size() - getNumberOfRoutes() + 2;
+        return getVehicleRoutes().size() - getNumberOfRoutes() + 1;
 	}
-
+    
 	/** @return the vehicleRoutes */
 	private ArrayList<Integer> getVehicleRoutes() {
 		return vehicleRoutes;

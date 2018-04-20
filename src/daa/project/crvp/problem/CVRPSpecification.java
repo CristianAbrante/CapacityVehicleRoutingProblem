@@ -31,10 +31,13 @@ public class CVRPSpecification {
 		this.setClients(clients);
 	}
 	
+<<<<<<< HEAD
 	public CVRPSpecification() {
 		
 	}
 	
+=======
+>>>>>>> 2e29147d17fd42ec0dbdccaaca56e9227f8a05bf
 	/**
 	 * Getter method for the clients attribute.
 	 * @return Clients of the problem.

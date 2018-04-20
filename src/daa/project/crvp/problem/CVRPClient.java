@@ -3,8 +3,6 @@
  */
 package daa.project.crvp.problem;
 
-import java.awt.Point;
-
 /**
  * Class which represents a node of Capacity Routing Vehicle Problem.
  * 
@@ -12,54 +10,95 @@ import java.awt.Point;
  * @version 1.0
  * @since 16 abr. 2018
  */
-public class CVRPClient extends Point {
+public class CVRPClient {
+	/** X axis coordinate of the node. */
+	private int xCoordinate;
+	/** Y axis coordinate of the node. */
+	private int yCoordinate;
 	/** Demand of the node. */
 	private int demand;
-
+	
 	/**
 	 * Default constructor.
-	 * 
-	 * @param xCoordinate
-	 *            X axis coordinate of the node.
-	 * @param yCoordinate
-	 *            Y axis coordinate of the node.
-	 * @param demand
-	 *            Demand of the node.
+	 * @param xCoordinate X axis coordinate of the node.
+	 * @param yCoordinate Y axis coordinate of the node.
+	 * @param demand Demand of the node.
 	 */
 	public CVRPClient(int xCoordinate, int yCoordinate, int demand) {
-		super(xCoordinate, yCoordinate);
+		this.setxCoordinate(xCoordinate);
+		this.setyCoordinate(yCoordinate);
 		this.setDemand(demand);
 	}
-
+	
+	/**
+	 * Getter method for the xCoordinate attribute.
+	 * @return xCoordinate of the node.
+	 */
+	public int getxCoordinate() {
+		return xCoordinate;
+	}
+	
+	/**
+	 * Setter method for the xCoordinate attribute.
+	 * @param xCoordinate of the node.
+	 */
+	public void setxCoordinate(int xCoordinate) {
+		this.xCoordinate = xCoordinate;
+	}
+	
+	/**
+	 * Getter method for the yCoordinate attribute.
+	 * @return yCoordinate of the node.
+	 */
+	public int getyCoordinate() {
+		return yCoordinate;
+	}
+	
+	/**
+	 * Setter method for the yCoordinate attribute.
+	 * @param yCoordinate of the node.
+	 */
+	public void setyCoordinate(int yCoordinate) {
+		this.yCoordinate = yCoordinate;
+	}
+	
 	/**
 	 * Getter method for the demand attribute.
-	 * 
 	 * @return demand of the node.
 	 */
 	public int getDemand() {
 		return demand;
 	}
-
+	
 	/**
 	 * Setter method for the demand attribute.
-	 * 
-	 * @param demand
-	 *            of the node.
+	 * @param demand of the node.
 	 */
 	public void setDemand(int demand) {
 		this.demand = demand;
 	}
-
+	
 	/**
 	 * Calculates the euclidean distance between two given nodes.
-	 * 
-	 * @param firstNode
-	 *            First node.
-	 * @param secondNode
-	 *            Second node.
+	 * @param firstNode First node.
+	 * @param secondNode Second node.
 	 * @return Distance between nodes.
 	 */
 	public static int euclideanDistance(CVRPClient firstNode, CVRPClient secondNode) {
-		return (int) Point.distance(firstNode.getX(), firstNode.getY(), secondNode.getX(), secondNode.getY());
+		int firstNodeXCoord = firstNode.getxCoordinate();
+		int secondNodeXCoord = secondNode.getyCoordinate();
+		int firstNodeYCoord = firstNode.getyCoordinate();
+		int secondNodeYCoord = secondNode.getyCoordinate();
+		
+		return (int) Math.sqrt(Math.pow(secondNodeXCoord - firstNodeXCoord, 2) +
+										 Math.pow(secondNodeYCoord - firstNodeYCoord, 2));
+	}
+	
+	/* (non-Javadoc)
+	 * Overloaded method to prettify the client output, showing it's coordinates and demand.
+	 * @see java.lang.Object#toString()
+	 */
+	public String toString() {
+		return "C: [" + this.getxCoordinate() + ", " + this.getyCoordinate() + "] D:" + this.getDemand();
 	}
 }

@@ -12,41 +12,68 @@ import java.util.regex.Pattern;
 import daa.project.crvp.problem.CVRPClient;
 import daa.project.crvp.problem.CVRPSpecification;
 
+
 public class ReaderFromFile {
-	private String[] PARAMS = {"NAME", "COMMENT", "TYPE", "DIMENSION", "EDGE_WEIGHT_TYPE", "CAPACITY"};
-	private String[] INTERESTED_PARAMS = {"DIMENSION", "CAPACITY"};
-	private String[] INTERESTED_NODE_INFORMATION = {"NODE_COORD_SECTION", "DEMAND_SECTION", "DEPOT_SECTION"};
-	private ArrayList<Point> nodeCoords;
-	private ArrayList<Integer> nodeDemands;
-	private ArrayList<Integer> depots;
-	private int numberOfNodes;
-	private CVRPSpecification problemSpecification;
+	/** All possible problem params */
+	private final String[] PARAMS = {
+	      "NAME", "COMMENT", "TYPE", "DIMENSION", "EDGE_WEIGHT_TYPE",
+	      "CAPACITY"};
+	/** Problem params we're interested on */
+	private final String[] INTERESTED_PARAMS = {"DIMENSION", "CAPACITY"};
+	/** Node information params that we're interested */
+	private final String[] INTERESTED_NODE_INFORMATION =
+	      {"NODE_COORD_SECTION", "DEMAND_SECTION", "DEPOT_SECTION"};
 	
-	public ReaderFromFile(String fileName) throws FileNotFoundException, IOException {
-		problemSpecification = new CVRPSpecification();
+	/** Represents the differents client coords */
+	private ArrayList<Point> clientCoords;
+	/** Represents the differents client demands */
+	private ArrayList<Integer> clientDemands;
+	/** Represents the differents depots */
+	private ArrayList<Integer> depots;
+	/** Represents the clients in our problem */
+	private int numberOfClients;
+	/** Represents the problem */
+	private CVRPSpecification problemSpecification;
+
+	
+	/** 
+	 * Constructs a ReaderFile
+	 * @param fileName File to be readed
+	 * @throws FileNotFoundException Exception that will be thrown if file doesn't exist
+	 * @throws IOException Exception that will be thrown if input operation fails
+	 */
+	public ReaderFromFile(String fileName)
+	      throws FileNotFoundException, IOException {
+		this.problemSpecification = new CVRPSpecification();
+		this.clientCoords = new ArrayList<Point>();
+		this.clientDemands = new ArrayList<>();
+		this.depots = new ArrayList<>();
 		String line;
 		int lineNumber = 0;
 		int lastIntestedParams = 0;
-		nodeCoords = new ArrayList<Point>();
-		nodeDemands = new ArrayList<>();
-		depots = new ArrayList<>();
 
 		try (BufferedReader br = new BufferedReader(new FileReader(fileName))) {
-			while((line = br.readLine()) != null) {
-				
-				// Reading node params
-				if(lineNumber < PARAMS.length) {
-					Pattern pattern = Pattern.compile("(" + INTERESTED_PARAMS[lastIntestedParams] + ")\\s*:\\s*(\\d+)");
+			while ((line = br.readLine()) != null) {
+				/** Reading problem specification params */
+				if (lineNumber < PARAMS.length) {
+					/** Finds the params we're interested on */
+					Pattern pattern = Pattern.compile(
+					      "(" + INTERESTED_PARAMS[lastIntestedParams]
+					            + ")\\s*:\\s*(\\d+)"
+					);
 					Matcher matcher = pattern.matcher(line);
-
-					if(matcher.find()) {
+					/** If param is an interested param */
+					if (matcher.find()) {
 						switch (lastIntestedParams) {
 							case 0 :
-								this.numberOfNodes = Integer.valueOf(matcher.group(2));
+								/** Takes the number after ':' and sets the numberOfClients */
+								this.numberOfClients = Integer.valueOf(matcher.group(2));
 								break;
 
-							case 1:
-								problemSpecification.setCapacity(Integer.valueOf(matcher.group(2)));
+							case 1 :
+								/** Takes the number after ':' and sets the vehicle capacity */
+								problemSpecification
+								      .setCapacity(Integer.valueOf(matcher.group(2)));
 
 							default :
 								break;
@@ -54,52 +81,106 @@ public class ReaderFromFile {
 						lastIntestedParams++;
 					}
 				} else {
-					if(lineNumber <= numberOfNodes + PARAMS.length) {
-						if(line.matches("[^A-Za-z]+")) {
+					/** If the readed line is a client information */
+					if (lineNumber <= numberOfClients + PARAMS.length) {
+						/** If its not the header of client coords */
+						if (line.matches("[^A-Za-z]+")) {
+							/** Take the two last numbers of the clients coords section */
 							Pattern pattern = Pattern.compile("(\\d+)\\s*(\\d+)$");
 							Matcher matcher = pattern.matcher(line);
 							matcher.matches();
-							
-							if(matcher.find()) {
-								nodeCoords.add(new Point(Integer.valueOf(matcher.group(1).trim()), Integer.valueOf(matcher.group(2).trim())));
+
+							if (matcher.find()) {
+								/** Adds the client coords */
+								clientCoords.add(
+								      new Point(Integer.valueOf(matcher.group(1).trim()), Integer.valueOf(matcher.group(2).trim()))
+								);
 							}
-							
 						}
 					}
-					
-					if(lineNumber >= numberOfNodes + PARAMS.length + 1) {
-						if(line.matches("[^A-Za-z]+")) {
+					/** If the readed line is demand coords */
+					if (lineNumber >= numberOfClients + PARAMS.length + 1) {
+						/** If its not the header of demand coords */
+						if (line.matches("[^A-Za-z]+")) {
+							/** Takes the last number that corresponds to client capacity */
 							Pattern pattern = Pattern.compile("(\\d+)\\s*$");
 							Matcher matcher = pattern.matcher(line);
 							matcher.matches();
-							if(matcher.find()) {
-								nodeDemands.add(Integer.valueOf(matcher.group(1).trim()));
+							/** Add the client capacity information */
+							if (matcher.find()) {
+								clientDemands
+								      .add(Integer.valueOf(matcher.group(1).trim()));
 							}
 						}
 					}
-					
-					if(lineNumber > numberOfNodes * 2 + PARAMS.length + 1) {
-						if(line.matches("[^A-Za-z]+")) {
+					/** If we're on depot information section */
+					if (lineNumber > numberOfClients * 2 + PARAMS.length + 1) {
+						if (line.matches("[^A-Za-z]+")) {
 							line = line.trim();
-							if(Integer.valueOf(line) > 0) {
+							/** Takes the depots bigger than 0, because -1 is when the depots list ends */
+							if (Integer.valueOf(line) > 0) {
 								depots.add(Integer.valueOf(line));
 							}
-								
+
 						}
 					}
 				}
-				
 				lineNumber++;
 			}
 		}
-		
-		constructProblemSpecification();
+		setProblemSpecification();
 	}
-	 
-	private void constructProblemSpecification() {
-		for(int i = 0; i < nodeCoords.size(); i++) {
-			new CVRPClient((int) nodeCoords.get(i).getX(), (int) nodeCoords.get(i).getY(), nodeDemands.get(i));
+
+	/**
+	 * Sets the problem specification, adding the clients and demands information and depot
+	 */
+	private void setProblemSpecification() {
+		for (int i = 0; i < clientCoords.size(); i++) {
+			problemSpecification.addClient(
+			      new CVRPClient((int) clientCoords.get(i).getX(), (int) clientCoords.get(i).getY(), clientDemands.get(i))
+			);
 		}
+		problemSpecification.setDepotID(depots.get(0));
+	}
+
+	/**
+	 * Gets the client coords
+	 * @return The clients array coords
+	 */
+	public ArrayList<Point> getClientCoords() {
+		return clientCoords;
+	}
+
+	/**
+	 * Get the client demands
+	 * @return Client demands
+	 */
+	public ArrayList<Integer> getClientDemands() {
+		return clientDemands;
+	}
+
+	/**
+	 * Get possible depots
+	 * @return Possible depots
+	 */
+	public ArrayList<Integer> getDepots() {
+		return depots;
+	}
+
+	/**
+	 * Get the number of clients
+	 * @return Number of clients
+	 */
+	public int getNumberOfClients() {
+		return numberOfClients;
+	}
+
+	/**
+	 * Get the problem specification
+	 * @return Problem
+	 */
+	public CVRPSpecification getProblemSpecification() {
+		return problemSpecification;
 	}
 }
 

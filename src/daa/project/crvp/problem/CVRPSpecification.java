@@ -78,6 +78,14 @@ public class CVRPSpecification {
 	}
 	
 	/**
+	 * Method for add a new client at clients.
+	 * @param Client to be added.
+	 */
+	public void addClient(CVRPClient clients) {
+		getClients().add(clients);
+	}
+	
+	/**
 	 * Getter method for the depotID attribute.
 	 * @return Identifier of the depot.
 	 */

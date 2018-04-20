@@ -20,28 +20,28 @@ public abstract class Move {
 	private CVRPSolution solution;
 
 	/** Updates the internal state to point to the next neighbor solution */
-	protected abstract void nextNeighbor();
+	public abstract void nextNeighbor();
 
 	/**
 	 * @return The difference in the objective function that applying the last move
 	 *         made
 	 */
-	protected abstract int getLastMoveCost();
+	public abstract int getLastMoveCost();
 
 	/**
 	 * @return The objective function value of the solution made from applying the
 	 *         last move
 	 */
-	protected abstract int getCost();
+	public abstract int getCost();
 
 	/**
 	 * @return Whether the solution made from applying the last move is feasible or
 	 *         not
 	 */
-	protected abstract boolean isCurrentNeighborFeasible();
+	public abstract boolean isCurrentNeighborFeasible();
 
 	/** @return The solution made from applying the last move */
-	protected abstract CVRPSolution getCurrentNeighbor();
+	public abstract CVRPSolution getCurrentNeighbor();
 
 	/**
 	 * Base solution from which the neighborhood structure will be generated
@@ -49,12 +49,12 @@ public abstract class Move {
 	 * @param solution
 	 *          Base solution
 	 */
-	protected void setSolution(CVRPSolution solution) {
+	public void setSolution(CVRPSolution solution) {
 		this.solution = solution;
 	}
 
 	/** @return The current solution that is the movement using. */
-	protected CVRPSolution getSolution() {
+	public CVRPSolution getSolution() {
 		return solution;
 	}
 }

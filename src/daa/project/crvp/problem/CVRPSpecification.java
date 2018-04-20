@@ -3,6 +3,8 @@
  */
 package daa.project.crvp.problem;
 
+import java.util.ArrayList;
+
 /**
  * Class which represents an instance of Capacity Routing Vehicle Problem.
  * 
@@ -13,7 +15,7 @@ package daa.project.crvp.problem;
 public class CVRPSpecification {
 
 	/** Clients. */
-	private CVRPClient[] clients;
+	private ArrayList<CVRPClient> clients;
 	/** Depot identifier. */
 	private int depotID;
 	/** Maximum capacity of a vehicle. */
@@ -25,21 +27,22 @@ public class CVRPSpecification {
 	 * @param depotID Depot identifier.
 	 * @param capacity Maximum capacity of a vehicle.
 	 */
-	public CVRPSpecification(CVRPClient[] clients, int depotID, int capacity) {
+	public CVRPSpecification(ArrayList<CVRPClient> clients, int depotID, int capacity) {
 		this.setCapacity(capacity);
 		this.setDepotID(depotID);
 		this.setClients(clients);
+		this.clients = new ArrayList<>();
 	}
 	
 	public CVRPSpecification() {
-		
+		this(null, -1, -1);
 	}
     
 	/**
 	 * Getter method for the clients attribute.
 	 * @return Clients of the problem.
 	 */
-	public CVRPClient[] getClients() {
+	public ArrayList<CVRPClient> getClients() {
 		return clients;
 	}
 	
@@ -50,11 +53,11 @@ public class CVRPSpecification {
      * @return Client information
      */
     public CVRPClient getClient(int clientId) {
-        if (clientId < 0 || clientId >= getClients().length) {
+        if (clientId < 0 || clientId >= getClients().size()) {
             throw new IllegalArgumentException("Invalid client ID \"" + clientId
-                    + "\" Expected client ID to be 0 <= clientId < " + getClients().length);
+                    + "\" Expected client ID to be 0 <= clientId < " + getClients().size());
         }
-        return getClients()[clientId];
+        return getClients().get(clientId);
     }
     
     /**
@@ -63,14 +66,14 @@ public class CVRPSpecification {
      * @return the depot information
      */
     public CVRPClient getDepot() {
-        return getClients()[getDepotID()];
+        return getClients().get(getDepotID());
     }
 	
 	/**
 	 * Setter method for the clients attribute.
 	 * @param Clients of the problem.
 	 */
-	public void setClients(CVRPClient[] clients) {
+	public void setClients(ArrayList<CVRPClient> clients) {
 		this.clients = clients;
 	}
 	

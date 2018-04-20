@@ -24,21 +24,24 @@ public class CVRPSpecification {
 	private int minimumVehicles;
 	
 	/**
-	 * Default constructor.
-	 * @param clients Clients.
-	 * @param depotID Depot identifier.
-	 * @param capacity Maximum capacity of a vehicle.
-	 */
+     * Create an object holding the given information for a Capacitated Vehicle Routing Problem
+     *  
+     * @param clients Clients.
+     * @param depotID Depot identifier.
+     * @param capacity Maximum capacity of a vehicle.
+     */
 	public CVRPSpecification(ArrayList<CVRPClient> clients, int depotID, int capacity, int minimumVehicles) {
 		this.setCapacity(capacity);
 		this.setDepotID(depotID);
 		this.setClients(clients);
 		this.setMinimunVehicles(minimumVehicles);
-		this.clients = new ArrayList<>();
 	}
 	
+    /**
+     * Create an empty data structure to hold information for a Capacitated Vehicle Routing Problem
+     */
 	public CVRPSpecification() {
-		this(null, -1, -1, -1);
+        this(new ArrayList<>(), -1, -1, -1);
 	}
     
 	/**
@@ -80,6 +83,9 @@ public class CVRPSpecification {
 		this.clients = clients;
 	}
 	
+    /**
+     * @return The minimum number of vehicles that have to be used to solve this problem
+     */
 	public int getMinimunVehicles() {
 		return this.minimumVehicles;
 	}

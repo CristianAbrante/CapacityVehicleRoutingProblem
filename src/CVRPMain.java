@@ -6,7 +6,7 @@ import daa.project.crvp.IO.ReaderFromFile;
 public class CVRPMain {
 
 	public static void main(String[] args) throws FileNotFoundException, IOException {
-		ReaderFromFile reader = new ReaderFromFile("./prueba.vrp");
+		ReaderFromFile reader = new ReaderFromFile("./test.vrp");
 	}
 
 }

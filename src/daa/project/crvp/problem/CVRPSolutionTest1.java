@@ -2,6 +2,7 @@ package daa.project.crvp.problem;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -193,4 +194,17 @@ public class CVRPSolutionTest1 {
     public void getClientShouldThrowForNegativePosition() {
         this.uut.getClient(-1);
     }
+    
+  	/** Test if the swap between to indexes in the routes array is correct.	 */
+  	@Test
+  	public void swapBetweenRoutes() {
+  		assertEquals(1, uut.getClientId(0));
+  		assertEquals(3, uut.getClientId(3));
+
+  		CVRPSolution newSolution = new CVRPSolution(problemInfo,
+  				CVRPSolution.generateSwappedSolution(uut, 0, 0, 1, 0));
+
+  		assertEquals(3, newSolution.getClientId(0));
+  		assertEquals(1, newSolution.getClientId(3));
+  	}
 }

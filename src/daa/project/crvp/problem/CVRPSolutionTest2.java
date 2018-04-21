@@ -50,6 +50,11 @@ public class CVRPSolutionTest2 {
     }
     
     @Test
+    public void solutionShouldHave0Clients() {
+        assertEquals(0, this.uut.getNumberOfClients());
+    }
+    
+    @Test
     public void solutionShouldHaveOneRoute() {
         assertEquals(1, this.uut.getNumberOfRoutes());
     }
@@ -103,5 +108,50 @@ public class CVRPSolutionTest2 {
     @Test
     public void solutionShouldHave0TotalDistance() {
         assertEquals(0.0, this.uut.getTotalDistance(), EPSILON);
+    }
+    
+    @Test(expected = IndexOutOfBoundsException.class)
+    public void getClientWithRouteShouldThrowForRoute0Client0() {
+        this.uut.getClient(0, 0);
+    }
+    
+    @Test(expected = IndexOutOfBoundsException.class)
+    public void getClientWithRouteShouldThrowForRoute0Client1() {
+        this.uut.getClient(0, 1);
+    }
+    
+    @Test(expected = IndexOutOfBoundsException.class)
+    public void getClientWithRouteShouldThrowForRoute1Client0() {
+        this.uut.getClient(1, 0);
+    }
+    
+    @Test(expected = IndexOutOfBoundsException.class)
+    public void getClientWithRouteShouldThrowErrorForRoute0Client2() {
+        this.uut.getClient(0, 2);
+    }
+    
+    @Test(expected = IndexOutOfBoundsException.class)
+    public void getClientWithRouteShouldThrowErrorForNegativeRouteClient0() {
+        this.uut.getClient(-1, 0);
+    }
+    
+    @Test(expected = IndexOutOfBoundsException.class)
+    public void getClientWithRouteShouldThrowErrorForRoute1Client1() {
+        this.uut.getClient(1, 1);
+    }
+    
+    @Test
+    public void getClientShouldReturnNullForPosition0() {
+        assertEquals(null, this.uut.getClient(0));
+    }
+    
+    @Test(expected = IndexOutOfBoundsException.class)
+    public void getClientShouldThrowForPosition1() {
+        this.uut.getClient(1);
+    }
+    
+    @Test(expected = IndexOutOfBoundsException.class)
+    public void getClientShouldThrowForNegativePosition() {
+        this.uut.getClient(-1);
     }
 }

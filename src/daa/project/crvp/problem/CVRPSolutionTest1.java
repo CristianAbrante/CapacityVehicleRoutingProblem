@@ -52,6 +52,11 @@ public class CVRPSolutionTest1 {
     }
     
     @Test
+    public void solutionShouldHave3Clients() {
+        assertEquals(3, this.uut.getNumberOfClients());
+    }
+    
+    @Test
     public void solutionShouldHaveTwoRoutes() {
         assertEquals(2, this.uut.getNumberOfRoutes());
     }
@@ -122,5 +127,70 @@ public class CVRPSolutionTest1 {
         double expectedSecondRouteDistance = 2 * Math.hypot(4 - 0, 4 - 0);
         double expectedTotalDistance = expectedFirstRouteDistance + expectedSecondRouteDistance;
         assertEquals(expectedTotalDistance, this.uut.getTotalDistance(), EPSILON);
+    }
+    
+    @Test
+    public void getClientWithRouteShouldReturnClientId1ForRoute0Client0() {
+        assertEquals(this.clients.get(1), this.uut.getClient(0, 0));
+    }
+    
+    @Test
+    public void getClientWithRouteShouldReturnClientId2ForRoute0Client1() {
+        assertEquals(this.clients.get(2), this.uut.getClient(0, 1));
+    }
+    
+    @Test
+    public void getClientWithRouteShouldReturnClientId3ForRoute1Client0() {
+        assertEquals(this.clients.get(3), this.uut.getClient(1, 0));
+    }
+    
+    @Test(expected = IndexOutOfBoundsException.class)
+    public void getClientWithRouteShouldThrowErrorForRoute0Client2() {
+        this.uut.getClient(0, 2);
+    }
+    
+    @Test(expected = IndexOutOfBoundsException.class)
+    public void getClientWithRouteShouldThrowErrorForNegativeRouteClient0() {
+        this.uut.getClient(-1, 0);
+    }
+    
+    @Test(expected = IndexOutOfBoundsException.class)
+    public void getClientWithRouteShouldThrowErrorForRoute1Client1() {
+        this.uut.getClient(1, 1);
+    }
+    
+    @Test
+    public void getClientShouldReturnClientId1ForPosition0() {
+        assertEquals(this.clients.get(1), this.uut.getClient(0));
+    }
+    
+    @Test
+    public void getClientShouldReturnClientId2ForPosition1() {
+        assertEquals(this.clients.get(2), this.uut.getClient(1));
+    }
+    
+    @Test
+    public void getClientShouldReturnNullForPosition2() {
+        assertEquals(null, this.uut.getClient(2));
+    }
+    
+    @Test
+    public void getClientShouldReturnClientId3ForPosition3() {
+        assertEquals(this.clients.get(3), this.uut.getClient(3));
+    }
+    
+    @Test
+    public void getClientShouldReturnNullForPosition4() {
+        assertEquals(null, this.uut.getClient(4));
+    }
+    
+    @Test(expected = IndexOutOfBoundsException.class)
+    public void getClientShouldThrowForPosition5() {
+        this.uut.getClient(5);
+    }
+    
+    @Test(expected = IndexOutOfBoundsException.class)
+    public void getClientShouldThrowForNegativePosition() {
+        this.uut.getClient(-1);
     }
 }

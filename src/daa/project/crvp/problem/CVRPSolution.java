@@ -141,6 +141,26 @@ public class CVRPSolution {
 		return getVehicleRoutes().get(position);
 	}
 
+    /**
+     * Returns the client ID in the specified position in the specified route.
+     * Throws if the position is off limits of the route or the route is not valid
+     * 
+     * @param route
+     *          Route to get the client ID from
+     * @param positionInRoute
+     *          Position of the client ID to get inside the specified route
+     * @return ID of the specified client     
+     */
+    public int getClientId(int route, int positionInRoute) {
+        int routeStartingIndex = getRouteStartingIndex(route);
+        if (positionInRoute < 0 || positionInRoute >= getNumberOfClientsInRoute(route)) {
+            throw new IndexOutOfBoundsException(
+                    "invalid solution index \"" + positionInRoute + "\" For route \"" + route
+                    + "\". Index should be 0 <= index < " + getNumberOfClientsInRoute(route));
+        }
+        return getVehicleRoutes().get(routeStartingIndex + positionInRoute);
+    }
+    
 	/**
 	 * Returns the client information in the specified position of the solution. Or
 	 * null if at the specified position there is not a valid client ID. Or throws
@@ -171,14 +191,8 @@ public class CVRPSolution {
 	 * @return Information of the specified client
 	 */
 	public CVRPClient getClient(int route, int positionInRoute) {
-		int routeStartingIndex = getRouteStartingIndex(route);
-		try {
-			return getClient(routeStartingIndex + positionInRoute);
-		}
-		catch (IndexOutOfBoundsException error) {
-			throw new IndexOutOfBoundsException(
-					"invalid solution index \"" + positionInRoute + "\" for route number \"" + route);
-		}
+        int clientId = getClientId(route, positionInRoute);
+        return getProblemInfo().getClient(clientId);
 	}
 
 	/** @return the problemInfo */
@@ -258,7 +272,7 @@ public class CVRPSolution {
      * @return Total number of clients
      */
 	public int getNumberOfClients() {
-        return getVehicleRoutes().size() - getNumberOfRoutes() + 1;
+        return getVehicleRoutes().size() - getNumberOfRoutes();
 	}
     
 	/** @return the vehicleRoutes */

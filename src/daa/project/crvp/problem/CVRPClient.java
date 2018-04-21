@@ -86,7 +86,7 @@ public class CVRPClient {
 	 */
     public static double euclideanDistance(CVRPClient firstNode, CVRPClient secondNode) {
 		int firstNodeXCoord = firstNode.getxCoordinate();
-		int secondNodeXCoord = secondNode.getyCoordinate();
+		int secondNodeXCoord = secondNode.getxCoordinate();
 		int firstNodeYCoord = firstNode.getyCoordinate();
 		int secondNodeYCoord = secondNode.getyCoordinate();
 		

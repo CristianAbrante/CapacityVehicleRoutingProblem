@@ -9,12 +9,22 @@ import java.util.Arrays;
 import org.junit.Before;
 import org.junit.Test;
 
-public class CVRPSolutionTest {
+/**
+ * Tests for a simple feasible solution with two routes, the first one with two clients and the second
+ * one with one
+ * 
+ * @author Carlos Dominguez Garcia (alu0100966589)
+ * @version 1.0.0
+ * @since 1.0.0 (Apr 21, 2018)
+ * @file CVRPSolutionTest1.java
+ *
+ */
+public class CVRPSolutionTest1 {
     static final double   EPSILON = 10E-6;
     ArrayList<CVRPClient> clients;
     CVRPSpecification     problemInfo;
-    ArrayList<Integer>    firstSolutionCodification;
-    CVRPSolution          firstUut; // First Unit Under Test
+    ArrayList<Integer>    solutionCodification;
+    CVRPSolution          uut;  // Unit Under Test
     
     @Before
     public void initialize() {
@@ -26,91 +36,91 @@ public class CVRPSolutionTest {
         }));
         
         this.problemInfo = new CVRPSpecification(this.clients, 0, 100, 1);
-        this.firstSolutionCodification = new ArrayList<>(
+        this.solutionCodification = new ArrayList<>(
                 Arrays.asList(new Integer[] { 1, 2, CVRPSolution.SEPARATOR, 3, CVRPSolution.SEPARATOR }));
-        this.firstUut = new CVRPSolution(this.problemInfo, this.firstSolutionCodification);
+        this.uut = new CVRPSolution(this.problemInfo, this.solutionCodification);
     }
     
     @Test
-    public void firstSolutionProblemInfoShouldReferToTheSamePassed() {
-        assertEquals(this.problemInfo, this.firstUut.getProblemInfo());
+    public void solutionProblemInfoShouldReferToTheSamePassed() {
+        assertEquals(this.problemInfo, this.uut.getProblemInfo());
     }
     
     @Test
-    public void firstSolutionShouldBeFeasible() {
-        assertTrue(this.firstUut.isFeasible());
+    public void solutionShouldBeFeasible() {
+        assertTrue(this.uut.isFeasible());
     }
     
     @Test
-    public void firstSolutionShouldHaveTwoRoutes() {
-        assertEquals(2, this.firstUut.getNumberOfRoutes());
+    public void solutionShouldHaveTwoRoutes() {
+        assertEquals(2, this.uut.getNumberOfRoutes());
     }
     
     @Test(expected = IndexOutOfBoundsException.class)
     public void routeRemainingCapacityShouldThrowWithNegativeRoute() {
-        this.firstUut.getVehicleRemainingCapacity(-1);
+        this.uut.getVehicleRemainingCapacity(-1);
     }
     
     @Test(expected = IndexOutOfBoundsException.class)
     public void routeRemainingCapacityShouldThrowWithARouteOutOfBounds() {
-        this.firstUut.getVehicleRemainingCapacity(2);
+        this.uut.getVehicleRemainingCapacity(2);
     }
     
     @Test
-    public void firstSolutionFirstRouteShouldHave90RemainingCapacity() {
-        assertEquals(90, this.firstUut.getVehicleRemainingCapacity(0));
+    public void solutionFirstRouteShouldHave90RemainingCapacity() {
+        assertEquals(90, this.uut.getVehicleRemainingCapacity(0));
     }
     
     @Test
-    public void firstSolutionSecondRouteShouldHave1RemainingCapacity() {
-        assertEquals(1, this.firstUut.getVehicleRemainingCapacity(1));
+    public void solutionSecondRouteShouldHave1RemainingCapacity() {
+        assertEquals(1, this.uut.getVehicleRemainingCapacity(1));
     }
     
     @Test(expected = IndexOutOfBoundsException.class)
     public void routeStartingIndexShouldThrowWithNegativeRoute() {
-        this.firstUut.getRouteStartingIndex(-1);
+        this.uut.getRouteStartingIndex(-1);
     }
     
     @Test(expected = IndexOutOfBoundsException.class)
     public void routeStartingIndexShouldThrowWithRouteOutOfBounds() {
-        this.firstUut.getRouteStartingIndex(2);
+        this.uut.getRouteStartingIndex(2);
     }
     
     @Test
-    public void firstSolutionFirstRouteStartingIndexShouldBe0() {
-        assertEquals(0, this.firstUut.getRouteStartingIndex(0));
+    public void solutionFirstRouteStartingIndexShouldBe0() {
+        assertEquals(0, this.uut.getRouteStartingIndex(0));
     }
     
     @Test
-    public void firstSolutionSecondRouteStartingIndexShouldBe3() {
-        assertEquals(3, this.firstUut.getRouteStartingIndex(1));
+    public void solutionSecondRouteStartingIndexShouldBe3() {
+        assertEquals(3, this.uut.getRouteStartingIndex(1));
     }
     
     @Test(expected = IndexOutOfBoundsException.class)
     public void routeNumberOfClientsShouldThrowWithNegativeRoute() {
-        this.firstUut.getNumberOfClientsInRoute(-1);
+        this.uut.getNumberOfClientsInRoute(-1);
     }
     
     @Test(expected = IndexOutOfBoundsException.class)
     public void routeNumberOfClientsShouldThrowWithRouteOutOfBounds() {
-        this.firstUut.getNumberOfClientsInRoute(2);
+        this.uut.getNumberOfClientsInRoute(2);
     }
     
     @Test
-    public void firstSolutionFirstRouteNumberOfClientsShouldBe2() {
-        assertEquals(2, this.firstUut.getNumberOfClientsInRoute(0));
+    public void solutionFirstRouteNumberOfClientsShouldBe2() {
+        assertEquals(2, this.uut.getNumberOfClientsInRoute(0));
     }
     
     @Test
-    public void firstSolutionSecondRouteNumberOfClientsShouldBe1() {
-        assertEquals(1, this.firstUut.getNumberOfClientsInRoute(1));
+    public void solutionSecondRouteNumberOfClientsShouldBe1() {
+        assertEquals(1, this.uut.getNumberOfClientsInRoute(1));
     }
     
     @Test
-    public void firstSolutionShouldHaveTheRightTotalDistance() {
+    public void solutionShouldHaveTheRightTotalDistance() {
         double expectedFirstRouteDistance = 2 * Math.hypot(3 - 0, 3 - 0); // * 2 Because it has to go back to the depot
         double expectedSecondRouteDistance = 2 * Math.hypot(4 - 0, 4 - 0);
         double expectedTotalDistance = expectedFirstRouteDistance + expectedSecondRouteDistance;
-        assertEquals(expectedTotalDistance, this.firstUut.getTotalDistance(), EPSILON);
+        assertEquals(expectedTotalDistance, this.uut.getTotalDistance(), EPSILON);
     }
 }

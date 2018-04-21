@@ -84,21 +84,21 @@ public class CVRPClient {
 	 * @param secondNode Second node.
 	 * @return Distance between nodes.
 	 */
-	public static int euclideanDistance(CVRPClient firstNode, CVRPClient secondNode) {
+    public static double euclideanDistance(CVRPClient firstNode, CVRPClient secondNode) {
 		int firstNodeXCoord = firstNode.getxCoordinate();
 		int secondNodeXCoord = secondNode.getyCoordinate();
 		int firstNodeYCoord = firstNode.getyCoordinate();
 		int secondNodeYCoord = secondNode.getyCoordinate();
 		
-		return (int) Math.sqrt(Math.pow(secondNodeXCoord - firstNodeXCoord, 2) +
-										 Math.pow(secondNodeYCoord - firstNodeYCoord, 2));
+        return Math.hypot(secondNodeXCoord - firstNodeXCoord, secondNodeYCoord - firstNodeYCoord);
 	}
 	
 	/* (non-Javadoc)
 	 * Overloaded method to prettify the client output, showing it's coordinates and demand.
 	 * @see java.lang.Object#toString()
 	 */
-	public String toString() {
+	@Override
+    public String toString() {
 		return "C: [" + this.getxCoordinate() + ", " + this.getyCoordinate() + "] D:" + this.getDemand();
 	}
 }

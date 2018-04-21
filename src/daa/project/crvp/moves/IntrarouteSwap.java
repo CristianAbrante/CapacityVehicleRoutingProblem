@@ -32,7 +32,7 @@ public class IntrarouteSwap extends Move {
 	}
 
 	@Override
-	public int getLastMoveCost() {
+    public double getLastMoveCost() {
 		// TODO Return the cost of the move
 		/*
 		 * [i, , j] MoveCost = -cost(i-1, j) -cost(i, i+1) -cost(j-1, j) -cost(j, j+1)
@@ -42,7 +42,7 @@ public class IntrarouteSwap extends Move {
 	}
 
 	@Override
-	public int getCost() {
+    public double getCost() {
 		// TODO Auto-generated method stub
 		return 0;
 	}

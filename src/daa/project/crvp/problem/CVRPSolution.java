@@ -48,7 +48,7 @@ public class CVRPSolution {
 	/**
 	 * Total distance that have to travel to get to every client
 	 */
-	private int totalDistance;
+    private double totalDistance;
 
 	/**
 	 * Whether this solution is feasible or not
@@ -78,48 +78,47 @@ public class CVRPSolution {
 		final int vehiclesCapacity = getProblemInfo().getCapacity();
 		int currentRouteStartingIndex = 0;
 		int currentRouteDemand = 0;
-		int totalDistance = 0;
+        double totalDistance = 0;
 		setFeasible(true);
 		CVRPClient prevClientOfTheRoute = getProblemInfo().getDepot();
 		CVRPClient currentClientOfTheRoute = null;
 
-		for (int pos = 0; pos < getVehicleRoutes().size(); ++pos) {
-			int clientId = getVehicleRoutes().get(pos);
-			if (clientId == CVRPSolution.SEPARATOR) {
-				// Add remaining capacity for the previous route. And set the demand for the
-				// next potential route
-				addVehicleRemainingCapacity(vehiclesCapacity - currentRouteDemand);
-				currentRouteDemand = 0;
-
-				// Add starting index for the previous route. And set the index for the next
-				// potential route
-				addRoutesStartingIndex(currentRouteStartingIndex);
-				currentRouteStartingIndex = pos + 1;
-
-				// Update lastClientOfTheRoute to be depot (so next route starts fresh from
-				// depot)
-				prevClientOfTheRoute = getProblemInfo().getDepot();
-			}
-			else {
-				// Get current client
-				currentClientOfTheRoute = getProblemInfo().getClient(clientId);
-
-				// Update demand and feasibility if current vehicle has to satisfy more demand
-				// than it can
-				currentRouteDemand += currentClientOfTheRoute.getDemand();
-				if (currentRouteDemand > vehiclesCapacity) {
-					setFeasible(false);
-				}
-
-				// Update total distance
-				totalDistance += CVRPClient.euclideanDistance(prevClientOfTheRoute, currentClientOfTheRoute);
-
-				// Update last client of the route to be the current one
-				prevClientOfTheRoute = currentClientOfTheRoute;
-			}
-		}
-
-		setTotalDistance(totalDistance);
+        for (int pos = 0; pos < getVehicleRoutes().size(); ++pos) {
+            int clientId = getVehicleRoutes().get(pos);
+            if (clientId == CVRPSolution.SEPARATOR) {
+                // Add remaining capacity for the previous route. And set the demand for the
+                // next potential route
+                addVehicleRemainingCapacity(vehiclesCapacity - currentRouteDemand);
+                currentRouteDemand = 0;
+                
+                // Add starting index for the previous route. And set the index for the next
+                // potential route
+                addRoutesStartingIndex(currentRouteStartingIndex);
+                currentRouteStartingIndex = pos + 1;
+                
+                // Update lastClientOfTheRoute to be depot (so next route starts fresh from
+                // depot)
+                prevClientOfTheRoute = getProblemInfo().getDepot();
+            } else {
+                // Get current client
+                currentClientOfTheRoute = getProblemInfo().getClient(clientId);
+                
+                // Update demand and feasibility if current vehicle has to satisfy more demand
+                // than it can
+                currentRouteDemand += currentClientOfTheRoute.getDemand();
+                if (currentRouteDemand > vehiclesCapacity) {
+                    setFeasible(false);
+                }
+                
+                // Update total distance
+                totalDistance += CVRPClient.euclideanDistance(prevClientOfTheRoute, currentClientOfTheRoute);
+                
+                // Update last client of the route to be the current one
+                prevClientOfTheRoute = currentClientOfTheRoute;
+            }
+        }
+        
+        setTotalDistance(totalDistance);
 	}
 
 	/**
@@ -184,7 +183,7 @@ public class CVRPSolution {
 	}
 
 	/** @return the totalDistance */
-	public int getTotalDistance() {
+    public double getTotalDistance() {
 		return totalDistance;
 	}
 
@@ -263,7 +262,7 @@ public class CVRPSolution {
 
 	/** @return the routesStartingIndexes */
 	private ArrayList<Integer> getRoutesStartingIndexes() {
-		return this.getRoutesStartingIndexes();
+        return this.routesStartingIndexes;
 	}
 
 	/** @return the vehicleRemainingCapacities */
@@ -288,7 +287,7 @@ public class CVRPSolution {
 	}
 
 	private void addRoutesStartingIndex(int newRouteStartingIndex) {
-		this.routesStartingIndexes.add(newRouteStartingIndex);
+        this.routesStartingIndexes.add(newRouteStartingIndex);
 	}
 
 	private void addVehicleRemainingCapacity(int newVehicleRemainingCapacity) {
@@ -299,7 +298,7 @@ public class CVRPSolution {
 	 * @param totalDistance
 	 *          the totalDistance to set
 	 */
-	private void setTotalDistance(int totalDistance) {
+    private void setTotalDistance(double totalDistance) {
 		this.totalDistance = totalDistance;
 	}
 

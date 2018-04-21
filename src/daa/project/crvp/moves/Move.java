@@ -26,13 +26,13 @@ public abstract class Move {
 	 * @return The difference in the objective function that applying the last move
 	 *         made
 	 */
-	public abstract int getLastMoveCost();
+    public abstract double getLastMoveCost();
 
 	/**
 	 * @return The objective function value of the solution made from applying the
 	 *         last move
 	 */
-	public abstract int getCost();
+    public abstract double getCost();
 
 	/**
 	 * @return Whether the solution made from applying the last move is feasible or

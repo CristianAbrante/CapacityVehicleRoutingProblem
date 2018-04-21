@@ -96,6 +96,10 @@ public class CVRPSolution {
                 addRoutesStartingIndex(currentRouteStartingIndex);
                 currentRouteStartingIndex = pos + 1;
                 
+                // Update total distance. From the last node we have to count the distance 
+                // to go back to the depot
+                totalDistance += CVRPClient.euclideanDistance(prevClientOfTheRoute, getProblemInfo().getDepot());
+                
                 // Update lastClientOfTheRoute to be depot (so next route starts fresh from
                 // depot)
                 prevClientOfTheRoute = getProblemInfo().getDepot();
@@ -221,13 +225,15 @@ public class CVRPSolution {
 	 */
 	public int getNumberOfClientsInRoute(int route) {
 		int routeStartingIndex = getRoutesStartingIndexes().get(route);
-		// If the route specified is the last route...
-		if (route == getNumberOfRoutes()) {
-			return getVehicleRoutes().size() - routeStartingIndex - 1;
+        // If the route specified is not the last route...
+        if (route < (getNumberOfRoutes() - 1)) {
+            int nextRouteStartingIndex = getRoutesStartingIndexes().get(route + 1);
+            return nextRouteStartingIndex - routeStartingIndex - 1;
 		}
 		else {
-			int nextRouteStartingIndex = getRoutesStartingIndexes().get(route + 1);
-			return nextRouteStartingIndex - routeStartingIndex - 1;
+            // If the route is the last one, we have to return the difference between the solution
+            // array length and the position. -1 because be don't want the SEPARATOR to be counted
+            return getVehicleRoutes().size() - routeStartingIndex - 1;
 		}
 	}
 

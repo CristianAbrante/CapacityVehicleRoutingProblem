@@ -195,7 +195,6 @@ public class CVRPSolutionTest1 {
         this.uut.getClient(-1);
     }
     
-  	/** Test if the swap between to indexes in the routes array is correct.	 */
   	@Test
   	public void swapBetweenRoutes() {
   		assertEquals(1, uut.getClientId(0));
@@ -206,5 +205,27 @@ public class CVRPSolutionTest1 {
 
   		assertEquals(3, newSolution.getClientId(0));
   		assertEquals(1, newSolution.getClientId(3));
+  	}
+  	
+  	@Test
+  	public void swapInsideRoutes() {
+  		assertEquals(1, uut.getClientId(0));
+  		assertEquals(2, uut.getClientId(1));
+
+  		CVRPSolution newSolution = new CVRPSolution(problemInfo,
+  				CVRPSolution.generateSwappedSolution(uut, 0, 0, 0, 1));
+
+  		assertEquals(2, newSolution.getClientId(0));
+  		assertEquals(1, newSolution.getClientId(1));
+  	}
+  	
+  	@Test
+  	public void swapSameClient() {
+  		assertEquals(1, uut.getClientId(0));
+
+  		CVRPSolution newSolution = new CVRPSolution(problemInfo,
+  				CVRPSolution.generateSwappedSolution(uut, 0, 0, 0, 0));
+
+  		assertEquals(1, newSolution.getClientId(0));
   	}
 }

@@ -349,11 +349,10 @@ public class CVRPSolution {
 	 * @param currentToRoute Index of the current route to where the exchange is produced.
 	 * @return New routes array with the elements swapped..
 	 */
-	public static ArrayList<Integer> generateSwappedSolution(CVRPSolution currentSolution, int currentFromRoutePosition, int currentFromRoute,
-			int currentToRoutePosition, int currentToRoute) {
-		int firstSwapIndex = (currentFromRoutePosition + 1) * (currentFromRoute + 1) + (currentFromRoute) - 1;
-		int secondSwapIndex = (currentToRoutePosition + 1) * (currentToRoute + 1) + (currentToRoute) - 1;
-		
+	public static ArrayList<Integer> generateSwappedSolution(CVRPSolution currentSolution, int currentFromRoute, int currentFromRoutePosition,
+			int currentToRoute, int currentToRoutePosition) {
+		int firstSwapIndex = currentSolution.getRouteStartingIndex(currentFromRoute) + currentFromRoutePosition;
+		int secondSwapIndex = currentSolution.getRouteStartingIndex(currentToRoute) + currentToRoutePosition;		
 		ArrayList<Integer> newVehicleRoutes = new ArrayList<Integer>(currentSolution.getVehicleRoutes());
 		
 		java.util.Collections.swap(newVehicleRoutes, firstSwapIndex, secondSwapIndex);

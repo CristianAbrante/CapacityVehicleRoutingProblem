@@ -42,7 +42,7 @@ public class IntrarouteSwap extends Move {
 	}
 
 	@Override
-    public double getCost() {
+    public double getCurrentNeighborCost() {
 		// TODO Auto-generated method stub
 		return 0;
 	}

@@ -35,7 +35,7 @@ public abstract class Move {
 	 * @return The objective function value of the solution made from applying the
 	 *         last move
 	 */
-	public abstract double getCost();
+	public abstract double getCurrentNeighborCost();
 
 	/**
 	 * @return Whether the solution made from applying the last move is feasible or

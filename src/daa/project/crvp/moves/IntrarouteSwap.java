@@ -60,4 +60,13 @@ public class IntrarouteSwap extends Move {
 		// TODO Generate solution and return it
 		return null;
 	}
+
+	/* (non-Javadoc)
+	 * @see daa.project.crvp.moves.Move#hasMoreNeighbors()
+	 */
+	@Override
+	public boolean hasMoreNeighbors() {
+		// TODO Auto-generated method stub
+		return false;
+	}
 }

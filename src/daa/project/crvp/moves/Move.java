@@ -21,18 +21,21 @@ public abstract class Move {
 
 	/** Updates the internal state to point to the next neighbor solution */
 	public abstract void nextNeighbor();
+	
+	/** Method to know if there are more neighbors for the current movement. */
+	public abstract boolean hasMoreNeighbors();
 
 	/**
 	 * @return The difference in the objective function that applying the last move
 	 *         made
 	 */
-    public abstract double getLastMoveCost();
+	public abstract double getLastMoveCost();
 
 	/**
 	 * @return The objective function value of the solution made from applying the
 	 *         last move
 	 */
-    public abstract double getCost();
+	public abstract double getCost();
 
 	/**
 	 * @return Whether the solution made from applying the last move is feasible or

@@ -32,6 +32,11 @@ public class CVRPSolutionTest {
     }
     
     @Test
+    public void firstSolutionProblemInfoShouldReferToTheSamePassed() {
+        assertEquals(this.problemInfo, this.firstUut.getProblemInfo());
+    }
+    
+    @Test
     public void firstSolutionShouldBeFeasible() {
         assertTrue(this.firstUut.isFeasible());
     }
@@ -39,6 +44,16 @@ public class CVRPSolutionTest {
     @Test
     public void firstSolutionShouldHaveTwoRoutes() {
         assertEquals(2, this.firstUut.getNumberOfRoutes());
+    }
+    
+    @Test(expected = IndexOutOfBoundsException.class)
+    public void routeRemainingCapacityShouldThrowWithNegativeRoute() {
+        this.firstUut.getVehicleRemainingCapacity(-1);
+    }
+    
+    @Test(expected = IndexOutOfBoundsException.class)
+    public void routeRemainingCapacityShouldThrowWithARouteOutOfBounds() {
+        this.firstUut.getVehicleRemainingCapacity(2);
     }
     
     @Test
@@ -51,6 +66,16 @@ public class CVRPSolutionTest {
         assertEquals(1, this.firstUut.getVehicleRemainingCapacity(1));
     }
     
+    @Test(expected = IndexOutOfBoundsException.class)
+    public void routeStartingIndexShouldThrowWithNegativeRoute() {
+        this.firstUut.getRouteStartingIndex(-1);
+    }
+    
+    @Test(expected = IndexOutOfBoundsException.class)
+    public void routeStartingIndexShouldThrowWithRouteOutOfBounds() {
+        this.firstUut.getRouteStartingIndex(2);
+    }
+    
     @Test
     public void firstSolutionFirstRouteStartingIndexShouldBe0() {
         assertEquals(0, this.firstUut.getRouteStartingIndex(0));
@@ -59,6 +84,16 @@ public class CVRPSolutionTest {
     @Test
     public void firstSolutionSecondRouteStartingIndexShouldBe3() {
         assertEquals(3, this.firstUut.getRouteStartingIndex(1));
+    }
+    
+    @Test(expected = IndexOutOfBoundsException.class)
+    public void routeNumberOfClientsShouldThrowWithNegativeRoute() {
+        this.firstUut.getNumberOfClientsInRoute(-1);
+    }
+    
+    @Test(expected = IndexOutOfBoundsException.class)
+    public void routeNumberOfClientsShouldThrowWithRouteOutOfBounds() {
+        this.firstUut.getNumberOfClientsInRoute(2);
     }
     
     @Test

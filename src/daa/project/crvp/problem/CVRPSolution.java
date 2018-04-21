@@ -292,10 +292,20 @@ public class CVRPSolution {
 		this.vehicleRoutes = vehicleRoutes;
 	}
 
+    /**
+     * Add a starting index for a new route
+     * 
+     * @param newRouteStartingIndex
+     */
 	private void addRoutesStartingIndex(int newRouteStartingIndex) {
         this.routesStartingIndexes.add(newRouteStartingIndex);
 	}
 
+    /**
+     * Add the remaining capacity for the vehicle of a new route
+     * 
+     * @param newVehicleRemainingCapacity
+     */
 	private void addVehicleRemainingCapacity(int newVehicleRemainingCapacity) {
 		this.vehicleRemainingCapacities.add(newVehicleRemainingCapacity);
 	}

@@ -341,15 +341,15 @@ public class CVRPSolution {
 	}
 	
 	/**
-	 * Method that swap two clients inside the vehicle routes and return a new solution.
+	 * Method that swap two clients inside the vehicle routes and return a new routes array.
 	 * 
 	 * @param currentFromRoutePosition Current index inside the source route.
 	 * @param currentFromRoute Index of the current route from where the exchange is produced.
 	 * @param currentToRoutePosition  Current index inside the destiny route.
 	 * @param currentToRoute Index of the current route to where the exchange is produced.
-	 * @return Generated solution with same problemInfo but different vehicleRoutes, swapped.
+	 * @return New routes array with the elements swapped..
 	 */
-	public static CVRPSolution generateSwappedSolution(CVRPSolution currentSolution, int currentFromRoutePosition, int currentFromRoute,
+	public static ArrayList<Integer> generateSwappedSolution(CVRPSolution currentSolution, int currentFromRoutePosition, int currentFromRoute,
 			int currentToRoutePosition, int currentToRoute) {
 		int firstSwapIndex = (currentFromRoutePosition + 1) * (currentFromRoute + 1) + (currentFromRoute) - 1;
 		int secondSwapIndex = (currentToRoutePosition + 1) * (currentToRoute + 1) + (currentToRoute) - 1;
@@ -357,7 +357,7 @@ public class CVRPSolution {
 		ArrayList<Integer> newVehicleRoutes = new ArrayList<Integer>(currentSolution.getVehicleRoutes());
 		
 		java.util.Collections.swap(newVehicleRoutes, firstSwapIndex, secondSwapIndex);
-		return new CVRPSolution(currentSolution.getProblemInfo(), newVehicleRoutes);
+		return newVehicleRoutes;
 	}
 
 }

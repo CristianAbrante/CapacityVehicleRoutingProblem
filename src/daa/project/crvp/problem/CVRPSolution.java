@@ -124,6 +124,16 @@ public class CVRPSolution {
         
         setTotalDistance(totalDistance);
 	}
+    
+    @Override
+    public boolean equals(Object thatObj) {
+        return getVehicleRoutes().equals(((CVRPSolution) thatObj).getVehicleRoutes());
+    }
+    
+    @Override
+    public int hashCode() {
+        return getVehicleRoutes().hashCode();
+    }
 
 	/**
 	 * Returns the client ID in the specified position or SEPARATOR if there is no

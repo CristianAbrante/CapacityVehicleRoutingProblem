@@ -150,6 +150,10 @@ public class IntrarouteSwap extends Move {
         updateNextState();
     }
     
+    /**
+     * Updates the next state and whether there are more neighbors 
+     * after the current state or not
+     */
     public void updateNextState() {
         // The goal of this move is to iterate through all possible swaps of two elements in each route.
         // What we want to do is a iteration of the following loop each time this method is called

@@ -146,10 +146,9 @@ public class GRASP {
 					insertCandidate(client);
 					// If the client is closest to the current client that the last/worst
 					// candidate: introduce properly the client in the candidate list.
-				} else if (CVRPClient.euclideanDistance(currentClient,
-						client) < CVRPClient.euclideanDistance(currentClient,
-								restrictedCandidateList
-										.get(restrictedCandidateList.size() - 1))) {
+				} else if (CVRPClient.euclideanDistance(currentClient, client) < 
+						       CVRPClient.euclideanDistance(currentClient, restrictedCandidateList.get(restrictedCandidateList.size() - 1)) && 
+						       client.getDemand() <= remainingVehicleCapacity) {
 					restrictedCandidateList.remove(restrictedCandidateList.size() - 1);
 					insertCandidate(client);
 				}
@@ -169,6 +168,7 @@ public class GRASP {
 				solution.add(
 						GRASP.problemSpecification.getClients().indexOf(currentClient));
 				updateRestrictedCandidateList();
+				
 			}
 
 			// If the vehicle is "full" or there aren't remaining clients to serve or
@@ -194,7 +194,7 @@ public class GRASP {
 	 * removed from the list.
 	 */
 	private static void updateRestrictedCandidateList() {
-		ArrayList<CVRPClient> clientsToRemove = new ArrayList();
+		ArrayList<CVRPClient> clientsToRemove = new ArrayList<>();
 		for (CVRPClient client : restrictedCandidateList) {
 			if (remainingVehicleCapacity < client.getDemand()) {
 				clientsToRemove.add(client);

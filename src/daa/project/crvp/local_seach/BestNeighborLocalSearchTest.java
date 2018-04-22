@@ -8,6 +8,7 @@ import java.util.Arrays;
 import org.junit.Before;
 import org.junit.Test;
 
+import daa.project.crvp.local_search.BestNeighborLocalSearch;
 import daa.project.crvp.moves.IntrarouteSwap;
 import daa.project.crvp.problem.CVRPClient;
 import daa.project.crvp.problem.CVRPSolution;

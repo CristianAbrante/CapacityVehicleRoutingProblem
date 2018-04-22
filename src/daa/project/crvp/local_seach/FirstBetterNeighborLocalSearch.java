@@ -1,5 +1,6 @@
 package daa.project.crvp.local_seach;
 
+import daa.project.crvp.local_search.LocalSearch;
 import daa.project.crvp.moves.Move;
 import daa.project.crvp.problem.CVRPSolution;
 import daa.project.crvp.utils.DoubleCompare;

@@ -62,10 +62,12 @@ public class CVRPGraphic extends JPanel {
 	private final String WINDOW_TITLE = "CVRP Representation";
 	/** Integer necessary to scale the points depending on it's maximum size. */
 	private int pointScale;
+	/** Diameter of the point. */
+	private final int POINT_DIAMETER = 10;
 	/** Radius of the point. */
-	private final int POINT_RADIUS = 10;
+	private final int POINT_RADIUS = POINT_DIAMETER / 2;
 	/** Radius of the DEPOT. */
-	private final int DEPOT_RADIUS = 20;
+	private final int DEPOT_DIAMETER = 20;
 
 	/**
 	 * Method that initialize the Graphic CVRP. For setting a solution use
@@ -112,12 +114,12 @@ public class CVRPGraphic extends JPanel {
 				int yPos2 = this.routesArray.get(i).get(j).getyCoordinate() * pointScale;
 
 				g.setColor(POINT_COLOR);
-				g.fillOval(xPos1, yPos1, POINT_RADIUS, POINT_RADIUS);
-				g.fillOval(xPos2, yPos2, POINT_RADIUS, POINT_RADIUS);
+				g.fillOval(xPos1, yPos1, POINT_DIAMETER, POINT_DIAMETER);
+				g.fillOval(xPos2, yPos2, POINT_DIAMETER, POINT_DIAMETER);
 
 				g.setColor(DEPOT_COLOR);
 				if ((j - 1) == 0) {
-					g.fillOval(xPos1 - (DEPOT_RADIUS / 2), yPos1 - (DEPOT_RADIUS / 2), DEPOT_RADIUS, DEPOT_RADIUS);
+					g.fillOval(xPos1 - (DEPOT_DIAMETER / 2), yPos1 - (DEPOT_DIAMETER / 2), DEPOT_DIAMETER, DEPOT_DIAMETER);
 				}
 
 				// IDS
@@ -126,7 +128,7 @@ public class CVRPGraphic extends JPanel {
 				g.drawString(String.valueOf(this.idArray.get(i).get(j)), xPos2 - 10, yPos2 - 10);
 
 				g.setColor(routeColor);
-				g.drawLine(xPos1, yPos1, xPos2, yPos2);
+				g.drawLine(xPos1 + POINT_RADIUS, yPos1 + POINT_RADIUS, xPos2 + POINT_RADIUS, yPos2 + POINT_RADIUS);
 
 				g.setColor(Color.BLACK);
 				Point middlePoint = getMiddlePoint(new Point(xPos1, yPos1), new Point(xPos2, yPos2));
@@ -208,16 +210,5 @@ public class CVRPGraphic extends JPanel {
 	public void showSolution() {
 		this.cvrpWindow.setVisible(true);
 		this.cvrpWindow.repaint();
-	}
-
-	public static void main(String[] args) throws FileNotFoundException, IOException {
-		ReaderFromFile reader = new ReaderFromFile(args[0]);
-
-		ArrayList<Integer> vehicleRoutes = new ArrayList<Integer>(Arrays.asList(4, 1, 3, -1, 2, 5, 6, -1, 8, 7, 0, -1));
-		CVRPSolution solution = new CVRPSolution(reader.getProblemSpecification(), vehicleRoutes);
-
-		CVRPGraphic graphic = new CVRPGraphic();
-		graphic.setSolution(solution);
-		graphic.showSolution();
 	}
 }

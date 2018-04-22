@@ -1,4 +1,4 @@
-package daa.project.crvp.local_seach;
+package daa.project.crvp.local_search;
 
 import daa.project.crvp.moves.Move;
 import daa.project.crvp.problem.CVRPSolution;

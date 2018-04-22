@@ -173,7 +173,7 @@ public class IntrarouteSwap extends Move {
                     this.nextRoute += 1;
                     this.nextRouteFirstPosition = 0;
                     this.nextRouteSecondPosition = 1;
-                    if (this.nextRoute == this.numberRoutes) {
+                    if (this.nextRoute >= this.numberRoutes) {
                         this.hasMoreNeighbors = false;
                         this.nextRoute = -1;
                         this.nextRouteFirstPosition = -1;

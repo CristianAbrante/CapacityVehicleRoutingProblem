@@ -35,7 +35,7 @@ public class CVRPClient {
 	 * @return xCoordinate of the node.
 	 */
 	public int getxCoordinate() {
-		return xCoordinate;
+		return this.xCoordinate;
 	}
 	
 	/**
@@ -51,7 +51,7 @@ public class CVRPClient {
 	 * @return yCoordinate of the node.
 	 */
 	public int getyCoordinate() {
-		return yCoordinate;
+		return this.yCoordinate;
 	}
 	
 	/**
@@ -67,7 +67,7 @@ public class CVRPClient {
 	 * @return demand of the node.
 	 */
 	public int getDemand() {
-		return demand;
+		return this.demand;
 	}
 	
 	/**
@@ -84,7 +84,7 @@ public class CVRPClient {
 	 * @param secondNode Second node.
 	 * @return Distance between nodes.
 	 */
-    public static double euclideanDistance(CVRPClient firstNode, CVRPClient secondNode) {
+  public static double euclideanDistance(CVRPClient firstNode, CVRPClient secondNode) {
 		int firstNodeXCoord = firstNode.getxCoordinate();
 		int secondNodeXCoord = secondNode.getxCoordinate();
 		int firstNodeYCoord = firstNode.getyCoordinate();

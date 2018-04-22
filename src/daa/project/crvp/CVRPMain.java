@@ -1,8 +1,13 @@
 package daa.project.crvp;
+
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import daa.project.crvp.IO.ReaderFromFile;
+import daa.project.crvp.algorithms.GRASP;
+import daa.project.crvp.graphic.CVRPGraphic;
+import daa.project.crvp.local_search.BestNeighborLocalSearch;
+import daa.project.crvp.moves.IntrarouteSwap;
 import daa.project.crvp.problem.CVRPClient;
 import daa.project.crvp.problem.CVRPSpecification;
 
@@ -36,6 +41,12 @@ public class CVRPMain {
 		}
 		
 		System.out.println("Total Demand: " + totalDemand);
+		
+		
+		
+		CVRPGraphic window = new CVRPGraphic();
+		window.setSolution(GRASP.grasp(problemSpecification, 100, 100, 5, new BestNeighborLocalSearch(new IntrarouteSwap())));
+		window.showSolution();
 	}
 
 }

@@ -49,7 +49,7 @@ public class CVRPSpecification {
 	 * @return Clients of the problem.
 	 */
 	public ArrayList<CVRPClient> getClients() {
-		return clients;
+		return this.clients;
 	}
 	
     /**
@@ -59,11 +59,11 @@ public class CVRPSpecification {
      * @return Client information
      */
     public CVRPClient getClient(int clientId) {
-        if (clientId < 0 || clientId >= getClients().size()) {
+        if (clientId < 0 || clientId >= this.getClients().size()) {
             throw new IllegalArgumentException("Invalid client ID \"" + clientId
-                    + "\" Expected client ID to be 0 <= clientId < " + getClients().size());
+                    + "\" Expected client ID to be 0 <= clientId < " + this.getClients().size());
         }
-        return getClients().get(clientId);
+        return this.getClients().get(clientId);
     }
     
     /**
@@ -72,7 +72,7 @@ public class CVRPSpecification {
      * @return the depot information
      */
     public CVRPClient getDepot() {
-        return getClients().get(getDepotID());
+        return this.getClients().get(this.getDepotID());
     }
 	
 	/**
@@ -103,7 +103,7 @@ public class CVRPSpecification {
 	 * @param Client to be added.
 	 */
 	public void addClient(CVRPClient clients) {
-		getClients().add(clients);
+		this.getClients().add(clients);
 	}
 	
 	/**
@@ -111,7 +111,7 @@ public class CVRPSpecification {
 	 * @return Identifier of the depot.
 	 */
 	public int getDepotID() {
-		return depotID;
+		return this.depotID;
 	}
 	
 	/**
@@ -127,7 +127,7 @@ public class CVRPSpecification {
 	 * @return Capacity of each vehicle.
 	 */
 	public int getCapacity() {
-		return capacity;
+		return this.capacity;
 	}
 	
 	/**

@@ -42,11 +42,15 @@ public class CVRPGraphic extends JPanel {
 	private static final int RGB_MAX = 170;
 	/** POINT_COLOR */
 	private final Color POINT_COLOR = Color.BLUE;
+	/** POINT_COLOR */
+	private final Color DEPOT_COLOR = Color.RED;
 
 	/** Frame that contains the CVRPPanel */
 	private JFrame cvrpWindow;
 	/** Array that contains the routes of the CVRP solution. */
 	ArrayList<ArrayList<CVRPClient>> routesArray;
+	/** Array that contains the routes of the CVRP solution. */
+	ArrayList<ArrayList<String>> idArray;
 
 	/** SCREEN_MARGIN represent the distance between the screen and the window. */
 	private final int SCREEN_MARGIN = 150;
@@ -60,6 +64,8 @@ public class CVRPGraphic extends JPanel {
 	private int pointScale;
 	/** Radius of the point. */
 	private final int POINT_RADIUS = 10;
+	/** Radius of the DEPOT. */
+	private final int DEPOT_RADIUS = 20;
 
 	/**
 	 * Method that initialize the Graphic CVRP. For setting a solution use
@@ -109,6 +115,16 @@ public class CVRPGraphic extends JPanel {
 				g.fillOval(xPos1, yPos1, POINT_RADIUS, POINT_RADIUS);
 				g.fillOval(xPos2, yPos2, POINT_RADIUS, POINT_RADIUS);
 
+				g.setColor(DEPOT_COLOR);
+				if ((j - 1) == 0) {
+					g.fillOval(xPos1 - (DEPOT_RADIUS / 2), yPos1 - (DEPOT_RADIUS / 2), DEPOT_RADIUS, DEPOT_RADIUS);
+				}
+
+				// IDS
+				g.setColor(Color.BLACK);
+				g.drawString(String.valueOf(this.idArray.get(i).get(j - 1)), xPos1 - 10, yPos1 - 10);
+				g.drawString(String.valueOf(this.idArray.get(i).get(j)), xPos2 - 10, yPos2 - 10);
+
 				g.setColor(routeColor);
 				g.drawLine(xPos1, yPos1, xPos2, yPos2);
 
@@ -148,6 +164,8 @@ public class CVRPGraphic extends JPanel {
 	 */
 	public void setSolution(CVRPSolution solution) {
 		this.routesArray = new ArrayList<ArrayList<CVRPClient>>();
+		this.idArray = new ArrayList<ArrayList<String>>();
+
 		int maximumPosition = 100;
 
 		for (int i = 0; i < solution.getNumberOfRoutes(); ++i) {
@@ -156,7 +174,10 @@ public class CVRPGraphic extends JPanel {
 			}
 
 			ArrayList<CVRPClient> route = new ArrayList<CVRPClient>();
+			ArrayList<String> idSubArray = new ArrayList<String>();
+
 			route.add(solution.getProblemInfo().getDepot());
+			idSubArray.add(String.valueOf(solution.getProblemInfo().getDepotID()));
 
 			for (int j = 0; j < solution.getNumberOfClientsInRoute(i); ++j) {
 				if (maximumPosition < solution.getClient(i, j).getxCoordinate()) {
@@ -167,10 +188,14 @@ public class CVRPGraphic extends JPanel {
 				}
 
 				route.add(solution.getClient(i, j));
+				idSubArray.add(String.valueOf(solution.getClientId(i, j)));
 			}
 
 			route.add(solution.getProblemInfo().getDepot());
+			idSubArray.add(String.valueOf(solution.getProblemInfo().getDepotID()));
+
 			this.routesArray.add(route);
+			this.idArray.add(idSubArray);
 		}
 
 		this.pointScale = SCREEN_WIDTH / maximumPosition;
@@ -185,14 +210,14 @@ public class CVRPGraphic extends JPanel {
 		this.cvrpWindow.repaint();
 	}
 
-//	public static void main(String[] args) throws FileNotFoundException, IOException {
-//		ReaderFromFile reader = new ReaderFromFile(args[0]);
-//
-//		ArrayList<Integer> vehicleRoutes = new ArrayList<Integer>(Arrays.asList(2, 1, 3, -1, 4, 5, 6, -1, 8, 7, 9, 0, -1));
-//		CVRPSolution solution = new CVRPSolution(reader.getProblemSpecification(), vehicleRoutes);
-//
-//		CVRPGraphic graphic = new CVRPGraphic();
-//		graphic.setSolution(solution);
-//		graphic.showSolution();
-//	}
+	public static void main(String[] args) throws FileNotFoundException, IOException {
+		ReaderFromFile reader = new ReaderFromFile(args[0]);
+
+		ArrayList<Integer> vehicleRoutes = new ArrayList<Integer>(Arrays.asList(4, 1, 3, -1, 2, 5, 6, -1, 8, 7, 0, -1));
+		CVRPSolution solution = new CVRPSolution(reader.getProblemSpecification(), vehicleRoutes);
+
+		CVRPGraphic graphic = new CVRPGraphic();
+		graphic.setSolution(solution);
+		graphic.showSolution();
+	}
 }

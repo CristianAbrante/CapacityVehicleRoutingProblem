@@ -1,22 +1,24 @@
-package daa.project.crvp.local_search;
+package daa.project.crvp.local_seach;
 
 import daa.project.crvp.moves.Move;
 import daa.project.crvp.problem.CVRPSolution;
 import daa.project.crvp.utils.DoubleCompare;
 
 /**
- * Local search algorithm that searches all neighbors of a solution for the best one
- * and continues until the current neighbor is the best of the neighborhood (local optimum)
+ * Local search algorithm that searches through all neighbors of a solution until one better
+ * than the current, and continues until the current neighbor is the best of the neighborhood 
+ * (local optimum)
+ * 
  * 
  * @author Carlos Dominguez Garcia (alu0100966589)
  * @version 1.0.0
  * @since 1.0.0 (Apr 22, 2018)
- * @file BestNeighborLocalSearch.java
+ * @file FirstBetterNeighborLocalSearch.java
  *
  */
-public class BestNeighborLocalSearch extends LocalSearch {
+public class FirstBetterNeighborLocalSearch extends LocalSearch {
     
-    public BestNeighborLocalSearch(Move moveToUse) {
+    public FirstBetterNeighborLocalSearch(Move moveToUse) {
         super(moveToUse);
     }
     
@@ -35,7 +37,7 @@ public class BestNeighborLocalSearch extends LocalSearch {
         do {
             isLocalOptimum = true;
             move.setSolution(currentBestSolution);
-            while (move.hasMoreNeighbors()) {
+            while (move.hasMoreNeighbors() && isLocalOptimum) {
                 move.nextNeighbor();
                 if (DoubleCompare.lessThan(move.getCurrentNeighborCost(), currentBestSolution.getTotalDistance())) {
                     isLocalOptimum = false;

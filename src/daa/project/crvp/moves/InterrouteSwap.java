@@ -17,10 +17,13 @@ import daa.project.crvp.problem.CVRPSolution;
  */
 public class InterrouteSwap extends Move {
 
+	/** Default value of route indicates that doesn't exist. */
+	private int DEFAULT_ROUTE_VALUE = -1;
+
 	/** Index of the current route from where the exchange is produced. */
-	private int currentFromRoute = 0;
+	private int currentFromRoute = DEFAULT_ROUTE_VALUE;
 	/** Index of the current route to where the exchange is produced. */
-	private int currentToRoute = 1;
+	private int currentToRoute = DEFAULT_ROUTE_VALUE;
 	/** Current index inside the source route. */
 	private int currentFromRoutePosition = 0;
 	/** Current index inside the destiny route. */
@@ -41,6 +44,33 @@ public class InterrouteSwap extends Move {
 	@Override
 	public void setSolution(CVRPSolution solution) {
 		super.setSolution(solution);
+
+		this.started = false;
+		this.canAdvance = true;
+		this.lastMoveCost = 0.0;
+
+		this.currentFromRoutePosition = 0;
+		this.currentFromRoute = getNextRouteOf(-1);
+
+		this.currentToRoutePosition = 0;
+		this.currentToRoute = getNextRouteOf(this.currentFromRoute);
+
+		if (this.currentFromRoute == DEFAULT_ROUTE_VALUE || this.currentToRoute == DEFAULT_ROUTE_VALUE) {
+			this.canAdvance = false;
+		}
+	}
+
+	/**
+	 * Method that looks for the first non-empty route in the solution after the
+	 * current route and return it.
+	 */
+	private int getNextRouteOf(int currentRoute) {
+		for (int i = currentRoute + 1; i < getSolution().getNumberOfRoutes(); ++i) {
+			if (getSolution().getNumberOfClientsInRoute(i) > 0) {
+				return i;
+			}
+		}
+		return DEFAULT_ROUTE_VALUE;
 	}
 
 	/*
@@ -50,6 +80,9 @@ public class InterrouteSwap extends Move {
 	 */
 	@Override
 	public void nextNeighbor() {
+		if (getSolution() == null) {
+			throw new IllegalAccessError("trying to use move with no base solution set");
+		}
 		if (canAdvance) {
 			if (started) {
 				canAdvance = advanceToPosition();
@@ -58,9 +91,6 @@ public class InterrouteSwap extends Move {
 				started = true;
 			}
 			calculateLastMoveCost();
-		}
-		else {
-			System.err.println("There are not more next Neighbor in Interroute Swap.");
 		}
 	}
 
@@ -71,6 +101,9 @@ public class InterrouteSwap extends Move {
 	 */
 	@Override
 	public boolean hasMoreNeighbors() {
+		if (getSolution() == null) {
+			throw new IllegalAccessError("trying to use move with no base solution set");
+		}
 		return canAdvance;
 	}
 
@@ -107,15 +140,22 @@ public class InterrouteSwap extends Move {
 	 * @return If it was possible to move From Position.
 	 */
 	private boolean advanceFromPosition() {
-		if ((getSolution().getNumberOfClientsInRoute(currentToRoute) == 0)
+		if ((getSolution().getNumberOfClientsInRoute(currentFromRoute) == 0)
 				|| (currentFromRoutePosition == getSolution().getNumberOfClientsInRoute(currentFromRoute) - 1)) {
 			return advanceFromRoute();
 		}
 		else {
 			currentFromRoutePosition++;
+
 			currentToRoutePosition = 0;
-			currentToRoute = currentFromRoute + 1;
-			return true;
+			int nextToRoute = getNextRouteOf(this.currentFromRoute);
+			if (nextToRoute == DEFAULT_ROUTE_VALUE) {
+				return false;
+			}
+			else {
+				this.currentToRoute = nextToRoute;
+				return true;
+			}
 		}
 	}
 
@@ -126,13 +166,23 @@ public class InterrouteSwap extends Move {
 	 * @return If it was possible to move From Route.
 	 */
 	private boolean advanceFromRoute() {
-		currentFromRoutePosition = 0;
-		currentFromRoute++;
-		if (currentFromRoute != getSolution().getNumberOfRoutes() - 1) {
+		if ((currentFromRoute + 1) < getSolution().getNumberOfRoutes() - 1) {
+			currentFromRoutePosition = 0;
+			currentFromRoute++;
+
 			currentToRoutePosition = 0;
-			currentToRoute = currentFromRoute + 1;
+			int nextToRoute = getNextRouteOf(this.currentFromRoute);
+			if (nextToRoute == DEFAULT_ROUTE_VALUE) {
+				return false;
+			}
+			else {
+				this.currentToRoute = nextToRoute;
+				return true;
+			}
 		}
-		return (currentFromRoute != getSolution().getNumberOfRoutes() - 1); // To avoid repetitions.
+		else {
+			return false;
+		}
 	}
 
 	/**
@@ -142,8 +192,15 @@ public class InterrouteSwap extends Move {
 	 */
 	private boolean advanceToRoute() {
 		currentToRoutePosition = 0;
-		currentToRoute++;
-		return true;
+
+		int nextToRoute = getNextRouteOf(this.currentToRoute);
+		if (nextToRoute == DEFAULT_ROUTE_VALUE) {
+			return false;
+		}
+		else {
+			this.currentToRoute = nextToRoute;
+			return true;
+		}
 	}
 
 	/**
@@ -157,6 +214,9 @@ public class InterrouteSwap extends Move {
 	 * @return Absolute position in the global routes array of the CVRP solution.
 	 */
 	private int getClientAbsolutePosition(int positionInRoute, int route) {
+		if (getSolution() == null) {
+			throw new IllegalAccessError("trying to use move with no base solution set");
+		}
 		return getSolution().getRouteStartingIndex(route) + positionInRoute;
 	}
 
@@ -187,8 +247,8 @@ public class InterrouteSwap extends Move {
 				- CVRPClient.euclideanDistance(clientOfFromRoute, nextClientOfFromRoute)
 				- CVRPClient.euclideanDistance(lastClientOfToRoute, clientOfToRoute)
 				- CVRPClient.euclideanDistance(clientOfToRoute, nextClientOfToRoute)
-				+ CVRPClient.euclideanDistance(lastClientOfFromRoute, nextClientOfToRoute)
-				+ CVRPClient.euclideanDistance(nextClientOfToRoute, nextClientOfFromRoute)
+				+ CVRPClient.euclideanDistance(lastClientOfFromRoute, clientOfToRoute)
+				+ CVRPClient.euclideanDistance(clientOfToRoute, nextClientOfFromRoute)
 				+ CVRPClient.euclideanDistance(lastClientOfToRoute, clientOfFromRoute)
 				+ CVRPClient.euclideanDistance(clientOfFromRoute, nextClientOfToRoute);
 	}
@@ -201,6 +261,10 @@ public class InterrouteSwap extends Move {
 	 */
 	@Override
 	public boolean isCurrentNeighborFeasible() {
+		if (getSolution() == null) {
+			throw new IllegalAccessError("trying to use move with no base solution set");
+		}
+
 		int realFromPosition = getClientAbsolutePosition(currentFromRoutePosition, currentFromRoute);
 		int realToPosition = getClientAbsolutePosition(currentToRoutePosition, currentToRoute);
 
@@ -222,6 +286,9 @@ public class InterrouteSwap extends Move {
 	 */
 	@Override
 	public double getLastMoveCost() {
+		if (getSolution() == null) {
+			throw new IllegalAccessError("trying to use move with no base solution set");
+		}
 		return this.lastMoveCost;
 	}
 
@@ -232,6 +299,9 @@ public class InterrouteSwap extends Move {
 	 */
 	@Override
 	public double getCurrentNeighborCost() {
+		if (getSolution() == null) {
+			throw new IllegalAccessError("trying to use move with no base solution set");
+		}
 		return getSolution().getTotalDistance() + getLastMoveCost();
 	}
 
@@ -242,7 +312,18 @@ public class InterrouteSwap extends Move {
 	 */
 	@Override
 	public CVRPSolution getCurrentNeighbor() {
-		return new CVRPSolution(getSolution().getProblemInfo(), CVRPSolution.generateSwappedSolution(getSolution(),
-				currentFromRoute, currentFromRoutePosition, currentToRoute, currentToRoutePosition));
+		if (getSolution() == null) {
+			throw new IllegalAccessError("trying to use move with no base solution set");
+		}
+		if (this.currentFromRoute == DEFAULT_ROUTE_VALUE) {
+			throw new IllegalArgumentException("Calling getCurrent Neighbor without routes.");
+		}
+		else if (this.currentToRoute == DEFAULT_ROUTE_VALUE) {
+			return getSolution();
+		}
+		else {
+			return new CVRPSolution(getSolution().getProblemInfo(), CVRPSolution.generateSwappedSolution(getSolution(),
+					currentFromRoute, currentFromRoutePosition, currentToRoute, currentToRoutePosition));
+		}
 	}
 }

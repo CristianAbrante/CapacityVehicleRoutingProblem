@@ -7,17 +7,17 @@
  */
 package daa.project.crvp.moves.test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Random;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
+import daa.project.crvp.IO.ReaderFromFile;
 import daa.project.crvp.moves.InterrouteSwap;
-import daa.project.crvp.problem.CVRPClient;
 import daa.project.crvp.problem.CVRPSolution;
 import daa.project.crvp.problem.CVRPSpecification;
 
@@ -27,65 +27,39 @@ import daa.project.crvp.problem.CVRPSpecification;
 public class InterrouteSwapTest {
 
 	/** Interroute instance. */
-	private InterrouteSwap move;
+	private static InterrouteSwap move;
 	/** Problem specification for test. */
-	private CVRPSpecification specification;
+	private static CVRPSpecification specification;
+	/** Contains the solution */
+	private static CVRPSolution solution;
+	/** File from where we will get the problem specification. */
+	private static final String TEST_FILENAME = "input/test_graphic.vrp";
 
-	/** SPECIFICIATION PARAMETERS */
-	private final int NUMBER_OF_CLIENTS = 9;
-	private final int NUMBER_OF_ROUTES = 3;
-	private final int CAPACITY = 50;
-	private final int MAX_COORDINATE = 100;
+	private final double EPS = 0.3;
 
 	/**
 	 * Method to generate a random specification.
 	 * 
 	 * @throws java.lang.Exception
 	 */
-	@BeforeEach
-	public void setUp() throws Exception {
-		this.move = new InterrouteSwap();
-		this.specification = generateRandomSpecification(NUMBER_OF_CLIENTS, NUMBER_OF_ROUTES, CAPACITY);
-	}
+	@BeforeClass
+	public static void setUp() throws Exception {
+		move = new InterrouteSwap();
 
-	/**
-	 * Method that generate a random specification depending on the parameters
-	 * received.
-	 * 
-	 * @param numberOfClients
-	 *          Number of clients in the problem.
-	 * @param numberOfRoutes
-	 *          Number of routes in the problem.
-	 * @param capacity
-	 *          Capacity of the vehicles.
-	 * @return New problem specification.
-	 */
-	public CVRPSpecification generateRandomSpecification(int numberOfClients, int numberOfRoutes, int capacity) {
-		ArrayList<CVRPClient> clientArray = new ArrayList<CVRPClient>();
-		int demandPerClient = capacity / (numberOfClients / numberOfRoutes); // All equal demand
+		ReaderFromFile reader = new ReaderFromFile(TEST_FILENAME);
+		specification = reader.getProblemSpecification();
 
-		for (int i = 0; i < numberOfClients; ++i) {
-			Random rand = new Random();
-			clientArray.add(new CVRPClient(rand.nextInt(MAX_COORDINATE), rand.nextInt(MAX_COORDINATE), demandPerClient));
-		}
-
-		return new CVRPSpecification(clientArray, 0, capacity, numberOfRoutes);
-	}
-
-	/**
-	 * Test if the next neighbor movement is correct.
-	 * 
-	 * Test method for {@link daa.project.crvp.moves.InterrouteSwap#nextNeighbor()}.
-	 */
-	@Test
-	void testNextNeighbor() {
 		ArrayList<Integer> vehicleRoutes = new ArrayList<Integer>(Arrays.asList(2, 1, 3, -1, 4, 5, 6, -1, 8, 7, 0, -1));
-		CVRPSolution solution = new CVRPSolution(this.specification, vehicleRoutes);
+		solution = new CVRPSolution(specification, vehicleRoutes);
+	}
+
+	@Test
+	public void testNextNeighbor() { // Test if the next neighbor movement is correct.
+		move.setSolution(solution); // {2, 1, 3, -1, 4, 5, 6, -1, 8, 7, 0, -1}
 
 		assertEquals(2, solution.getClientId(0));
 		assertEquals(4, solution.getClientId(4));
 
-		move.setSolution(solution);
 		move.nextNeighbor();
 		CVRPSolution newSolution = move.getCurrentNeighbor();
 
@@ -93,15 +67,48 @@ public class InterrouteSwapTest {
 		assertEquals(2, newSolution.getClientId(4));
 	}
 
-	/**
-	 * Test if the possible number of movements with 3 routes and 9 clients is
-	 * correct.
-	 */
 	@Test
-	void testNumberOfMovements() {
-		ArrayList<Integer> vehicleRoutes = new ArrayList<Integer>(Arrays.asList(2, 1, 3, -1, 4, 5, 6, -1, 8, 7, 0, -1));
-		CVRPSolution solution = new CVRPSolution(this.specification, vehicleRoutes);
-		move.setSolution(solution);
+	public void testNextNeighborAndSetSolution() { // Check two swaps
+		move.setSolution(solution); // {2, 1, 3, -1, 4, 5, 6, -1, 8, 7, 0, -1}
+
+		assertEquals(2, solution.getClientId(0));
+		assertEquals(4, solution.getClientId(4));
+
+		move.nextNeighbor();
+		CVRPSolution newSolution = move.getCurrentNeighbor();
+		move.setSolution(newSolution); // {4, 1, 3, -1, 2, 5, 6, -1, 8, 7, 0, -1}
+
+		assertEquals(4, newSolution.getClientId(0));
+		assertEquals(2, newSolution.getClientId(4));
+
+		move.nextNeighbor(); // {2, 1, 3, -1, 4, 5, 6, -1, 8, 7, 0, -1}
+		assertEquals(solution, move.getCurrentNeighbor());
+	}
+
+	@Test
+	public void testNextNeighborAtEnd() { // Check last move
+		move.setSolution(solution); // {2, 1, 3, -1, 4, 5, 6, -1, 8, 7, 0, -1}
+
+		while (move.hasMoreNeighbors()) {
+			move.nextNeighbor();
+		}
+
+		CVRPSolution lastSolution = move.getCurrentNeighbor(); // {2, 1, 3, -1, 4, 5, 0, -1, 8, 7, 6, -1}
+
+		assertEquals(lastSolution.getClientId(0, 0), 2);
+		assertEquals(lastSolution.getClientId(0, 1), 1);
+		assertEquals(lastSolution.getClientId(0, 2), 3);
+		assertEquals(lastSolution.getClientId(1, 0), 4);
+		assertEquals(lastSolution.getClientId(1, 1), 5);
+		assertEquals(lastSolution.getClientId(1, 2), 0);
+		assertEquals(lastSolution.getClientId(2, 0), 8);
+		assertEquals(lastSolution.getClientId(2, 1), 7);
+		assertEquals(lastSolution.getClientId(2, 2), 6);
+	}
+
+	@Test
+	public void testNumberOfMovements() { // Check possible number of movements with k = 3 and V = 9
+		move.setSolution(solution); // {2, 1, 3, -1, 4, 5, 6, -1, 8, 7, 0, -1}
 
 		int movementCounter = 0;
 		while (move.hasMoreNeighbors()) {
@@ -114,35 +121,104 @@ public class InterrouteSwapTest {
 		assertEquals(27, movementCounter);
 	}
 
-	/**
-	 * Test method for
-	 * {@link daa.project.crvp.moves.InterrouteSwap#getLastMoveCost()}.
-	 */
 	@Test
-	void testGetLastMoveCost() {
+	public void shouldDoNothingWithoutNeigbor() { // Should do nothing.
+		move.setSolution(solution); // {2, 1, 3, -1, 4, 5, 6, -1, 8, 7, 0, -1}
+
+		while (move.hasMoreNeighbors()) {
+			move.nextNeighbor();
+		}
+
+		CVRPSolution lastSolution = move.getCurrentNeighbor(); // {2, 1, 3, -1, 4, 5, 0, -1, 8, 7, 6, -1}
+		assertEquals(lastSolution.getClientId(1, 2), 0);
+		assertEquals(lastSolution.getClientId(2, 2), 6);
+
+		lastSolution = move.getCurrentNeighbor();
+		assertEquals(lastSolution.getClientId(1, 2), 0);
+		assertEquals(lastSolution.getClientId(2, 2), 6);
+
+		lastSolution = move.getCurrentNeighbor();
+		assertEquals(lastSolution.getClientId(1, 2), 0);
+		assertEquals(lastSolution.getClientId(2, 2), 6);
 	}
 
-	/**
-	 * Test method for {@link daa.project.crvp.moves.InterrouteSwap#getCost()}.
-	 */
 	@Test
-	void testGetCost() {
+	public void testHasMoreNeighborsOneRoute() { // Should Not have neighbor
+		ArrayList<Integer> vehicleRoutes = new ArrayList<Integer>(Arrays.asList(2, 1, 3, -1, -1, -1));
+		CVRPSolution newSolution = new CVRPSolution(specification, vehicleRoutes);
+		move.setSolution(newSolution);
+
+		assert (!move.hasMoreNeighbors());
 	}
 
-	/**
-	 * Test method for
-	 * {@link daa.project.crvp.moves.InterrouteSwap#isCurrentNeighborFeasible()}.
-	 */
 	@Test
-	void testIsCurrentNeighborFeasible() {
+	public void testNextNeighborOneRoute() { // Should Return base solution
+		ArrayList<Integer> vehicleRoutes = new ArrayList<Integer>(Arrays.asList(2, 1, 3, -1, -1));
+		CVRPSolution newSolution = new CVRPSolution(specification, vehicleRoutes);
+		move.setSolution(newSolution);
+
+		CVRPSolution nextSolution = move.getCurrentNeighbor(); // {2, 1, 3}
+		assertEquals(nextSolution, newSolution);
 	}
 
-	/**
-	 * Test method for
-	 * {@link daa.project.crvp.moves.InterrouteSwap#getCurrentNeighbor()}.
-	 */
-	@Test
-	void testGetCurrentNeighbor() {
+	@Test(expected = IllegalArgumentException.class)
+	public void testNextNeighborNoRoute() { // Should Throw Error
+		ArrayList<Integer> vehicleRoutes = new ArrayList<Integer>(Arrays.asList(-1, -1, -1, -1));
+		CVRPSolution newSolution = new CVRPSolution(specification, vehicleRoutes);
+		move.setSolution(newSolution);
+
+		assert (!move.hasMoreNeighbors());
+		move.getCurrentNeighbor();
 	}
 
+	@Test
+	public void testNextNeighborWithoutOneRouteInMiddle() { // Should jump to next route
+		ArrayList<Integer> vehicleRoutes = new ArrayList<Integer>(Arrays.asList(2, 1, 3, -1, -1, 8, 7, 6, -1));
+		CVRPSolution newSolution = new CVRPSolution(specification, vehicleRoutes);
+		move.setSolution(newSolution);
+
+		assertEquals(newSolution.getClientId(0, 0), 2);
+		assertEquals(newSolution.getClientId(2, 0), 8);
+
+		CVRPSolution nextSolution = move.getCurrentNeighbor(); // {2, 1, 3, -1, 4, 5, 0, -1, 8, 7, 6, -1}
+		assertEquals(nextSolution.getClientId(0, 0), 8);
+		assertEquals(nextSolution.getClientId(2, 0), 2);
+	}
+
+	@Test
+	public void testNextNeighborWithoutTwoRoutesInMiddle() { // Should jump ToRoute next route
+		ArrayList<Integer> vehicleRoutes = new ArrayList<Integer>(Arrays.asList(2, 1, 3, -1, 5, -1, -1, 7, -1));
+		CVRPSolution newSolution = new CVRPSolution(specification, vehicleRoutes);
+		move.setSolution(newSolution);
+
+		assertEquals(newSolution.getClientId(0, 0), 2);
+		assertEquals(newSolution.getClientId(1, 0), 5);
+
+		move.nextNeighbor();
+		CVRPSolution nextSolution = move.getCurrentNeighbor();
+		assertEquals(nextSolution.getClientId(0, 0), 5);
+		assertEquals(nextSolution.getClientId(1, 0), 2);
+
+		move.nextNeighbor();
+		nextSolution = move.getCurrentNeighbor();
+		assertEquals(nextSolution.getClientId(0, 0), 7);
+		assertEquals(nextSolution.getClientId(3, 0), 2);
+	}
+
+	@Test
+	public void testMovementCost() { // Test if the next neighbor movement is correct.
+		move.setSolution(solution); // {2, 1, 3, -1, 4, 5, 6, -1, 8, 7, 0, -1}
+		assertTrue(Math.abs(move.getCurrentNeighborCost() - 555.472) < EPS);
+
+		move.nextNeighbor(); // {4, 1, 3, -1, 2, 5, 6, -1, 8, 7, 0, -1}
+		CVRPSolution newSolution = move.getCurrentNeighbor();
+
+		assertEquals(4, newSolution.getClientId(0));
+		assertEquals(2, newSolution.getClientId(4));
+		
+		assertTrue(Math.abs(move.getCurrentNeighborCost() - 579.586) < EPS);
+		assertTrue(Math.abs(move.getLastMoveCost() - 24.114) < EPS);
+	}
+
+	// TODO: feasible
 }

@@ -40,6 +40,9 @@ public class IntrarouteSwap extends Move {
 
 	@Override
 	public void nextNeighbor() {
+        if (getSolution() == null) {
+            throw new IllegalAccessError("trying to use move with no base solution set");
+        }
         if (this.hasMoreNeighbors) {
             // Set current state to next state
             this.currentRoute = this.nextRoute;
@@ -73,6 +76,9 @@ public class IntrarouteSwap extends Move {
          *    +cost(i-1, j) 
          *    +cost(i, j+1)
          */
+        if (getSolution() == null) {
+            throw new IllegalAccessError("trying to use move with no base solution set");
+        }
         CVRPClient first = getSolution().getClient(this.currentRoute, this.currentRouteFirstPosition);
         CVRPClient second = getSolution().getClient(this.currentRoute, this.currentRouteSecondPosition);
 	    
@@ -105,17 +111,26 @@ public class IntrarouteSwap extends Move {
 
 	@Override
     public double getCurrentNeighborCost() {
+        if (getSolution() == null) {
+            throw new IllegalAccessError("trying to use move with no base solution set");
+        }
         return this.getSolution().getTotalDistance() + this.getLastMoveCost();
 	}
 
 	@Override
 	public boolean isCurrentNeighborFeasible() {
+        if (getSolution() == null) {
+            throw new IllegalAccessError("trying to use move with no base solution set");
+        }
         // We are only swapping the order to visit clients in the same route
         return getSolution().isFeasible();
 	}
 
 	@Override
 	public CVRPSolution getCurrentNeighbor() {
+        if (getSolution() == null) {
+            throw new IllegalAccessError("trying to use move with no base solution set");
+        }
         ArrayList<Integer> newSolutionCodification = CVRPSolution.generateSwappedSolution(getSolution(),
                 this.currentRoute, this.currentRouteFirstPosition, this.currentRoute, this.currentRouteSecondPosition);
         return new CVRPSolution(getSolution().getProblemInfo(), newSolutionCodification);
@@ -154,7 +169,7 @@ public class IntrarouteSwap extends Move {
      * Updates the next state and whether there are more neighbors 
      * after the current state or not
      */
-    public void updateNextState() {
+    private void updateNextState() {
         // The goal of this move is to iterate through all possible swaps of two elements in each route.
         // What we want to do is a iteration of the following loop each time this method is called
         //
@@ -178,6 +193,7 @@ public class IntrarouteSwap extends Move {
                         this.nextRoute = -1;
                         this.nextRouteFirstPosition = -1;
                         this.nextRouteSecondPosition = -1;
+                        return;
                     } else {
                         this.numberClientsNextRoute = getSolution().getNumberOfClientsInRoute(this.nextRoute);
                     }

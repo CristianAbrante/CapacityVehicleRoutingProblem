@@ -1,6 +1,7 @@
 package daa.project.crvp.moves.test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
@@ -61,6 +62,56 @@ public class IntrarouteSwapTest2 {
     public void shouldHaveLastMoveCostZeroForBasicSolution() {
         this.uut.setSolution(this.solution);
         assertEquals(0.0, this.uut.getLastMoveCost(), EPSILON);
+    }
+    
+    @Test
+    public void shouldReturnBasicSolutionWhenNotCalledNextNeighbor() {
+        this.uut.setSolution(this.solution);
+        assertEquals(this.solution, this.uut.getCurrentNeighbor());
+    }
+    
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldThrowWhenSettingSolutionWithZeroRoutes() {
+        this.uut.setSolution(new CVRPSolution(this.problemInfo, new ArrayList<>()));
+        assertEquals(this.solution, this.uut.getCurrentNeighbor());
+    }
+    
+    @Test
+    public void shouldHaveNoNeighborsWithASolutionWithOnlyOneRouteWithNoClients() {
+        CVRPSolution solution = new CVRPSolution(this.problemInfo,
+                new ArrayList<>(Arrays.asList(new Integer[] { CVRPSolution.SEPARATOR })));
+        this.uut.setSolution(solution);
+        
+        assertEquals(solution, this.uut.getCurrentNeighbor());
+        assertFalse(this.uut.hasMoreNeighbors());
+        this.uut.nextNeighbor();
+        assertEquals(solution, this.uut.getCurrentNeighbor());
+        assertFalse(this.uut.hasMoreNeighbors());
+    }
+    
+    @Test(expected = IllegalAccessError.class)
+    public void shouldThrowWhenCallingNextNeighborWithNoBaseSolutionSet() {
+        this.uut.nextNeighbor();
+    }
+    
+    @Test(expected = IllegalAccessError.class)
+    public void shouldThrowWhenCallingGetLastMoveCostWithNoBaseSolutionSet() {
+        this.uut.getLastMoveCost();
+    }
+    
+    @Test(expected = IllegalAccessError.class)
+    public void shouldThrowWhenCallingGetCurrentNeighborCostWithNoBaseSolutionSet() {
+        this.uut.getCurrentNeighborCost();
+    }
+    
+    @Test(expected = IllegalAccessError.class)
+    public void shouldThrowWhenCallingIsCurrentNeighborFeasibleWithNoBaseSolutionSet() {
+        this.uut.isCurrentNeighborFeasible();
+    }
+    
+    @Test(expected = IllegalAccessError.class)
+    public void shouldThrowWhenCallingGetCurrentNeighborWithNoBaseSolutionSet() {
+        this.uut.getCurrentNeighbor();
     }
     
     @Test

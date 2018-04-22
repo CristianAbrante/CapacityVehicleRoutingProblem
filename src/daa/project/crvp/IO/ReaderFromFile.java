@@ -66,7 +66,12 @@ public class ReaderFromFile {
 						switch (lastIntestedParams) {
 							case 0 :
 								/** Takes the minimun vehicle number */
-								problemSpecification.setMinimunVehicles(Integer.valueOf(matcher.group(2)));
+								if(Integer.valueOf(matcher.group(2)) <= 0) {
+									throw new IllegalArgumentException("Invalid minimum vehicles number " + Integer.valueOf(matcher.group(2))
+											+ ". Expected minimum vehicles number to be more than 1");
+								}else {
+									problemSpecification.setMinimunVehicles(Integer.valueOf(matcher.group(2)));
+								}
 								break;
 							case 1 :
 								/** Takes the number after ':' and sets the numberOfClients */
@@ -85,7 +90,7 @@ public class ReaderFromFile {
 					/** If the readed line is a client information */
 					if (lineNumber <= numberOfClients + PARAMS.length) {
 						/** If its not the header of client coords */
-						if (line.matches("[^A-Za-z]+")) {
+						if ((lineNumber == PARAMS.length && line.trim().matches(INTERESTED_NODE_INFORMATION[0])) || lineNumber > PARAMS.length) {
 							/** Take the two last numbers of the clients coords section */
 							Pattern pattern = Pattern.compile("(\\d+)\\s*(\\d+)$");
 							Matcher matcher = pattern.matcher(line);
@@ -97,12 +102,17 @@ public class ReaderFromFile {
 										new Point(Integer.valueOf(matcher.group(1).trim()), Integer.valueOf(matcher.group(2).trim()))
 										);
 							}
+						}else {
+							throw new IllegalArgumentException("There are more problem params that the setted on the program (" + 
+									PARAMS.length + ")");
 						}
 					}
 					/** If the readed line is demand coords */
 					if (lineNumber >= numberOfClients + PARAMS.length + 1) {
 						/** If its not the header of demand coords */
-						if (line.matches("[^A-Za-z]+")) {
+						if ((lineNumber == numberOfClients + PARAMS.length + 1
+						      && line.trim().matches(INTERESTED_NODE_INFORMATION[1]))
+						      || lineNumber > numberOfClients + PARAMS.length + 1) {
 							/** Takes the last number that corresponds to client capacity */
 							Pattern pattern = Pattern.compile("(\\d+)\\s*$");
 							Matcher matcher = pattern.matcher(line);
@@ -117,6 +127,9 @@ public class ReaderFromFile {
 											+ ". Expected client capacity to be less than " + problemSpecification.getCapacity());
 								}
 							}
+						}else{
+							throw new IllegalArgumentException("There are more clients that the setted on the program (" + 
+									getNumberOfClients() + ")");
 						}
 					}
 					/** If we're on depot information section */

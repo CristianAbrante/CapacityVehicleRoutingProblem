@@ -1,6 +1,8 @@
 package daa.project.crvp.problem;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
@@ -153,5 +155,47 @@ public class CVRPSolutionTest2 {
     @Test(expected = IndexOutOfBoundsException.class)
     public void getClientShouldThrowForNegativePosition() {
         this.uut.getClient(-1);
+    }
+    
+    @Test
+    public void solutionShouldEqualToItself() {
+        assertTrue(this.uut.equals(this.uut));
+    }
+    
+    @Test
+    public void solutionShouldEqualToAnotherWithTheSameCodification() {
+        ArrayList<Integer> newSolutionCodification = new ArrayList<>(
+                Arrays.asList(new Integer[] { CVRPSolution.SEPARATOR }));
+        CVRPSolution newSolution = new CVRPSolution(this.problemInfo, newSolutionCodification);
+        assertTrue(this.uut.equals(newSolution));
+    }
+    
+    @Test
+    public void solutionShouldNotEqualToAnotherWithTheDifferentCodification() {
+        ArrayList<Integer> newSolutionCodification = new ArrayList<>(
+                Arrays.asList(new Integer[] { 2, CVRPSolution.SEPARATOR, 3, CVRPSolution.SEPARATOR }));
+        CVRPSolution newSolution = new CVRPSolution(this.problemInfo, newSolutionCodification);
+        assertFalse(this.uut.equals(newSolution));
+    }
+    
+    @Test
+    public void solutionHashCodeShouldEqualToTheCodificationHashCode() {
+        assertEquals(this.uut.hashCode(), this.solutionCodification.hashCode());
+    }
+    
+    @Test
+    public void hashCodeOfEqualSolutionsShouldBeEqual() {
+        ArrayList<Integer> newSolutionCodification = new ArrayList<>(
+                Arrays.asList(new Integer[] { CVRPSolution.SEPARATOR }));
+        CVRPSolution newSolution = new CVRPSolution(this.problemInfo, newSolutionCodification);
+        assertEquals(this.uut.hashCode(), newSolution.hashCode());
+    }
+    
+    @Test
+    public void hashCodeOfDifferentSolutionsShouldNotBeEqual() {
+        ArrayList<Integer> newSolutionCodification = new ArrayList<>(
+                Arrays.asList(new Integer[] { 2, CVRPSolution.SEPARATOR, 3, CVRPSolution.SEPARATOR }));
+        CVRPSolution newSolution = new CVRPSolution(this.problemInfo, newSolutionCodification);
+        assertNotEquals(this.uut.hashCode(), newSolution.hashCode());
     }
 }

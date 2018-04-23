@@ -2,6 +2,7 @@ package daa.project.crvp;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.ArrayList;
 
 import daa.project.crvp.IO.ReaderFromFile;
 import daa.project.crvp.algorithms.ConstructiveDeterministic;
@@ -10,6 +11,7 @@ import daa.project.crvp.graphic.CVRPGraphic;
 import daa.project.crvp.local_search.BestNeighborLocalSearch;
 import daa.project.crvp.moves.IntrarouteSwap;
 import daa.project.crvp.problem.CVRPClient;
+import daa.project.crvp.problem.CVRPSolution;
 import daa.project.crvp.problem.CVRPSpecification;
 
 public class CVRPMain {
@@ -43,15 +45,21 @@ public class CVRPMain {
 		
 		System.out.println("Total Demand: " + totalDemand);
 		
-		
-		
 		CVRPGraphic window = new CVRPGraphic();
 		window.setSolution(GRASP.grasp(problemSpecification, 100, 100, 5, new BestNeighborLocalSearch(new IntrarouteSwap())));
 		window.showSolution();
-		
+
 		CVRPGraphic window2 = new CVRPGraphic();
 		window2.setSolution(ConstructiveDeterministic.constructDeterministicSolution(problemSpecification));
 		window2.showSolution();
+		
+//		ArrayList<Integer> sol = ConstructiveDeterministic.constructDeterministicSolution(problemSpecification).getVehicleRoutes();
+//		
+//		for(Integer route : sol) {
+//			System.out.println(route);
+//		}
+		
+		
 	}
 
 }

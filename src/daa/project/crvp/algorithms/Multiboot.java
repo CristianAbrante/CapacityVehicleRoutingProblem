@@ -35,28 +35,31 @@ public class Multiboot {
      * @return  Feasible random solution for the given CVRP
      */
     public static CVRPSolution constructRandomSolution(CVRPSpecification problemInfo) {
-        ArrayList<CVRPClient> clients = problemInfo.getClients();
+        ArrayList<CVRPClient> clients = new ArrayList<>(problemInfo.getClients());
         ArrayList<Integer> solution = new ArrayList<>();
+        int depotId = problemInfo.getDepotID();
         int remainingCapacityCurrentRoute = problemInfo.getCapacity();
         
         for (int i = 0; i < clients.size(); ++i) {
-            // Generate random index in range [i, size)
-            int randomIndex = Random.randomInt(i, clients.size());
-            
-            // Add client to solution. If the demand is greater than what the
-            // current vehicle can carry, then start a new route
-            int clientDemand = clients.get(randomIndex).getDemand();
-            if (clientDemand < remainingCapacityCurrentRoute) {
-                solution.add(randomIndex);
-                remainingCapacityCurrentRoute -= clientDemand;
-            } else {
-                solution.add(CVRPSolution.SEPARATOR);
-                solution.add(randomIndex);
-                remainingCapacityCurrentRoute = problemInfo.getCapacity() - clientDemand;
+            if (i != depotId) {
+                // Generate random index in range [i, size)
+                int randomIndex = Random.randomInt(i, clients.size());
+                
+                // Add client to solution. If the demand is greater than what the
+                // current vehicle can carry, then start a new route
+                int clientDemand = clients.get(randomIndex).getDemand();
+                if (clientDemand < remainingCapacityCurrentRoute) {
+                    solution.add(randomIndex);
+                    remainingCapacityCurrentRoute -= clientDemand;
+                } else {
+                    solution.add(CVRPSolution.SEPARATOR);
+                    solution.add(randomIndex);
+                    remainingCapacityCurrentRoute = problemInfo.getCapacity() - clientDemand;
+                }
+                
+                // Swap the chose client with i, so the i-th client can be picked lately
+                Collections.swap(clients, i, randomIndex);
             }
-            
-            // Swap the chose client with i, so the i-th client can be picked lately
-            Collections.swap(clients, i, randomIndex);
         }
         solution.add(CVRPSolution.SEPARATOR);
         

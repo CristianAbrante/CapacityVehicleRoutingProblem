@@ -1,7 +1,6 @@
 package daa.project.crvp.algorithms.test;
 
-import static org.junit.Assert.*;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -9,10 +8,7 @@ import java.util.Arrays;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.sun.xml.internal.bind.v2.runtime.unmarshaller.XsiNilLoader.Array;
-
 import daa.project.crvp.algorithms.ConstructiveDeterministic;
-import daa.project.crvp.moves.IntrarouteSwap;
 import daa.project.crvp.problem.CVRPClient;
 import daa.project.crvp.problem.CVRPSolution;
 import daa.project.crvp.problem.CVRPSpecification;

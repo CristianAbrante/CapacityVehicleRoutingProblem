@@ -7,6 +7,7 @@ import daa.project.crvp.local_search.LocalSearch;
 import daa.project.crvp.problem.CVRPClient;
 import daa.project.crvp.problem.CVRPSolution;
 import daa.project.crvp.problem.CVRPSpecification;
+import daa.project.crvp.utils.DoubleCompare;
 import daa.project.crvp.utils.Random;
 
 /**
@@ -24,8 +25,20 @@ import daa.project.crvp.utils.Random;
  */
 public class Multiboot {
     
-    public static CVRPSolution multiboot(CVRPSpecification problemInfo, LocalSearch localSearch) {
-        return null;
+    public static CVRPSolution multiboot(CVRPSpecification problemInfo, LocalSearch localSearch, int numIterations) {
+        CVRPSolution solution = constructRandomSolution(problemInfo);
+        CVRPSolution bestSolutionFound = solution;
+        
+        for (int i = 0; i < numIterations; ++i) {
+            localSearch.setBaseSolution(solution);
+            solution = localSearch.findLocalOptimum();
+            if (DoubleCompare.lessThan(solution.getTotalDistance(), bestSolutionFound.getTotalDistance())) {
+                bestSolutionFound = solution;
+            }
+            solution = constructRandomSolution(problemInfo);
+        }
+        
+        return bestSolutionFound;
     }
     
     /**
@@ -35,23 +48,28 @@ public class Multiboot {
      * @return  Feasible random solution for the given CVRP
      */
     public static CVRPSolution constructRandomSolution(CVRPSpecification problemInfo) {
-        ArrayList<CVRPClient> clients = problemInfo.getClients();
+        ArrayList<CVRPClient> clients = new ArrayList<>(problemInfo.getClients());
         ArrayList<Integer> solution = new ArrayList<>();
+        int depotId = problemInfo.getDepotID();
         int remainingCapacityCurrentRoute = problemInfo.getCapacity();
         
-        for (int i = 0; i < clients.size(); ++i) {
+        // Swap the chose client with i, so the i-th client can be picked lately
+        Collections.swap(clients, 0, depotId);
+        
+        for (int i = 1; i < clients.size(); ++i) {
             // Generate random index in range [i, size)
             int randomIndex = Random.randomInt(i, clients.size());
             
+            int clientId = problemInfo.getClients().indexOf(clients.get(randomIndex));
             // Add client to solution. If the demand is greater than what the
             // current vehicle can carry, then start a new route
-            int clientDemand = clients.get(randomIndex).getDemand();
+            int clientDemand = problemInfo.getClients().get(clientId).getDemand();
             if (clientDemand < remainingCapacityCurrentRoute) {
-                solution.add(randomIndex);
+                solution.add(clientId);
                 remainingCapacityCurrentRoute -= clientDemand;
             } else {
                 solution.add(CVRPSolution.SEPARATOR);
-                solution.add(randomIndex);
+                solution.add(clientId);
                 remainingCapacityCurrentRoute = problemInfo.getCapacity() - clientDemand;
             }
             

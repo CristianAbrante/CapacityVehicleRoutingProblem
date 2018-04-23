@@ -33,7 +33,7 @@ public class TwoOpt extends Move {
   /**
    * Flag used to compute the first solution of all.
    */
-  private boolean firstNodeEvaluated = false;
+  private boolean firstSolutionEvaluated = false;
   
   /**
    * Route that we are examining.
@@ -83,12 +83,12 @@ public class TwoOpt extends Move {
   @Override
   public void setSolution(CVRPSolution solution) {
     super.setSolution(solution);
-    firstNodeEvaluated = false;
-    currentRoute = STARTING_ROUTE_POSITION;
-    currentFirstNode = STARTING_ROUTE_POSITION;
-    currentSecondNode = currentFirstNode + 1;
-    currentCost = getSolution().getTotalDistance();
-    hasMoreNeighbors = true;
+    if (getSolution().getNumberOfRoutes() == 0) {
+      throw new IllegalArgumentException("solution must have more than zero routes.");
+    }
+    initializeIndexes();
+    firstSolutionEvaluated = false;
+    updateCurrentCost();
   }
   
   /**
@@ -96,8 +96,16 @@ public class TwoOpt extends Move {
    */
   @Override
   public void nextNeighbor() {
-    updateNodesPosition();
-    if (hasMoreNeighbors) {
+    if (getSolution() == null) {
+      throw new IllegalAccessError("initial solution is null");
+    }
+    if (hasMoreNeighbors()) {
+      if (firstSolutionEvaluated) {
+        updateNextPosition();
+      } else {        
+        firstSolutionEvaluated = true;
+        evaluateIfHasMoreNeighbors();
+      }
       updateCurrentCost();
     }
   }
@@ -115,7 +123,11 @@ public class TwoOpt extends Move {
    */
   @Override
   public boolean isCurrentNeighborFeasible() {
-    return getSolution().isFeasible();
+    if (getSolution() != null) {
+      return getSolution().isFeasible();      
+    } else {
+      throw new IllegalAccessError("trying to use move with no base solution set");
+    }
   }
 
   /**
@@ -123,6 +135,12 @@ public class TwoOpt extends Move {
    */
   @Override
   public CVRPSolution getCurrentNeighbor() {
+    if (getSolution() == null) {
+      throw new IllegalAccessError("trying to use move with no base solution set");
+    }
+    if (!firstSolutionEvaluated) {
+      return getSolution();
+    }
     ArrayList<Integer> swappedIndexSolution = CVRPSolution.generateSwappedSolution(getSolution(), currentRoute, currentFirstNode, currentRoute, currentSecondNode);
     // We swap all the intermediate nodes of the two indexes.
     int firstNodeIndex = currentFirstNode + 1;
@@ -143,7 +161,11 @@ public class TwoOpt extends Move {
    */
   @Override
   public boolean hasMoreNeighbors() {
-    return hasMoreNeighbors;
+    if (getSolution() != null) {
+      return hasMoreNeighbors;      
+    } else {
+      throw new IllegalAccessError("trying to use move with no base solution set");
+    }
   }
   
   /**
@@ -151,39 +173,74 @@ public class TwoOpt extends Move {
    */
   @Override
   public double getCurrentNeighborCost() {
-    return currentCost;
-  }
-  
-  /**
-   * Method used to update the nodes position
-   */
-  private void updateNodesPosition() {
-    if (currentFirstNode != STARTING_ROUTE_POSITION || firstNodeEvaluated) {
-      currentSecondNode++;
-      int currentRouteClients = getSolution().getNumberOfClientsInRoute(currentRoute);
-      if (currentSecondNode >= currentRouteClients) {
-        currentFirstNode++;
-        if (currentFirstNode >= currentRouteClients - 1) {
-          currentFirstNode = STARTING_ROUTE_POSITION;
-          currentSecondNode = STARTING_ROUTE_POSITION + 1;
-          firstNodeEvaluated = false;
-          updateCurrentRoute();
-        } else {
-          currentSecondNode = currentFirstNode + 1;
-        }
-      }
+    if (getSolution() != null) {
+      return currentCost;      
     } else {
-      firstNodeEvaluated = true;
+      throw new IllegalAccessError("trying to use move with no base solution set");
     }
   }
   
-  /**
-   * Method used to update the current route
-   */
-  private void updateCurrentRoute() {
-    currentRoute++;
-    if (currentRoute >= getSolution().getNumberOfRoutes()) {
+  private void initializeIndexes() {
+    currentRoute = 0;
+    while (currentRoute < getSolution().getNumberOfRoutes()
+        && getSolution().getNumberOfClientsInRoute(currentRoute) < 2) {
+      currentRoute++;
+    }
+    if (currentRoute < getSolution().getNumberOfRoutes()) {
+      currentFirstNode = 0;
+      currentSecondNode = 1;
+      // TODO: Has more neighbours
+      hasMoreNeighbors = true;
+    } else {
       hasMoreNeighbors = false;
+    }
+  }
+  
+  private void evaluateIfHasMoreNeighbors() {
+    int clientsInCurrentRoute = getSolution().getNumberOfClientsInRoute(currentRoute);
+    if (currentSecondNode == clientsInCurrentRoute - 1) {
+      if (currentFirstNode == clientsInCurrentRoute - 2) {
+        if (currentRoute < getSolution().getNumberOfRoutes() - 1) {
+          int nextRoute = currentRoute + 1;
+          while (nextRoute < getSolution().getNumberOfRoutes()
+              && getSolution().getNumberOfClientsInRoute(nextRoute) < 2) {
+            nextRoute += 1;
+          }
+          if (nextRoute < getSolution().getNumberOfRoutes()) {
+            hasMoreNeighbors = true;
+          } else {
+            hasMoreNeighbors = false;
+          }
+        } else {
+          hasMoreNeighbors = false;
+        }        
+      } else {
+        hasMoreNeighbors = true;
+      }
+    } else {
+      hasMoreNeighbors = true;
+    }
+  }
+  
+  public void updateNextPosition() {
+    if (hasMoreNeighbors()) {
+      int clientsInCurrentRoute = getSolution().getNumberOfClientsInRoute(currentRoute);
+      if (currentSecondNode == clientsInCurrentRoute - 1) {
+        if (currentFirstNode == clientsInCurrentRoute - 2) {
+          do {
+            currentRoute++;            
+          } while (getSolution().getNumberOfClientsInRoute(currentRoute) < 2);
+          currentFirstNode = 0;
+          currentSecondNode = 1;
+        } else {
+          currentFirstNode++;
+          currentSecondNode = currentFirstNode + 1;
+        }
+      } else {
+        currentSecondNode++;
+      }
+      // TODO: Evaluate more neighbors
+      evaluateIfHasMoreNeighbors();
     }
   }
   
@@ -191,6 +248,10 @@ public class TwoOpt extends Move {
    * Method used to update the cost of the solution.
    */
   private void updateCurrentCost() {
+    if (!firstSolutionEvaluated) {
+      currentCost = getSolution().getTotalDistance();
+      return;
+    }
     // From the original cost, we remove the distances to the evaluated nodes.
     double costRemovingCurrentVertex = getSolution().getTotalDistance() 
                                        - getDistance(currentRoute, currentFirstNode - 1, currentFirstNode)

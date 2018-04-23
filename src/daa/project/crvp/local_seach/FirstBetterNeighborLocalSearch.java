@@ -40,7 +40,7 @@ public class FirstBetterNeighborLocalSearch extends LocalSearch {
             move.setSolution(currentBestSolution);
             while (move.hasMoreNeighbors() && isLocalOptimum) {
                 move.nextNeighbor();
-                if (DoubleCompare.lessThan(move.getCurrentNeighborCost(), currentBestSolution.getTotalDistance())) {
+                if (move.isCurrentNeighborFeasible() && DoubleCompare.lessThan(move.getCurrentNeighborCost(), currentBestSolution.getTotalDistance())) {
                     isLocalOptimum = false;
                     currentBestSolution = move.getCurrentNeighbor();
                 }
@@ -48,6 +48,15 @@ public class FirstBetterNeighborLocalSearch extends LocalSearch {
         } while (!isLocalOptimum);
         
         return currentBestSolution;
+    }
+    
+    @Override
+    public void setBaseSolution(CVRPSolution baseSolution) {
+    	// TODO Auto-generated method stub
+    	super.setBaseSolution(baseSolution);
+    	if (!getBaseSolution().isFeasible()) {
+    		throw new IllegalAccessError("cannot set unfeasible initial solution");
+    	}
     }
     
 }

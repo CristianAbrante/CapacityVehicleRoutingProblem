@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.Random;
 
 import daa.project.crvp.local_search.LocalSearch;
-import daa.project.crvp.moves.Move;
 import daa.project.crvp.problem.CVRPClient;
 import daa.project.crvp.problem.CVRPSolution;
 import daa.project.crvp.problem.CVRPSpecification;
@@ -22,9 +21,7 @@ public class GRASP {
 
 	/** Problem specification. */
 	private static CVRPSpecification			problemSpecification;
-	/**
-	 * Size of the restricted candidate list used in the construct phase of GRASP.
-	 */
+	/** Size of the restricted candidate list used in the construct phase of GRASP. */
 	private static int										restrictedCandidateListSize;
 	/** Restricted candidate list. */
 	private static ArrayList<CVRPClient>	restrictedCandidateList	= new ArrayList<>();
@@ -74,12 +71,20 @@ public class GRASP {
 			// the
 			// construction phase.
 			CVRPSolution newSolution = constructGreedyRandomizedSolution();
+			
+			if (!newSolution.isFeasible()) {
+				System.err.println("GRASP error");
+			}
 
 			// Explore the neighborhood of the new constructed solution searching for
 			// a better solution.
 			// This corresponds with the local search phase.
 			localSearchStrategy.setBaseSolution(newSolution);
 			newSolution = localSearchStrategy.findLocalOptimum();
+			
+			if (!newSolution.isFeasible()) {
+				System.err.println("Local search error");
+			}
 
 			// Solution update. If the new solution or one of it's neighbours it's
 			// better

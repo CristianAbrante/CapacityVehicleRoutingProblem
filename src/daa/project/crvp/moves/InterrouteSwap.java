@@ -261,22 +261,24 @@ public class InterrouteSwap extends Move {
 	 */
 	@Override
 	public boolean isCurrentNeighborFeasible() {
-		if (getSolution() == null) {
-			throw new IllegalAccessError("trying to use move with no base solution set");
-		}
-
-		int realFromPosition = getClientAbsolutePosition(currentFromRoutePosition, currentFromRoute);
-		int realToPosition = getClientAbsolutePosition(currentToRoutePosition, currentToRoute);
-
-		CVRPClient clientOfFromRoute = getSolution().getClient(realFromPosition);
-		CVRPClient clientOfToRoute = getSolution().getClient(realToPosition);
-
-		int fromRouteCapacity = getSolution().getVehicleRemainingCapacity(currentFromRoute) - clientOfFromRoute.getDemand()
-				+ clientOfToRoute.getDemand();
-		int toRouteCapacity = getSolution().getVehicleRemainingCapacity(currentToRoute) - clientOfToRoute.getDemand()
-				+ clientOfFromRoute.getDemand();
-
-		return ((fromRouteCapacity >= 0) && (toRouteCapacity >= 0));
+//		if (getSolution() == null) {
+//			throw new IllegalAccessError("trying to use move with no base solution set");
+//		}
+//
+//		int realFromPosition = getClientAbsolutePosition(currentFromRoutePosition, currentFromRoute);
+//		int realToPosition = getClientAbsolutePosition(currentToRoutePosition, currentToRoute);
+//
+//		CVRPClient clientOfFromRoute = getSolution().getClient(realFromPosition);
+//		CVRPClient clientOfToRoute = getSolution().getClient(realToPosition);
+//
+//		int fromRouteCapacity = getSolution().getVehicleRemainingCapacity(currentFromRoute) - clientOfFromRoute.getDemand()
+//				+ clientOfToRoute.getDemand();
+//		int toRouteCapacity = getSolution().getVehicleRemainingCapacity(currentToRoute) - clientOfToRoute.getDemand()
+//				+ clientOfFromRoute.getDemand();
+//
+//		return ((fromRouteCapacity <= getSolution().getProblemInfo().getCapacity()) && 
+//				    (toRouteCapacity <= getSolution().getProblemInfo().getCapacity()));
+		return getCurrentNeighbor().isFeasible();
 	}
 
 	/*

@@ -124,6 +124,14 @@ public class CVRPSolution {
         
         setTotalDistance(totalDistance);
 	}
+	
+	/**
+	 * Copy constructor.
+	 * @param copySolution Source CVRP Solution to copy.
+	 */
+	public CVRPSolution(CVRPSolution copySolution) {
+		this(copySolution.getProblemInfo(), new ArrayList<Integer>(copySolution.getVehicleRoutes()));
+	}
     
     @Override
     public boolean equals(Object thatObj) {
@@ -368,5 +376,31 @@ public class CVRPSolution {
 		java.util.Collections.swap(newVehicleRoutes, firstSwapIndex, secondSwapIndex);
 		return newVehicleRoutes;
 	}
+	
+	/**
+	 * Method that move one client inside the vehicle routes to another position. 
+	 * It returns the routes array with the positions moved.
+	 * 
+	 * @param currentFromRoutePosition Current index inside the source route.
+	 * @param currentFromRoute Index of the current route from where the exchange is produced.
+	 * @param currentToRoutePosition  Current index inside the destiny route.
+	 * @param currentToRoute Index of the current route to where the exchange is produced.
+	 * @return New routes array with the elements moved.
+	 */
+  public static ArrayList<Integer> generateMovedSolution(CVRPSolution currentSolution, int currentFromRoute, int currentFromRoutePosition,
+			int currentToRoute, int currentToRoutePosition) {
+  	int firstIndex = currentSolution.getRouteStartingIndex(currentFromRoute) + currentFromRoutePosition;
+		int secondIndex = currentSolution.getRouteStartingIndex(currentToRoute) + currentToRoutePosition;		
+		ArrayList<Integer> newVehicleRoutes = new ArrayList<Integer>(currentSolution.getVehicleRoutes());
+		
+		if (newVehicleRoutes.get(firstIndex) == SEPARATOR) {
+			throw new IllegalArgumentException("Trying to move an unknown element. First Index: " 
+					+ firstIndex + " Second Index: " + secondIndex);
+		}
+		int copyElement = newVehicleRoutes.remove(firstIndex);		
+		newVehicleRoutes.add(secondIndex - 1, copyElement);
+		
+		return newVehicleRoutes;
+  }
 
 }

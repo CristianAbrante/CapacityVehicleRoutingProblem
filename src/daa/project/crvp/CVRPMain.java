@@ -4,6 +4,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import daa.project.crvp.IO.ReaderFromFile;
+import daa.project.crvp.algorithms.ConstructiveDeterministic;
 import daa.project.crvp.algorithms.GRASP;
 import daa.project.crvp.graphic.CVRPGraphic;
 import daa.project.crvp.local_search.BestNeighborLocalSearch;
@@ -47,6 +48,10 @@ public class CVRPMain {
 		CVRPGraphic window = new CVRPGraphic();
 		window.setSolution(GRASP.grasp(problemSpecification, 100, 100, 5, new BestNeighborLocalSearch(new IntrarouteSwap())));
 		window.showSolution();
+		
+		CVRPGraphic window2 = new CVRPGraphic();
+		window2.setSolution(ConstructiveDeterministic.constructDeterministicSolution(problemSpecification));
+		window2.showSolution();
 	}
 
 }

@@ -397,8 +397,12 @@ public class CVRPSolution {
 			throw new IllegalArgumentException("Trying to move an unknown element. First Index: " 
 					+ firstIndex + " Second Index: " + secondIndex);
 		}
-		int copyElement = newVehicleRoutes.remove(firstIndex);		
-		newVehicleRoutes.add(secondIndex - 1, copyElement);
+		int copyElement = newVehicleRoutes.remove(firstIndex);
+		if (secondIndex - 1 >= 0) {
+			secondIndex -= 1;
+		}
+		
+		newVehicleRoutes.add(secondIndex, copyElement);
 		
 		return newVehicleRoutes;
   }

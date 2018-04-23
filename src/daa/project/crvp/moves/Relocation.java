@@ -205,6 +205,8 @@ public class Relocation extends Move {
 			return getSolution();
 		}
 		else {
+//			System.out.println(this.currentFromRoute + " " + currentFromRoutePosition + " " + currentToRoute + " "
+//					+ currentToRoutePosition + " ");
 			return new CVRPSolution(getSolution().getProblemInfo(), CVRPSolution.generateMovedSolution(getSolution(),
 					currentFromRoute, currentFromRoutePosition, currentToRoute, currentToRoutePosition));
 		}

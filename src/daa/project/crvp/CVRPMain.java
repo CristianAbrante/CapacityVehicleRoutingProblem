@@ -46,7 +46,7 @@ public class CVRPMain {
 		
 		System.out.println("Total Demand: " + totalDemand);
 		
-        		CVRPSolution solution = GRASP.grasp(problemSpecification, 100, 100, 5, new BestNeighborLocalSearch(new TwoOpt()));        		
+		CVRPSolution solution = GRASP.grasp(problemSpecification, 100, 100, 5, new BestNeighborLocalSearch(new Relocation()));        		
         		System.out.println(solution.isFeasible());
         		System.out.println(solution.getTotalDistance());
         		CVRPGraphic window = new CVRPGraphic();

@@ -67,8 +67,7 @@ public class BestNeighborLocalSearchTest {
     public void shouldReturnSameSolutionAsOptimumForSingleRouteEmptyBaseSolution() {
         CVRPSolution solution = new CVRPSolution(this.problemInfo,
                 new ArrayList<>(Arrays.asList(new Integer[] { CVRPSolution.SEPARATOR })));
-        this.uut.setBaseSolution(solution);
-        CVRPSolution localOptimum = this.uut.findLocalOptimum();
+        CVRPSolution localOptimum = this.uut.findLocalOptimum(solution);
         
         assertEquals(solution, localOptimum);
     }
@@ -77,8 +76,7 @@ public class BestNeighborLocalSearchTest {
     public void shouldReturnSameSolutionAsOptimumForSingleRouteSingleClientBaseSolution() {
         CVRPSolution solution = new CVRPSolution(this.problemInfo,
                 new ArrayList<>(Arrays.asList(new Integer[] { 3, CVRPSolution.SEPARATOR })));
-        this.uut.setBaseSolution(solution);
-        CVRPSolution localOptimum = this.uut.findLocalOptimum();
+        CVRPSolution localOptimum = this.uut.findLocalOptimum(solution);
         
         assertEquals(solution, localOptimum);
     }
@@ -87,8 +85,7 @@ public class BestNeighborLocalSearchTest {
     public void shouldReturnSameSolutionAsOptimumForMultipleRoutesSingleClientBaseSolution() {
         CVRPSolution solution = new CVRPSolution(this.problemInfo, new ArrayList<>(Arrays.asList(
                 new Integer[] { 1, CVRPSolution.SEPARATOR, 2, CVRPSolution.SEPARATOR, 3, CVRPSolution.SEPARATOR })));
-        this.uut.setBaseSolution(solution);
-        CVRPSolution localOptimum = this.uut.findLocalOptimum();
+        CVRPSolution localOptimum = this.uut.findLocalOptimum(solution);
         
         assertEquals(solution, localOptimum);
     }

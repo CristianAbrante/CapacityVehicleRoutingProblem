@@ -21,14 +21,13 @@ public class BestNeighborLocalSearch extends LocalSearch {
     }
     
     @Override
-    public CVRPSolution findLocalOptimum() {
+    public CVRPSolution findLocalOptimum(CVRPSolution baseSolution) {
+        if (baseSolution == null || !baseSolution.isFeasible()) {
+            throw new IllegalAccessError("invalid initial solution, it is null or unfeasible");
+        }
         boolean isLocalOptimum = true;
         Move move = getMove();
-        CVRPSolution currentBestSolution = getBaseSolution();
-        
-        if (currentBestSolution == null) {
-            throw new IllegalAccessError("trying to find a local optimum without setting a base solution");
-        }
+        CVRPSolution currentBestSolution = baseSolution;
         
         // While the solution is not locally an optimum, find the best neighbor
         // and try again with that neighbor
@@ -45,15 +44,6 @@ public class BestNeighborLocalSearch extends LocalSearch {
         } while (!isLocalOptimum);
         
         return currentBestSolution;
-    }
-    
-    @Override
-    public void setBaseSolution(CVRPSolution baseSolution) {
-    	// TODO Auto-generated method stub
-    	super.setBaseSolution(baseSolution);
-    	if (!getBaseSolution().isFeasible()) {
-    		throw new IllegalAccessError("cannot set unfeasible initial solution");
-    	}
     }
     
 }

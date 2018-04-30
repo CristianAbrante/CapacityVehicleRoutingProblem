@@ -16,8 +16,6 @@ import daa.project.crvp.problem.CVRPSolution;
 public abstract class LocalSearch {
     /** Move used to explore the neighbors of the solutions */
     private Move moveToUse;
-    /** Starting solution from which the local search has to find a local optimum */
-    private CVRPSolution baseSolution;
     
     /**
      * Create a local search with the given move used to explore
@@ -34,27 +32,10 @@ public abstract class LocalSearch {
      * in setMoveToUse and the move specified in the construction
      * of this instance
      * 
+     * @param baseSolution Base solution to set
      * @return A solution that is local optimum
      */
-    public abstract CVRPSolution findLocalOptimum();
-    
-    /**
-     * Returns the base solution
-     * 
-     * @return The base solution
-     */
-    public CVRPSolution getBaseSolution() {
-        return this.baseSolution;
-    }
-    
-    /**
-     * Sets the base solution
-     * 
-     * @param baseSolution Base solution to set
-     */
-    public void setBaseSolution(CVRPSolution baseSolution) {
-        this.baseSolution = baseSolution;
-    }
+    public abstract CVRPSolution findLocalOptimum(CVRPSolution baseSolution);
     
     /** @return the moveToUse */
     public Move getMove() {

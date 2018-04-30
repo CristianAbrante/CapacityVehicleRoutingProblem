@@ -79,8 +79,7 @@ public class GRASP {
 			// Explore the neighborhood of the new constructed solution searching for
 			// a better solution.
 			// This corresponds with the local search phase.
-			localSearchStrategy.setBaseSolution(newSolution);
-			newSolution = localSearchStrategy.findLocalOptimum();
+            newSolution = localSearchStrategy.findLocalOptimum(newSolution);
 			
 			if (!newSolution.isFeasible()) {
 				System.err.println("Local search error");

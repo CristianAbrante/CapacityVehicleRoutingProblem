@@ -30,8 +30,7 @@ public class Multiboot {
         CVRPSolution bestSolutionFound = solution;
         
         for (int i = 0; i < numIterations; ++i) {
-            localSearch.setBaseSolution(solution);
-            solution = localSearch.findLocalOptimum();
+            solution = localSearch.findLocalOptimum(solution);
             if (DoubleCompare.lessThan(solution.getTotalDistance(), bestSolutionFound.getTotalDistance())) {
                 bestSolutionFound = solution;
             }

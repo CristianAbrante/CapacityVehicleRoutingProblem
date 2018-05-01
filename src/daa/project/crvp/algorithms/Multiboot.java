@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 import daa.project.crvp.local_search.LocalSearch;
+import daa.project.crvp.metrics.AlgorithmRecorder;
 import daa.project.crvp.problem.CVRPClient;
 import daa.project.crvp.problem.CVRPSolution;
 import daa.project.crvp.problem.CVRPSpecification;
@@ -25,21 +26,26 @@ import daa.project.crvp.utils.Random;
  */
 public class Multiboot {
     
-    public static CVRPSolution multiboot(CVRPSpecification problemInfo, LocalSearch localSearch, int maxNumIterationsNoImprovement) {
+    public static CVRPSolution multiboot(CVRPSpecification problemInfo, LocalSearch localSearch,
+            int maxNumIterationsNoImprovement, AlgorithmRecorder recorder) {
+        recorder.starting();
         CVRPSolution solution = constructRandomSolution(problemInfo);
         CVRPSolution bestSolutionFound = solution;
-        
         int numIterationsNoImprovement = 0;
+        
         while (numIterationsNoImprovement < maxNumIterationsNoImprovement) {
+            recorder.aboutToDoNextIteration();
             solution = localSearch.findLocalOptimum(solution);
             if (DoubleCompare.lessThan(solution.getTotalDistance(), bestSolutionFound.getTotalDistance())) {
                 bestSolutionFound = solution;
                 numIterationsNoImprovement = -1;
+                recorder.foundBetterSolution(bestSolutionFound);
             }
             solution = constructRandomSolution(problemInfo);
             numIterationsNoImprovement += 1;
         }
         
+        recorder.finishing();
         return bestSolutionFound;
     }
     

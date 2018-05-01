@@ -4,11 +4,12 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import daa.project.crvp.IO.ReaderFromFile;
-import daa.project.crvp.algorithms.GRASP;
+import daa.project.crvp.algorithms.Multiboot;
 import daa.project.crvp.algorithms.VariableNeighborhoodSearch;
 import daa.project.crvp.local_search.BestNeighborLocalSearch;
 import daa.project.crvp.local_search.LocalSearch;
 import daa.project.crvp.local_search.VariableNeighborhoodDescent;
+import daa.project.crvp.metrics.TimeAndIterationsRecorder;
 import daa.project.crvp.moves.InterrouteSwap;
 import daa.project.crvp.moves.IntrarouteSwap;
 import daa.project.crvp.moves.Move;
@@ -49,18 +50,25 @@ public class CVRPMain {
 		
 		System.out.println("Total Demand: " + totalDemand);
 		
+        //
+        // Algorithms tests
+        //
+        
+        TimeAndIterationsRecorder multibootRecorder = new TimeAndIterationsRecorder();
+        
         Move[] moveList = new Move[] { new InterrouteSwap(), new Relocation(), new IntrarouteSwap(), new TwoOpt() };
         LocalSearch vnd = new VariableNeighborhoodDescent(moveList);
         
         // GRASP initial solution
-        CVRPSolution solution = GRASP.grasp(problemSpecification, 100, 100, 3,
-                new BestNeighborLocalSearch(new Relocation()));
-        System.out.println("GRASP. Initial solution total distance: " + solution.getTotalDistance());
+        //        CVRPSolution solution = GRASP.grasp(problemSpecification, 100, 100, 3,
+        //                new BestNeighborLocalSearch(new Relocation()));
+        //        System.out.println("GRASP. Initial solution total distance: " + solution.getTotalDistance());
         
         // Multiboot initial solution
-        //        CVRPSolution solution = Multiboot.multiboot(problemSpecification, new BestNeighborLocalSearch(new Relocation()),
-        //                100);
-        //        System.out.println("Multiboot. Initial solution total distance: " + solution.getTotalDistance());
+        CVRPSolution solution = Multiboot.multiboot(problemSpecification, new BestNeighborLocalSearch(new Relocation()),
+                100, multibootRecorder);
+        System.out.println("Multiboot. Initial solution total distance: " + solution.getTotalDistance());
+        System.out.println(multibootRecorder.toString());
         
         // Random initial solution
 //        CVRPSolution solution = Multiboot.constructRandomSolution(problemSpecification);

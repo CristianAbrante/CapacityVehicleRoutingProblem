@@ -25,16 +25,19 @@ import daa.project.crvp.utils.Random;
  */
 public class Multiboot {
     
-    public static CVRPSolution multiboot(CVRPSpecification problemInfo, LocalSearch localSearch, int numIterations) {
+    public static CVRPSolution multiboot(CVRPSpecification problemInfo, LocalSearch localSearch, int maxNumIterationsNoImprovement) {
         CVRPSolution solution = constructRandomSolution(problemInfo);
         CVRPSolution bestSolutionFound = solution;
         
-        for (int i = 0; i < numIterations; ++i) {
+        int numIterationsNoImprovement = 0;
+        while (numIterationsNoImprovement < maxNumIterationsNoImprovement) {
             solution = localSearch.findLocalOptimum(solution);
             if (DoubleCompare.lessThan(solution.getTotalDistance(), bestSolutionFound.getTotalDistance())) {
                 bestSolutionFound = solution;
+                numIterationsNoImprovement = -1;
             }
             solution = constructRandomSolution(problemInfo);
+            numIterationsNoImprovement += 1;
         }
         
         return bestSolutionFound;

@@ -89,7 +89,7 @@ public class VariableNeighborhoodSearch {
                 move.nextNeighbor();
             }
         }
-        return solutionToShake;
+        return move.isCurrentNeighborFeasible() ? move.getCurrentNeighbor() : solutionToShake;
     }
     
 }

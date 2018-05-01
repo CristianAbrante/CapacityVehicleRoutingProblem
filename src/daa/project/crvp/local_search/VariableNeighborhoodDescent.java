@@ -35,6 +35,9 @@ public class VariableNeighborhoodDescent extends LocalSearch {
     
     @Override
     public CVRPSolution findLocalOptimum(CVRPSolution baseSolution) {
+        if (baseSolution == null || !baseSolution.isFeasible()) {
+            throw new IllegalAccessError("invalid initial solution, it is null or unfeasible");
+        }
         int currentMove = 0;
         Move[] movesToUse = getMovesToUse();
         BestNeighborLocalSearch bestNeighborFinder;

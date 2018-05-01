@@ -166,23 +166,22 @@ public class InterrouteSwap extends Move {
 	 * @return If it was possible to move From Route.
 	 */
 	private boolean advanceFromRoute() {
-		if ((currentFromRoute + 1) < getSolution().getNumberOfRoutes() - 1) {
-			currentFromRoutePosition = 0;
-			currentFromRoute++;
+        int nextFromRoute = getNextRouteOf(this.currentFromRoute);
+        if (nextFromRoute != DEFAULT_ROUTE_VALUE) {
+            currentFromRoutePosition = 0;
+            currentFromRoute = nextFromRoute;
 
-			currentToRoutePosition = 0;
-			int nextToRoute = getNextRouteOf(this.currentFromRoute);
-			if (nextToRoute == DEFAULT_ROUTE_VALUE) {
-				return false;
-			}
-			else {
-				this.currentToRoute = nextToRoute;
-				return true;
-			}
-		}
-		else {
-			return false;
-		}
+            currentToRoutePosition = 0;
+            int nextToRoute = getNextRouteOf(this.currentFromRoute);
+            if (nextToRoute == DEFAULT_ROUTE_VALUE) {
+                return false;
+            } else {
+                this.currentToRoute = nextToRoute;
+                return true;
+            }
+        } else {
+            return false;
+        }
 	}
 
 	/**
@@ -226,31 +225,49 @@ public class InterrouteSwap extends Move {
 	 * distance to reach the swapped nodes in each route.
 	 */
 	private void calculateLastMoveCost() {
-		int realFromPosition = getClientAbsolutePosition(currentFromRoutePosition, currentFromRoute);
-		int realToPosition = getClientAbsolutePosition(currentToRoutePosition, currentToRoute);
-
-		CVRPClient depot = getSolution().getProblemInfo().getDepot();
-
-		CVRPClient lastClientOfFromRoute = (currentFromRoutePosition == 0) ? depot
-				: getSolution().getClient(realFromPosition - 1);
-		CVRPClient clientOfFromRoute = getSolution().getClient(realFromPosition);
-		CVRPClient nextClientOfFromRoute = (currentFromRoutePosition == (getSolution()
-				.getNumberOfClientsInRoute(currentFromRoute) - 1)) ? depot : getSolution().getClient(realFromPosition + 1);
-
-		CVRPClient lastClientOfToRoute = (currentToRoutePosition == 0) ? depot
-				: getSolution().getClient(realToPosition - 1);
-		CVRPClient clientOfToRoute = getSolution().getClient(realToPosition);
-		CVRPClient nextClientOfToRoute = (currentToRoutePosition == (getSolution().getNumberOfClientsInRoute(currentToRoute)
-				- 1)) ? depot : getSolution().getClient(realToPosition + 1);
-
-		this.lastMoveCost = -CVRPClient.euclideanDistance(lastClientOfFromRoute, clientOfFromRoute)
-				- CVRPClient.euclideanDistance(clientOfFromRoute, nextClientOfFromRoute)
-				- CVRPClient.euclideanDistance(lastClientOfToRoute, clientOfToRoute)
-				- CVRPClient.euclideanDistance(clientOfToRoute, nextClientOfToRoute)
-				+ CVRPClient.euclideanDistance(lastClientOfFromRoute, clientOfToRoute)
-				+ CVRPClient.euclideanDistance(clientOfToRoute, nextClientOfFromRoute)
-				+ CVRPClient.euclideanDistance(lastClientOfToRoute, clientOfFromRoute)
-				+ CVRPClient.euclideanDistance(clientOfFromRoute, nextClientOfToRoute);
+        try {
+            int realFromPosition = getClientAbsolutePosition(currentFromRoutePosition, currentFromRoute);
+            int realToPosition = getClientAbsolutePosition(currentToRoutePosition, currentToRoute);
+            
+            CVRPClient depot = getSolution().getProblemInfo().getDepot();
+            
+            CVRPClient lastClientOfFromRoute = (currentFromRoutePosition == 0) ? depot
+                    : getSolution().getClient(realFromPosition - 1);
+            CVRPClient clientOfFromRoute = getSolution().getClient(realFromPosition);
+            CVRPClient nextClientOfFromRoute = (currentFromRoutePosition == (getSolution()
+                    .getNumberOfClientsInRoute(currentFromRoute) - 1)) ? depot
+                            : getSolution().getClient(realFromPosition + 1);
+            
+            CVRPClient lastClientOfToRoute = (currentToRoutePosition == 0) ? depot
+                    : getSolution().getClient(realToPosition - 1);
+            CVRPClient clientOfToRoute = getSolution().getClient(realToPosition);
+            CVRPClient nextClientOfToRoute = (currentToRoutePosition == (getSolution()
+                    .getNumberOfClientsInRoute(currentToRoute) - 1)) ? depot
+                            : getSolution().getClient(realToPosition + 1);
+            
+            this.lastMoveCost = -CVRPClient.euclideanDistance(lastClientOfFromRoute, clientOfFromRoute)
+                    - CVRPClient.euclideanDistance(clientOfFromRoute, nextClientOfFromRoute)
+                    - CVRPClient.euclideanDistance(lastClientOfToRoute, clientOfToRoute)
+                    - CVRPClient.euclideanDistance(clientOfToRoute, nextClientOfToRoute)
+                    + CVRPClient.euclideanDistance(lastClientOfFromRoute, clientOfToRoute)
+                    + CVRPClient.euclideanDistance(clientOfToRoute, nextClientOfFromRoute)
+                    + CVRPClient.euclideanDistance(lastClientOfToRoute, clientOfFromRoute)
+                    + CVRPClient.euclideanDistance(clientOfFromRoute, nextClientOfToRoute);
+        } catch (Exception e) {
+            System.err.println("Error in interroute swap calculateLastMoveCost()");
+            System.err.println("currentFromRoutePosition: " + currentFromRoutePosition);
+            System.err.println("currentFromRoute: " + currentFromRoute);
+            System.err.println("currentToRoutePosition: " + currentToRoutePosition);
+            System.err.println("currentToRoute: " + currentToRoute);
+            for (int r = 0; r < getSolution().getNumberOfRoutes(); ++r) {
+                System.out.print("Route " + r + ": ");
+                for (int c = 0; c < getSolution().getNumberOfClientsInRoute(r); ++c) {
+                    System.out.print(getSolution().getClientId(r, c) + ", ");
+                }
+                System.out.println();
+            }
+            throw e;
+        }
 	}
 
 	/*

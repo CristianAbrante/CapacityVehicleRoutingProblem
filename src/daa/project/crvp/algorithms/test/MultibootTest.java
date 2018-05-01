@@ -1,6 +1,8 @@
-package daa.project.crvp.algorithms;
+package daa.project.crvp.algorithms.test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -8,6 +10,7 @@ import java.util.Arrays;
 import org.junit.Before;
 import org.junit.Test;
 
+import daa.project.crvp.algorithms.Multiboot;
 import daa.project.crvp.local_search.BestNeighborLocalSearch;
 import daa.project.crvp.moves.IntrarouteSwap;
 import daa.project.crvp.problem.CVRPClient;

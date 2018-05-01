@@ -4,13 +4,15 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import daa.project.crvp.IO.ReaderFromFile;
-import daa.project.crvp.algorithms.GRASP;
-import daa.project.crvp.graphic.CVRPGraphic;
+import daa.project.crvp.algorithms.Multiboot;
+import daa.project.crvp.algorithms.VariableNeighborhoodSearch;
 import daa.project.crvp.local_search.BestNeighborLocalSearch;
+import daa.project.crvp.local_search.LocalSearch;
+import daa.project.crvp.local_search.VariableNeighborhoodDescent;
 import daa.project.crvp.moves.InterrouteSwap;
 import daa.project.crvp.moves.IntrarouteSwap;
+import daa.project.crvp.moves.Move;
 import daa.project.crvp.moves.Relocation;
-import daa.project.crvp.moves.TwoOpt;
 import daa.project.crvp.problem.CVRPClient;
 import daa.project.crvp.problem.CVRPSolution;
 import daa.project.crvp.problem.CVRPSpecification;
@@ -46,32 +48,25 @@ public class CVRPMain {
 		
 		System.out.println("Total Demand: " + totalDemand);
 		
-		CVRPSolution solution = GRASP.grasp(problemSpecification, 100, 100, 5, new BestNeighborLocalSearch(new Relocation()));        		
-        		System.out.println(solution.isFeasible());
-        		System.out.println(solution.getTotalDistance());
-        		CVRPGraphic window = new CVRPGraphic();
-        		window.setSolution(solution);
-        		window.showSolution();
-
-        //		CVRPGraphic window2 = new CVRPGraphic();
-        //		window2.setSolution(ConstructiveDeterministic.constructDeterministicSolution(problemSpecification));
-        //		window2.showSolution();
+		LocalSearch vnd = new VariableNeighborhoodDescent(new Move[] {
+                new InterrouteSwap(),
+                new Relocation(),
+                new IntrarouteSwap()
+		});
+        //        CVRPSolution solution = GRASP.grasp(problemSpecification, 500, 500, 5, new BestNeighborLocalSearch(new Relocation()));
+        CVRPSolution solution = Multiboot.multiboot(problemSpecification, new BestNeighborLocalSearch(new Relocation()),
+                50);
+        solution = VariableNeighborhoodSearch.run(solution, new Move[] { 
+                new InterrouteSwap(),
+                new Relocation(),
+                new IntrarouteSwap(),
+        }, vnd);
         
-        //        CVRPGraphic window2 = new CVRPGraphic();
-//        CVRPSolution solution = Multiboot.multiboot(problemSpecification,
-//                new FirstBetterNeighborLocalSearch(new IntrarouteSwap()), 100000);
-        //        window2.setSolution(solution);
-        //        window2.showSolution();
-//        System.out.println(solution.isFeasible());
-//        System.out.println(solution.getTotalDistance());
-        
-//		ArrayList<Integer> sol = ConstructiveDeterministic.constructDeterministicSolution(problemSpecification).getVehicleRoutes();
-//		
-//		for(Integer route : sol) {
-//			System.out.println(route);
-//		}
-		
-		
+        System.out.println(solution.isFeasible());
+        System.out.println(solution.getTotalDistance());
+        //        CVRPGraphic window = new CVRPGraphic();
+        //        window.setSolution(solution);
+        //        window.showSolution();
 	}
 
 }

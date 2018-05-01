@@ -101,4 +101,17 @@ public class CVRPClient {
     public String toString() {
 		return "C: [" + this.getxCoordinate() + ", " + this.getyCoordinate() + "] D:" + this.getDemand();
 	}
+	
+	/* (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	public boolean equals(Object anotherObject) {
+		if (anotherObject instanceof CVRPClient) {
+			CVRPClient anotherClient = (CVRPClient) anotherObject;
+			return ((getDemand() == anotherClient.getDemand()) && 
+					(getxCoordinate() == anotherClient.getxCoordinate()) &&
+					(getyCoordinate() == anotherClient.getyCoordinate()));
+		}
+		return false;
+	}
 }

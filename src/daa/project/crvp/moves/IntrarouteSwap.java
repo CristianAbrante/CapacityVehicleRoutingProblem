@@ -207,7 +207,12 @@ public class IntrarouteSwap extends Move {
 		 */
 		@Override
 		public MoveState getState() {
-			// TODO Auto-generated method stub
-			return null;
+			int realFromPosition = getSolution().getRouteStartingIndex(currentRoute) + currentRouteFirstPosition;
+			int realToPosition = getSolution().getRouteStartingIndex(currentRoute) + currentRouteSecondPosition;
+			
+			CVRPClient firstClient = getSolution().getClient(realFromPosition);
+			CVRPClient secondClient =  getSolution().getClient(realToPosition);
+			
+			return new MoveState(firstClient, secondClient, this.getCurrentNeighbor());
 		}
 }

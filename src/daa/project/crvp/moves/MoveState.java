@@ -16,6 +16,7 @@ import daa.project.crvp.problem.CVRPSolution;
  */
 public class MoveState {
 
+	private static final CVRPClient DEFAULT_CLIENT = new CVRPClient(0, 0, 0);
 	private CVRPClient firstClient;
 	private CVRPClient secondClient;
 	private CVRPSolution moveSolution;
@@ -45,7 +46,7 @@ public class MoveState {
 	 *          the firstClient to set
 	 */
 	public void setFirstClient(CVRPClient firstClient) {
-		this.firstClient = firstClient;
+		this.firstClient = (firstClient == null) ? DEFAULT_CLIENT : firstClient;
 	}
 
 	/**
@@ -53,7 +54,7 @@ public class MoveState {
 	 *          the secondClient to set
 	 */
 	public void setSecondClient(CVRPClient secondClient) {
-		this.secondClient = secondClient;
+		this.secondClient = (secondClient == null) ? DEFAULT_CLIENT : secondClient;
 	}
 
 	/*

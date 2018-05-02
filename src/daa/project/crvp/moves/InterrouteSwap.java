@@ -340,7 +340,7 @@ public class InterrouteSwap extends Move {
 		if (this.currentFromRoute == DEFAULT_ROUTE_VALUE) {
 			throw new IllegalArgumentException("Calling getCurrent Neighbor without routes.");
 		}
-		else if (this.currentToRoute == DEFAULT_ROUTE_VALUE) {
+		else if (this.currentToRoute == DEFAULT_ROUTE_VALUE || !started) {
 			return getSolution();
 		}
 		else {

@@ -7,10 +7,12 @@
  */
 package daa.project.crvp.moves;
 
+import daa.project.crvp.problem.CVRPClient;
 import daa.project.crvp.problem.CVRPSolution;
 
 /**
- * [DESCRIPTION]
+ * Relocation move is an inter-route move that moves an element from a route to
+ * another one.
  */
 public class Relocation extends Move {
 
@@ -27,15 +29,16 @@ public class Relocation extends Move {
 	private int currentToRoutePosition = 0;
 	/** Boolean that denotes if there are more movements. */
 	private boolean canAdvance = true;
-	/** Cost of the last movement. */
-	private double lastMoveCost = 0.0;
+	
+	/** If the algorithm has started */
+	private boolean started = false;
 
 	@Override
 	public void setSolution(CVRPSolution solution) {
 		super.setSolution(solution);
 
+		this.started = false;
 		this.canAdvance = true;
-		this.lastMoveCost = 0.0;
 
 		this.currentFromRoutePosition = 0;
 		this.currentFromRoute = getNextRouteOf(-1);
@@ -68,7 +71,12 @@ public class Relocation extends Move {
 			throw new IllegalAccessError("trying to use move with no base solution set");
 		}
 		if (canAdvance) {
-			canAdvance = advanceToPosition();
+			if (started) {
+				canAdvance = advanceToPosition();				
+			}
+			else {
+				started = true;
+			}
 		}
 	}
 
@@ -201,23 +209,26 @@ public class Relocation extends Move {
 		if (this.currentFromRoute == DEFAULT_ROUTE_VALUE) {
 			throw new IllegalArgumentException("Calling getCurrent Neighbor without routes.");
 		}
-		else if (this.currentToRoute == DEFAULT_ROUTE_VALUE) {
+		else if (this.currentToRoute == DEFAULT_ROUTE_VALUE || !started) {
 			return getSolution();
 		}
 		else {
-//			System.out.println(this.currentFromRoute + " " + currentFromRoutePosition + " " + currentToRoute + " "
-//					+ currentToRoutePosition + " ");
 			return new CVRPSolution(getSolution().getProblemInfo(), CVRPSolution.generateMovedSolution(getSolution(),
 					currentFromRoute, currentFromRoutePosition, currentToRoute, currentToRoutePosition));
 		}
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc) We generate a fake state with the second client as null.
+	 * 
 	 * @see daa.project.crvp.moves.Move#getState()
 	 */
 	@Override
 	public MoveState getState() {
-		// TODO Auto-generated method stub
-		return null;
+		int realFromPosition = getSolution().getRouteStartingIndex(currentFromRoute) + currentFromRoutePosition;
+
+		CVRPClient firstClient = getSolution().getClient(realFromPosition);
+
+		return new MoveState(firstClient, null, this.getCurrentNeighbor());
 	}
 }

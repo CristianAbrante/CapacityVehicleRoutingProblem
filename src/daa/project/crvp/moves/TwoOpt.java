@@ -198,7 +198,12 @@ public class TwoOpt extends Move {
 	 */
 	@Override
 	public MoveState getState() {
-		// TODO Auto-generated method stub
-		return null;
+		int realFromPosition = getSolution().getRouteStartingIndex(currentRoute) + firstClient;
+		int realToPosition = getSolution().getRouteStartingIndex(currentRoute) + secondClient;
+		
+		CVRPClient firstSolutionClient = getSolution().getClient(realFromPosition);
+		CVRPClient secondSolutionClient =  getSolution().getClient(realToPosition);
+		
+		return new MoveState(firstSolutionClient, secondSolutionClient, this.getCurrentNeighbor());
 	}
 }

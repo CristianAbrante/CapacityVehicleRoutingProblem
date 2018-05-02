@@ -53,7 +53,7 @@ public class ConstructiveDeterministic {
 				solution.add(CVRPSolution.SEPARATOR);
 			}
 		}
-
+		
 		// Return the generated solution.
 		return new CVRPSolution(ConstructiveDeterministic.problemSpecification, solution);
 	}

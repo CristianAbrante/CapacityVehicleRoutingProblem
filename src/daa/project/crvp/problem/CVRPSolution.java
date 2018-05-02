@@ -2,6 +2,10 @@ package daa.project.crvp.problem;
 
 import java.util.ArrayList;
 
+import Test.CVRPClient;
+
+import java.util.*;
+
 /**
  * Represents all the information of a solution for 
  * a Capacitated Vehicle Routing Problem (CVRP)
@@ -179,6 +183,41 @@ public class CVRPSolution {
         return getVehicleRoutes().get(routeStartingIndex + positionInRoute);
     }
     
+    public void addClientToRoute(int route, int clientId) {
+       	if (route < 0 || route >= getNumberOfRoutes()) {
+       		throw new IndexOutOfBoundsException(
+                   	"trying adding client " + clientId + " on an invalid route: " + route); 
+       	}
+       
+       	if(getVehicleRoutes().contains(clientId)) {
+       		throw new IllegalArgumentException("trying to add a client " + clientId + " that was already in another route");
+       	}
+       
+       	int startingIndexOfRoute = getRouteStartingIndex(route);
+       	ArrayList<Integer> newVehiclesRoutes = (ArrayList<Integer>) getVehicleRoutes().clone();
+       	newVehiclesRoutes.subList(startingIndexOfRoute, vehicleRoutes.size()).clear();
+       	CVRPClient clientToMove = problemInfo.getClient(getClientId(startingIndexOfRoute));
+       	
+       	setTotalDistance(getTotalDistance() - CVRPClient.euclideanDistance(clientToMove, getProblemInfo().getDepot()));
+       	newVehiclesRoutes.add(clientId);
+       	newVehiclesRoutes.addAll(
+       			getVehicleRoutes().subList(startingIndexOfRoute, getVehicleRoutes().size())
+       	);
+       	
+       	setVehicleRoutes(newVehiclesRoutes);
+       	updateVehicleRemainingCapacity(
+ 		      getVehicleRemainingCapacity(route) - problemInfo.getClient(clientId).getDemand(), 
+ 		      route
+       	);
+       	updateRoutesStartingIndex(route + 1, getRouteStartingIndex(route + 1) + 1);
+
+       	double distanceToClient = CVRPClient.euclideanDistance(
+       			problemInfo.getClient(clientId), getProblemInfo().getDepot()
+       	);
+       	
+       	setTotalDistance(getTotalDistance() + distanceToClient);
+   }
+    
 	/**
 	 * Returns the client information in the specified position of the solution. Or
 	 * null if at the specified position there is not a valid client ID. Or throws
@@ -297,6 +336,18 @@ public class CVRPSolution {
 	private ArrayList<Integer> getVehicleRoutes() {
 		return vehicleRoutes;
 	}
+	
+	/**
+	 * Updates the routes index
+	 * @param route Route where we will update the index
+	 * @param newIndex New index of the route route
+	 */
+	private void updateRoutesStartingIndex(int route, int newIndex) {
+		int increase = newIndex - routesStartingIndexes.get(route);
+		for(int i = route; i < getNumberOfRoutes(); i++) {
+			routesStartingIndexes.set(i, routesStartingIndexes.get(i) + increase);
+		}
+	}
 
 	/** @return the routesStartingIndexes */
 	private ArrayList<Integer> getRoutesStartingIndexes() {
@@ -340,6 +391,20 @@ public class CVRPSolution {
      */
 	private void addVehicleRemainingCapacity(int newVehicleRemainingCapacity) {
 		this.vehicleRemainingCapacities.add(newVehicleRemainingCapacity);
+	}
+	
+	 /**
+    * Update the remaining capacity for the specified vehicle
+    * 
+    * @param newCapacity New capacity for vehicle vehicle
+    * @param vehicle Vehicle whose capacity will be updated
+    */
+	private void updateVehicleRemainingCapacity(int newCapacity, int vehicle) {
+		if(newCapacity < 0) {
+			setFeasible(false);
+		}
+		
+		vehicleRemainingCapacities.set(vehicle, newCapacity);
 	}
 
 	/**
@@ -406,5 +471,6 @@ public class CVRPSolution {
 		
 		return newVehicleRoutes;
   }
+  
 
 }

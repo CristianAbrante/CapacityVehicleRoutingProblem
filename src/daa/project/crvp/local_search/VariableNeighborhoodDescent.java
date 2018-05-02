@@ -22,7 +22,7 @@ public class VariableNeighborhoodDescent extends LocalSearch {
     private Move[] movesToUse;
     
     /**
-     * Creates an instance ofa VND local search
+     * Creates an instance of a VND local search
      * 
      * @param movesToUse    List of moves that generate the neighborhood structures.
      * The algorithm has to check that the resulting solution is an optimum in all

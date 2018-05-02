@@ -4,7 +4,9 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import daa.project.crvp.IO.ReaderFromFile;
+import daa.project.crvp.algorithms.ConstructiveDeterministic;
 import daa.project.crvp.algorithms.GRASP;
+import daa.project.crvp.algorithms.LargeNeighborhoodSearch;
 import daa.project.crvp.algorithms.VariableNeighborhoodSearch;
 import daa.project.crvp.local_search.BestNeighborLocalSearch;
 import daa.project.crvp.local_search.LocalSearch;
@@ -53,8 +55,10 @@ public class CVRPMain {
         LocalSearch vnd = new VariableNeighborhoodDescent(moveList);
         
         // GRASP initial solution
-        CVRPSolution solution = GRASP.grasp(problemSpecification, 100, 100, 3,
-                new BestNeighborLocalSearch(new Relocation()));
+//        CVRPSolution solution = GRASP.grasp(problemSpecification, 100, 100, 3,
+//                new BestNeighborLocalSearch(new Relocation()));
+        CVRPSolution solution = ConstructiveDeterministic.constructDeterministicSolution(problemSpecification);
+
         System.out.println("GRASP. Initial solution total distance: " + solution.getTotalDistance());
         
         // Multiboot initial solution
@@ -66,11 +70,11 @@ public class CVRPMain {
 //        CVRPSolution solution = Multiboot.constructRandomSolution(problemSpecification);
 //        System.out.println("Random solution. Initial solution total distance: " + solution.getTotalDistance());
         
-        for (int i = 0; i < 100; ++i) {
-            solution = VariableNeighborhoodSearch.run(solution, moveList, vnd);
-        }
-        System.out.println("Is solution feasible after various runs of VNS?: " + solution.isFeasible());
-        System.out.println("Total distance after various runs of VNS: " + solution.getTotalDistance());
+       
+            solution = LargeNeighborhoodSearch.run(problemSpecification, solution, moveList, 0.2);
+        
+//        System.out.println("Is solution feasible after various runs of VNS?: " + solution.isFeasible());
+//        System.out.println("Total distance after various runs of VNS: " + solution.getTotalDistance());
         //        CVRPGraphic window = new CVRPGraphic();
         //        window.setSolution(solution);
         //        window.showSolution();

@@ -55,9 +55,14 @@ public abstract class Move {
 	public void setSolution(CVRPSolution solution) {
 		this.solution = solution;
 	}
+	
+	/** Method that returns the state of the move. */
+	public abstract MoveState getState();
 
 	/** @return The current solution that is the movement using. */
 	public CVRPSolution getSolution() {
 		return solution;
 	}
+	
+	
 }

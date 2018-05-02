@@ -348,4 +348,18 @@ public class InterrouteSwap extends Move {
 					currentFromRoute, currentFromRoutePosition, currentToRoute, currentToRoutePosition));
 		}
 	}
+
+	/* (non-Javadoc)
+	 * @see daa.project.crvp.moves.Move#getState()
+	 */
+	@Override
+	public MoveState getState() {
+		int realFromPosition = getClientAbsolutePosition(currentFromRoutePosition, currentFromRoute);
+		int realToPosition = getClientAbsolutePosition(currentToRoutePosition, currentToRoute);
+		
+		CVRPClient firstClient = getSolution().getClient(realFromPosition);
+		CVRPClient secondClient =  getSolution().getClient(realToPosition);
+		
+		return new MoveState(firstClient, secondClient, this.getCurrentNeighbor());
+	}
 }

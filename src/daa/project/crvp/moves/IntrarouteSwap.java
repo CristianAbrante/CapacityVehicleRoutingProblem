@@ -201,4 +201,13 @@ public class IntrarouteSwap extends Move {
             }
         }
     }
+
+		/* (non-Javadoc)
+		 * @see daa.project.crvp.moves.Move#getState()
+		 */
+		@Override
+		public MoveState getState() {
+			// TODO Auto-generated method stub
+			return null;
+		}
 }

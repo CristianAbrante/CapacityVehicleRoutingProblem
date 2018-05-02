@@ -8,6 +8,7 @@
 package daa.project.crvp.moves;
 
 import daa.project.crvp.problem.CVRPClient;
+import daa.project.crvp.problem.CVRPSolution;
 
 /**
  * Class that represents the state of one move, meaning as state the clients
@@ -17,10 +18,12 @@ public class MoveState {
 
 	private CVRPClient firstClient;
 	private CVRPClient secondClient;
+	private CVRPSolution moveSolution;
 
-	public MoveState(CVRPClient firstClient, CVRPClient secondClient) {
+	public MoveState(CVRPClient firstClient, CVRPClient secondClient, CVRPSolution moveSolution) {
 		setFirstClient(firstClient);
 		setSecondClient(secondClient);
+		setMoveSolution(moveSolution);
 	}
 
 	/**
@@ -71,4 +74,38 @@ public class MoveState {
 		}
 		return false;
 	}
+	
+	/* (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		 int hash = 1;
+     hash += 17 * (getFirstClient().getxCoordinate()  + getSecondClient().getxCoordinate());
+     hash += 31 * (getFirstClient().getyCoordinate()  + getSecondClient().getyCoordinate());
+     return hash;
+	}
+	
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	public String toString() {
+		return getFirstClient() + " <-> " + getSecondClient();
+	}
+
+	/**
+	 * @return the moveSolution
+	 */
+	public CVRPSolution getMoveSolution() {
+		return moveSolution;
+	}
+
+	/**
+	 * @param moveSolution the moveSolution to set
+	 */
+	public void setMoveSolution(CVRPSolution moveSolution) {
+		this.moveSolution = moveSolution;
+	}
+
+
 }

@@ -1,6 +1,6 @@
 package daa.project.crvp.moves.test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -9,7 +9,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import daa.project.crvp.IO.ReaderFromFile;
-import daa.project.crvp.moves.InterrouteSwap;
 import daa.project.crvp.moves.Move;
 import daa.project.crvp.moves.Relocation;
 import daa.project.crvp.problem.CVRPSolution;
@@ -25,8 +24,6 @@ public class RelocationTest {
 	private static CVRPSolution solution;
 	/** File from where we will get the problem specification. */
 	private static final String TEST_FILENAME = "input/test_graphic.vrp";
-
-	private final double EPS = 0.3;
 
 	/**
 	 * Method to generate a random specification.
@@ -51,6 +48,7 @@ public class RelocationTest {
 		assertEquals(2, solution.getClientId(0));
 		assertEquals(4, solution.getClientId(4));
 
+		move.nextNeighbor();
 		CVRPSolution newSolution = move.getCurrentNeighbor(); // {1, 3, -1, 2, 4, 5, 6, -1, 8, 7, 0, -1}
 
 		assertEquals(1, newSolution.getClientId(0));
@@ -77,16 +75,18 @@ public class RelocationTest {
 		assertEquals(4, solution.getClientId(4));
 
 		move.nextNeighbor();
-		CVRPSolution newSolution = move.getCurrentNeighbor();
-		move.setSolution(newSolution); // {1, 3, -1, 4, 2, 5, 6, -1, 8, 7, 0, -1}
+		CVRPSolution newSolution = move.getCurrentNeighbor(); // {1, 3, -1, 2, 4, 5, 6, -1, 8, 7, 0, -1}
 		assertEquals(1, newSolution.getClientId(0));
-		assertEquals(2, newSolution.getClientId(4));
+		assertEquals(2, newSolution.getClientId(3));
 
-		newSolution = move.getCurrentNeighbor(); // {3, -1, 1 ,4, 2, 5, 6, -1, 8, 7, 0, -1}
+		move.setSolution(newSolution); 
+		move.nextNeighbor();
+		newSolution = move.getCurrentNeighbor(); // {3, -1, 1, 2, 4, 5, 6, -1, 8, 7, 0, -1}
 		assertEquals(3, newSolution.getClientId(0));
 		assertEquals(1, newSolution.getClientId(2));
 
 		move.setSolution(newSolution);
+		move.nextNeighbor();
 		newSolution = move.getCurrentNeighbor(); // {-1, 3, 1 ,4, 2, 5, 6, -1, 8, 7, 0, -1}
 		assertEquals(-1, newSolution.getClientId(0));
 		assertEquals(3, newSolution.getClientId(1));
@@ -96,7 +96,8 @@ public class RelocationTest {
 	public void testNextNeighborAtEnd() { // Check last move
 		move.setSolution(solution); // {2, 1, 3, -1, 4, 5, 6, -1, 8, 7, 0, -1}
 
-		CVRPSolution lastSolution = move.getCurrentNeighbor();
+		move.nextNeighbor();
+		CVRPSolution lastSolution = move.getCurrentNeighbor(); // {1, 3, -1, 2, 4, 5, 6, -1, 8, 7, 0, -1}
 		assertEquals(lastSolution.getClientId(0, 0), 1);
 		assertEquals(lastSolution.getClientId(0, 1), 3);
 		assertEquals(lastSolution.getClientId(1, 0), 2);
@@ -131,11 +132,11 @@ public class RelocationTest {
 
 		int movementCounter = 0;
 		while (move.hasMoreNeighbors()) {
-			movementCounter++;
 			move.nextNeighbor();
+			movementCounter++;
 		}
 
-		assertEquals(72, movementCounter);
+		assertEquals(73, movementCounter);
 	}
 
 	@Test
@@ -184,8 +185,10 @@ public class RelocationTest {
 		assertEquals(newSolution.getClientId(0, 0), 2);
 		assertEquals(newSolution.getClientId(0, 1), 1);
 		assertEquals(newSolution.getClientId(0, 2), 3);
-
+		
+		move.nextNeighbor();
 		CVRPSolution nextSolution = move.getCurrentNeighbor(); // { 1, 3, -1, 2 }
+		
 		assert (move.hasMoreNeighbors());
 		assertEquals(nextSolution.getClientId(0, 0), 1);
 		assertEquals(nextSolution.getClientId(0, 1), 3);
@@ -210,6 +213,7 @@ public class RelocationTest {
 
 		assertEquals(newSolution.getClientId(0, 0), 2);
 
+		move.nextNeighbor();
 		CVRPSolution nextSolution = move.getCurrentNeighbor(); // {2, 1, 3, -1, 4, 5, 0, -1, 8, 7, 6, -1}
 		assertEquals(nextSolution.getClientId(0, 0), 1);
 		assertEquals(nextSolution.getClientId(1, 0), 2);
@@ -224,6 +228,7 @@ public class RelocationTest {
 		assertEquals(newSolution.getClientId(0, 0), 2);
 		assertEquals(newSolution.getClientId(1, 0), 5);
 
+		move.nextNeighbor();
 		CVRPSolution nextSolution = move.getCurrentNeighbor();
 		assertEquals(nextSolution.getClientId(0, 0), 1);
 		assertEquals(nextSolution.getClientId(1, 0), 2);
@@ -233,20 +238,4 @@ public class RelocationTest {
 		assertEquals(nextSolution.getClientId(0, 0), 1);
 		assertEquals(nextSolution.getClientId(1, 1), 2);
 	}
-
-	// @Test
-	// public void testMovementCost() { // Test if the next neighbor movement is
-	// correct.
-	// move.setSolution(solution); // {2, 1, 3, -1, 4, 5, 6, -1, 8, 7, 0, -1}
-	// assertTrue(Math.abs(move.getCurrentNeighborCost() - 555.472) < EPS);
-	//
-	// move.nextNeighbor(); // {4, 1, 3, -1, 2, 5, 6, -1, 8, 7, 0, -1}
-	// CVRPSolution newSolution = move.getCurrentNeighbor();
-	//
-	// assertEquals(4, newSolution.getClientId(0));
-	// assertEquals(2, newSolution.getClientId(4));
-	//
-	// assertTrue(Math.abs(move.getCurrentNeighborCost() - 579.586) < EPS);
-	// assertTrue(Math.abs(move.getLastMoveCost() - 24.114) < EPS);
-	// }
 }

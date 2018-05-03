@@ -44,21 +44,39 @@ public class LargeNeighborhoodSearch {
 //				System.out.print(initialSolution.getClientId(j) + ", ");
 //			}
 			CVRPSolution bestConstructedSol = new CVRPSolution(initialSolution);
-		
-			for(int i = 0; i < 400; i++) {
+			
+			
+//			System.out.println(initialSolution.getRouteFromClient(-1));
+			
+			for(int i = 0; i < 100; i++) {
 			
 			CVRPSolution destroyedSolution = new CVRPSolution(getDestroyedSolution(initialSolution, destructionPercentage));
-
-					System.out.println("REMOVED CLIENTS");
-					for(int j = 0; j < removedClients.size(); j++) {
-						System.out.print(removedClients.get(j) + ", ");
-					}
-					System.out.println(" ");
+			
+			System.out.println("REMOVED CLIENTS");
+			for(int j = 0; j < removedClients.size(); j++) {
+				System.out.print(removedClients.get(j) + ", ");
+			}
+			System.out.println(" ");
+			
+			System.out.println("destroyedSolution");
+			for(int j = 0; j < destroyedSolution.getNumberOfClients()+destroyedSolution.getNumberOfRoutes(); j++) {
+				System.out.print(destroyedSolution.getClientId(j) + ", ");
+			}
+			System.out.println();
+					
 			CVRPSolution actualConstructedSol = new CVRPSolution(constructNewSolution(destroyedSolution));
 			
 			if(actualConstructedSol.getTotalDistance() < bestConstructedSol.getTotalDistance()) {
 				bestConstructedSol = new CVRPSolution(actualConstructedSol);
 			}
+			
+			
+			
+			System.out.println("initialSolution");
+			for(int j = 0; j < initialSolution.getNumberOfClients()+initialSolution.getNumberOfRoutes(); j++) {
+				System.out.print(initialSolution.getClientId(j) + ", ");
+			}
+			System.out.println();
 			
 			
 			destroyedSolution = new CVRPSolution(initialSolution);
@@ -76,6 +94,7 @@ public class LargeNeighborhoodSearch {
 		CVRPSolution bestSolution = null;
 		Random rand = new Random();
 		double vehicleRemaining;
+		
 		
 		
 		destroyedSolution.addClientToRoute(0, removedClients.get(0));
@@ -120,14 +139,16 @@ public class LargeNeighborhoodSearch {
 		for(int i = 0; i < numberOfRemovedClients; i++) {
 			indexToRemove = rand.nextInt(vehicleRoutesSize);
 			int clientToRemove = initialSolution.getClientId(indexToRemove);
-			
 			// If there is a separator or the client is repeated, dont stop until find another valid client
-			while(clientToRemove == CVRPSolution.SEPARATOR || removedClients.contains(clientToRemove)) {
+			System.err.println(clientToRemove);
+			while(clientToRemove == CVRPSolution.SEPARATOR || removedClients.contains(clientToRemove) || initialSolution.getNumberOfClientsInRoute(initialSolution.getRouteFromClient(clientToRemove)) - 1 <= 1) {
+				
 				indexToRemove = rand.nextInt(vehicleRoutesSize);
 				clientToRemove = initialSolution.getClientId(indexToRemove);
-//				System.err.println(indexToRemove);
+				System.err.println(clientToRemove);
 			}
 			removedClients.add(clientToRemove);
+			
 		}
 
 		ArrayList<Integer> remainingClients = new ArrayList<>();

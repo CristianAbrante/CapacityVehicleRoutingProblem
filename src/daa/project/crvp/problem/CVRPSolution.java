@@ -181,6 +181,24 @@ public class CVRPSolution {
         return getVehicleRoutes().get(routeStartingIndex + positionInRoute);
     }
     
+    public int getRouteFromClient(int clientID) {
+   	 if (clientID < 0 || clientID >= getVehicleRoutes().size()) {
+          throw new IllegalArgumentException("Invalid client ID \"" + clientID
+                  + "\" Expected client ID to be 0 <= clientId < " + getVehicleRoutes().size());
+      }
+   	 
+   	 int numberOfRoutes = 0;
+   	 for(int i = 0; numberOfRoutes < getNumberOfRoutes(); i++) {
+   		 if(vehicleRoutes.get(i) == CVRPSolution.SEPARATOR)
+   			 numberOfRoutes++;
+   		 
+   		 if(clientID == vehicleRoutes.get(i))
+   			 return numberOfRoutes;
+   	 }
+   		 
+   	 return Integer.MAX_VALUE;
+    }
+    
     /**
      * Adds a new client to route, recalculating the routes starting indexes,
      * vehicle remaining capacities and total distance. Also, if the new remaining
@@ -215,7 +233,7 @@ public class CVRPSolution {
        	if(route + 1 < getNumberOfRoutes()) {
        		updateRoutesStartingIndex(route + 1, getRouteStartingIndex(route + 1) + 1);
        	}else {
-       		if(getRouteStartingIndex(route) + 1 != CVRPSolution.SEPARATOR)
+//       		if(getRouteStartingIndex(route) + 1 != CVRPSolution.SEPARATOR)
        			updateRoutesStartingIndex(route, getRouteStartingIndex(route) + 1);
        	}
        	

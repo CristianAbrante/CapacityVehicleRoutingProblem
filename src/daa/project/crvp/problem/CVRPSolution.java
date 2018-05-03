@@ -215,7 +215,8 @@ public class CVRPSolution {
        	if(route + 1 < getNumberOfRoutes()) {
        		updateRoutesStartingIndex(route + 1, getRouteStartingIndex(route + 1) + 1);
        	}else {
-       		updateRoutesStartingIndex(route, getRouteStartingIndex(route) + 1);
+//       		if(getRouteStartingIndex(route) + 1 != CVRPSolution.SEPARATOR)
+       			updateRoutesStartingIndex(route, getRouteStartingIndex(route) + 1);
        	}
        	
        	double distanceToClient = CVRPClient.euclideanDistance(

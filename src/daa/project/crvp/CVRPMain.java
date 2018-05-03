@@ -54,7 +54,7 @@ public class CVRPMain {
         Move[] moveList = new Move[] { new InterrouteSwap(), new Relocation(), new IntrarouteSwap(), new TwoOpt() };
         LocalSearch vnd = new VariableNeighborhoodDescent(moveList);
         
-//         GRASP initial solution
+        // GRASP initial solution
 //        CVRPSolution solution = GRASP.grasp(problemSpecification, 100, 100, 3,
 //                new BestNeighborLocalSearch(new Relocation()));
         CVRPSolution solution = ConstructiveDeterministic.constructDeterministicSolution(problemSpecification);
@@ -71,23 +71,22 @@ public class CVRPMain {
 //        System.out.println("Random solution. Initial solution total distance: " + solution.getTotalDistance());
         
        
-        CVRPSolution optimized = VariableNeighborhoodSearch.run(solution, new Move[] { 
-              new InterrouteSwap(),
-              new Relocation(),
-              new IntrarouteSwap(),
-      }, vnd);
-            
-      		System.err.println("BEST SOLUTION");
-      		for(int i = 0; i < optimized.getNumberOfClients() + optimized.getNumberOfRoutes(); i++) {
-      			System.out.print(optimized.getClientId(i) + ", ");
-      		}
-      		System.out.println(optimized.getTotalDistance() + "\n");
-      		
+        CVRPSolution optimized = LargeNeighborhoodSearch.run(problemSpecification, solution, vnd, 0.2);
+//            
+        //optimized = vnd.findLocalOptimum(optimized);
+//      		System.err.println("BEST SOLUTION");
+//      		for(int i = 0; i < optimized.getNumberOfClients() + optimized.getNumberOfRoutes(); i++) {
+//      			System.out.print(optimized.getClientId(i) + ", ");
+//      		}
+//      		
+//      		System.out.println(optimized.getTotalDistance());
+      		System.out.println(" ");
+//      		
       		System.err.println("INITIAL SOLUTION");
       		for(int i = 0; i < solution.getNumberOfClients() + solution.getNumberOfRoutes(); i++) {
       			System.out.print(solution.getClientId(i) + ", ");
       		}
-      		System.out.println(solution.getTotalDistance() + "\n");
+      		System.out.println(solution.getNumberOfRoutes() + solution.getNumberOfClients());
         
 //        System.out.println("Is solution feasible after various runs of VNS?: " + solution.isFeasible());
 //        System.out.println("Total distance after various runs of VNS: " + solution.getTotalDistance());

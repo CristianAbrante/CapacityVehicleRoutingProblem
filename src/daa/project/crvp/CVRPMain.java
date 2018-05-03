@@ -8,6 +8,7 @@ import daa.project.crvp.algorithms.ConstructiveDeterministic;
 import daa.project.crvp.algorithms.GRASP;
 import daa.project.crvp.algorithms.LargeNeighborhoodSearch;
 import daa.project.crvp.algorithms.VariableNeighborhoodSearch;
+import daa.project.crvp.graphic.CVRPGraphic;
 import daa.project.crvp.local_search.BestNeighborLocalSearch;
 import daa.project.crvp.local_search.LocalSearch;
 import daa.project.crvp.local_search.VariableNeighborhoodDescent;
@@ -60,39 +61,13 @@ public class CVRPMain {
 //        CVRPSolution solution = ConstructiveDeterministic.constructDeterministicSolution(problemSpecification);
 
         System.out.println("GRASP. Initial solution total distance: " + solution.getTotalDistance());
-        
-        // Multiboot initial solution
-        //        CVRPSolution solution = Multiboot.multiboot(problemSpecification, new BestNeighborLocalSearch(new Relocation()),
-        //                100);
-        //        System.out.println("Multiboot. Initial solution total distance: " + solution.getTotalDistance());
-        
-        // Random initial solution
-//        CVRPSolution solution = Multiboot.constructRandomSolution(problemSpecification);
-//        System.out.println("Random solution. Initial solution total distance: " + solution.getTotalDistance());
-        
-       
-        CVRPSolution optimized = LargeNeighborhoodSearch.run(problemSpecification, solution, vnd, 0.2);
-//            
-//        optimized = vnd.findLocalOptimum(optimized);
-      		System.err.println("BEST SOLUTION");
-      		for(int i = 0; i < optimized.getNumberOfClients() + optimized.getNumberOfRoutes(); i++) {
-      			System.out.print(optimized.getClientId(i) + ", ");
-      		}
-      		
-      		System.out.println(optimized.getTotalDistance());
-      
-////      		
-      		System.err.println("INITIAL SOLUTION");
-      		for(int i = 0; i < solution.getNumberOfClients() + solution.getNumberOfRoutes(); i++) {
-      			System.out.print(solution.getClientId(i) + ", ");
-      		}
-      		System.out.println(solution.getTotalDistance());
-        
-//        System.out.println("Is solution feasible after various runs of VNS?: " + solution.isFeasible());
-//        System.out.println("Total distance after various runs of VNS: " + solution.getTotalDistance());
-        //        CVRPGraphic window = new CVRPGraphic();
-        //        window.setSolution(solution);
-        //        window.showSolution();
+        CVRPSolution optimized = LargeNeighborhoodSearch.run(problemSpecification, solution, vnd, 400, 10, 0.25);
+
+        System.out.println("Is solution feasible after various runs of LNS?: " + solution.isFeasible());
+        System.out.println("Total distance after various runs of LNS: " + solution.getTotalDistance());
+//        CVRPGraphic window = new CVRPGraphic();
+//        window.setSolution(optimized);
+//        window.showSolution();
 	}
 
 }

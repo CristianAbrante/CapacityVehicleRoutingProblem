@@ -2,8 +2,6 @@ package daa.project.crvp.problem;
 
 import java.util.ArrayList;
 
-import Test.CVRPClient;
-
 import java.util.*;
 
 /**
@@ -183,14 +181,18 @@ public class CVRPSolution {
         return getVehicleRoutes().get(routeStartingIndex + positionInRoute);
     }
     
+    /**
+     * Adds a new client to route, recalculating the routes starting indexes,
+     * vehicle remaining capacities and total distance. Also, if the new remaining
+     * value is negative the feasibility will be settled as false
+     * 
+     * @param route Route where new client will be added
+     * @param clientId Client that will be added in route route
+     */
     public void addClientToRoute(int route, int clientId) {
        	if (route < 0 || route >= getNumberOfRoutes()) {
        		throw new IndexOutOfBoundsException(
                    	"trying adding client " + clientId + " on an invalid route: " + route); 
-       	}
-       
-       	if(getVehicleRoutes().contains(clientId)) {
-       		throw new IllegalArgumentException("trying to add a client " + clientId + " that was already in another route");
        	}
        
        	int startingIndexOfRoute = getRouteStartingIndex(route);
@@ -209,8 +211,13 @@ public class CVRPSolution {
  		      getVehicleRemainingCapacity(route) - problemInfo.getClient(clientId).getDemand(), 
  		      route
        	);
-       	updateRoutesStartingIndex(route + 1, getRouteStartingIndex(route + 1) + 1);
-
+       	
+       	if(route + 1 < getNumberOfRoutes()) {
+       		updateRoutesStartingIndex(route + 1, getRouteStartingIndex(route + 1) + 1);
+       	}else {
+       		updateRoutesStartingIndex(route, getRouteStartingIndex(route) + 1);
+       	}
+       	
        	double distanceToClient = CVRPClient.euclideanDistance(
        			problemInfo.getClient(clientId), getProblemInfo().getDepot()
        	);

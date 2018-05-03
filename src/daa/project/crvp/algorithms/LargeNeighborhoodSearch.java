@@ -11,6 +11,7 @@ import daa.project.crvp.utils.Random;
 
 public class LargeNeighborhoodSearch {
 	
+	private static CVRPSolution initialSolution;
 	private static CVRPSpecification problemSpecification;
 	private static ArrayList<Integer> removedClients;
 	
@@ -28,20 +29,66 @@ public class LargeNeighborhoodSearch {
 		LargeNeighborhoodSearch.removedClients = new ArrayList<>();
 		LargeNeighborhoodSearch.problemSpecification = problemSpecification;
 		
-		CVRPSolution currentSolution = initialSolution;
-		CVRPSolution destroyedSolution = getDestroyedSolution(initialSolution, destructionPercentage);
+		LargeNeighborhoodSearch.initialSolution = initialSolution;
 		
-		constructNewSolution(destroyedSolution);
+		for(int i = 0; i < 1000; i++) {
+			CVRPSolution destroyedSolution = getDestroyedSolution(initialSolution, destructionPercentage);
 
+			//		System.out.println("REMOVED CLIENTS");
+			//		for(int i = 0; i < removedClients.size(); i++) {
+			//			System.err.print(removedClients.get(i) + ", ");
+			//		}
+			//		System.err.println();
+			CVRPSolution candidate = constructNewSolution(destroyedSolution);
+			if(candidate.getTotalDistance() < LargeNeighborhoodSearch.initialSolution.getTotalDistance())
+				return candidate;
+		}
+		
 		return initialSolution;
 	}
 	
 	private static CVRPSolution constructNewSolution(CVRPSolution destroyedSolution) {
-//		destroyedSolution.addClientToRoute(3, 2);
-//		for(int i = 0 ; i < destroyedSolution.getNumberOfClients() + destroyedSolution.getNumberOfRoutes(); i++) {
+		int vehicleRoutesSize = destroyedSolution.getNumberOfClients() + destroyedSolution.getNumberOfRoutes();
+//		for(int i = 0; i < destroyedSolution.getNumberOfClients() + destroyedSolution.getNumberOfRoutes(); i++) {
 //			System.out.print(destroyedSolution.getClientId(i) + ", ");
 //		}
-		return destroyedSolution;
+//		
+		double vehicleRemaining = Double.MAX_VALUE;
+		CVRPSolution currentSolution = destroyedSolution;
+		CVRPSolution bestSolution = null;
+		boolean improve = false;
+		
+		for(int i = 0; i < removedClients.size(); i++) {
+			for(int j = 0; j < currentSolution.getNumberOfRoutes(); j++) {
+				CVRPSolution actualSolution = new CVRPSolution(currentSolution);
+				actualSolution.addClientToRoute(j, removedClients.get(i));
+				if(actualSolution.isFeasible() && DoubleCompare.lessThan(actualSolution.getVehicleRemainingCapacity(j), vehicleRemaining)) {
+					vehicleRemaining = actualSolution.getTotalDistance();
+					bestSolution = actualSolution;
+				}
+				
+//				System.err.println(actualSolution.getTotalDistance());
+//				for(int i = 0; i < actualSolution.getNumberOfClients() + actualSolution.getNumberOfRoutes(); i++) {
+//					System.out.print(actualSolution.getClientId(i) + ", ");
+//				}
+//				System.err.println();
+			}
+			currentSolution = bestSolution;
+			vehicleRemaining = Double.MAX_VALUE;
+		}
+		
+//		System.err.println("BEST SOLUTION");
+//		for(int i = 0; i < bestSolution.getNumberOfClients() + bestSolution.getNumberOfRoutes(); i++) {
+//			System.out.print(bestSolution.getClientId(i) + ", ");
+//		}
+//		System.out.println(bestSolution.getTotalDistance() + "\n");
+//		
+//		System.err.println("INITIAL SOLUTION");
+//		for(int i = 0; i < initialSolution.getNumberOfClients() + initialSolution.getNumberOfRoutes(); i++) {
+//			System.out.print(initialSolution.getClientId(i) + ", ");
+//		}
+//		System.out.println(initialSolution.getTotalDistance() + "\n");
+		return bestSolution;
 	}
 
 	private static CVRPSolution getDestroyedSolution(CVRPSolution initialSolution, double destructionPercentage) {

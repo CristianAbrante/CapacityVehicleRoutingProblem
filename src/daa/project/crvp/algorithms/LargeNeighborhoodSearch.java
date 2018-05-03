@@ -25,11 +25,17 @@ public class LargeNeighborhoodSearch {
 			throw new IllegalArgumentException("initial solution for LNS is not feasible");
 		}
 		
+//		for(int i = 0; i < initialSolution.getNumberOfRoutes() + initialSolution.getNumberOfClients(); i++) {
+//			System.out.print(initialSolution.getClientId(i) + ", ");
+//		}
+//		System.out.println();
+//		System.out.println(initialSolution.getNumberOfRoutes());
+//		System.out.println(initialSolution.getNumberOfClientsInRoute(4));
+		
 		LargeNeighborhoodSearch.removedClients = new ArrayList<>();
 		LargeNeighborhoodSearch.problemSpecification = problemSpecification;
 		LargeNeighborhoodSearch.localSearch = localSearch;
 		LargeNeighborhoodSearch.initialSolution = new CVRPSolution(initialSolution);
-		CVRPSolution bestSol = new CVRPSolution(initialSolution);
 		
 		
 //			System.out.println();
@@ -37,52 +43,69 @@ public class LargeNeighborhoodSearch {
 //			for(int j = 0; j < initialSolution.getNumberOfClients() + initialSolution.getNumberOfRoutes(); j++) {
 //				System.out.print(initialSolution.getClientId(j) + ", ");
 //			}
+			CVRPSolution bestConstructedSol = new CVRPSolution(initialSolution);
+		
+			for(int i = 0; i < 400; i++) {
 			
 			CVRPSolution destroyedSolution = new CVRPSolution(getDestroyedSolution(initialSolution, destructionPercentage));
 
-//					System.out.println("REMOVED CLIENTS");
-//					for(int j = 0; j < removedClients.size(); j++) {
-//						System.err.print(removedClients.get(j) + ", ");
-//					}
-//					System.err.println();
-			CVRPSolution candidate = new CVRPSolution(constructNewSolution(destroyedSolution));
+					System.out.println("REMOVED CLIENTS");
+					for(int j = 0; j < removedClients.size(); j++) {
+						System.out.print(removedClients.get(j) + ", ");
+					}
+					System.out.println(" ");
+			CVRPSolution actualConstructedSol = new CVRPSolution(constructNewSolution(destroyedSolution));
 			
-			if(candidate.getTotalDistance() < bestSol.getTotalDistance())
-				bestSol = new CVRPSolution(candidate);
+			if(actualConstructedSol.getTotalDistance() < bestConstructedSol.getTotalDistance()) {
+				bestConstructedSol = new CVRPSolution(actualConstructedSol);
+			}
 			
-//			for(int i = 0; i < bestSol.getNumberOfRoutes() + bestSol.getNumberOfClients(); i++) {
-//				System.err.print(bestSol.getClientId(i) + ", ");
-//			}
-//			System.err.println(bestSol.getNumberOfRoutes() + bestSol.getNumberOfClients());
 			
-			destroyedSolution = initialSolution;
+			destroyedSolution = new CVRPSolution(initialSolution);
 			removedClients.clear();
 		
+			}
 			
 		
 		
-		return bestSol;
+		return bestConstructedSol;
 	}
 	
 	private static CVRPSolution constructNewSolution(CVRPSolution destroyedSolution) {
 		CVRPSolution init = new CVRPSolution(destroyedSolution);
-		CVRPSolution bestSolution = destroyedSolution;
+		CVRPSolution bestSolution = null;
 		Random rand = new Random();
-		double vehicleRemaining = Double.MAX_VALUE;
+		double vehicleRemaining;
 		
-		for(int i = 0; i < removedClients.size(); i++) {
-			for(int j = 0; j < destroyedSolution.getNumberOfRoutes(); j++) {
-				destroyedSolution.addClientToRoute(j, removedClients.get(i));
-				if(destroyedSolution.isFeasible() && DoubleCompare.lessThan(destroyedSolution.getVehicleRemainingCapacity(j), vehicleRemaining)) {
+		
+		destroyedSolution.addClientToRoute(0, removedClients.get(0));
+		vehicleRemaining = destroyedSolution.getTotalDistance();
+		bestSolution = new CVRPSolution(destroyedSolution);
+		
+		destroyedSolution = new CVRPSolution(init);
+		
+		for(int j = 0; j < removedClients.size(); j++) {
+			destroyedSolution.addClientToRoute(0, removedClients.get(j));
+			vehicleRemaining = destroyedSolution.getTotalDistance();
+			bestSolution = new CVRPSolution(destroyedSolution);
+			
+			for(int i = 0; i < destroyedSolution.getNumberOfRoutes(); i++) {
+				destroyedSolution.addClientToRoute(i, removedClients.get(j));
+//				System.out.println("RUTA : " +  i + " -> añadiendo " + removedClients.get(0) + " da: " + destroyedSolution.getTotalDistance() + " y la mejor es: " + vehicleRemaining);
+				if(destroyedSolution.isFeasible() && DoubleCompare.lessThan(destroyedSolution.getTotalDistance(), vehicleRemaining)) {
 					vehicleRemaining = destroyedSolution.getTotalDistance();
 					bestSolution = new CVRPSolution(destroyedSolution);
 				}
+				destroyedSolution = new CVRPSolution(init);
 			}
+			init = new CVRPSolution(bestSolution);
 			destroyedSolution = new CVRPSolution(bestSolution);
-			vehicleRemaining = Double.MAX_VALUE;
 		}
 		
-
+//		for(int i = 0; i < bestSolution.getNumberOfRoutes() + bestSolution.getNumberOfClients(); i++) {
+//			System.err.print(bestSolution.getClientId(i) + ", ");
+//		}
+//		System.err.println(bestSolution.getNumberOfRoutes() + bestSolution.getNumberOfClients());
 		
 		return bestSolution;
 	}

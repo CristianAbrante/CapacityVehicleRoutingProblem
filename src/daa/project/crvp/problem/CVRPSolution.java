@@ -197,6 +197,77 @@ public class CVRPSolution {
 	}
 
 	/**
+	 * Adds a new client to route, recalculating the routes starting indexes,
+	 * vehicle remaining capacities and total distance. Also, if the new remaining
+	 * value is negative the feasibility will be settled as false
+	 * 
+	 * @param route Route where new client will be added
+	 * @param clientId Client that will be added in route route
+	 */
+	public void addClientToRoute(int route, int clientId) {
+		if (route < 0 || route >= getNumberOfRoutes()) {
+			throw new IndexOutOfBoundsException(
+					"trying adding client " + clientId + " on an invalid route: " + route); 
+		}
+
+		int startingIndexOfRoute = getRouteStartingIndex(route);
+		ArrayList<Integer> newVehiclesRoutes = (ArrayList<Integer>) getVehicleRoutes().clone();
+		newVehiclesRoutes.subList(startingIndexOfRoute, vehicleRoutes.size()).clear();
+		CVRPClient clientToMove = problemInfo.getClient(getClientId(startingIndexOfRoute));
+
+		setTotalDistance(getTotalDistance() - CVRPClient.euclideanDistance(clientToMove, getProblemInfo().getDepot()));
+		newVehiclesRoutes.add(clientId);
+		newVehiclesRoutes.addAll(
+				getVehicleRoutes().subList(startingIndexOfRoute, getVehicleRoutes().size())
+				);
+
+		setVehicleRoutes(newVehiclesRoutes);
+		updateVehicleRemainingCapacity(
+				getVehicleRemainingCapacity(route) - problemInfo.getClient(clientId).getDemand(), 
+				route
+				);
+
+		if(route + 1 < getNumberOfRoutes()) {
+			updateRoutesStartingIndex(route + 1, getRouteStartingIndex(route + 1) + 1);
+		}else {
+			if(getRouteStartingIndex(route) + 1 != CVRPSolution.SEPARATOR)
+				updateRoutesStartingIndex(route, getRouteStartingIndex(route) + 1);
+		}
+
+		double distanceToClient = CVRPClient.euclideanDistance(
+				problemInfo.getClient(clientId), getProblemInfo().getDepot()
+				);
+
+		setTotalDistance(getTotalDistance() + distanceToClient);
+	}
+
+	/**
+	 * Updates the routes index
+	 * @param route Route where we will update the index
+	 * @param newIndex New index of the route route
+	 */
+	private void updateRoutesStartingIndex(int route, int newIndex) {
+		int increase = newIndex - routesStartingIndexes.get(route);
+		for(int i = route; i < getNumberOfRoutes(); i++) {
+			routesStartingIndexes.set(i, routesStartingIndexes.get(i) + increase);
+		}
+	}
+
+	/**
+	 * Update the remaining capacity for the specified vehicle
+	 * 
+	 * @param newCapacity New capacity for vehicle vehicle
+	 * @param vehicle Vehicle whose capacity will be updated
+	 */
+	private void updateVehicleRemainingCapacity(int newCapacity, int vehicle) {
+		if(newCapacity < 0) {
+			setFeasible(false);
+		}
+
+		vehicleRemainingCapacities.set(vehicle, newCapacity);
+	}
+
+	/**
 	 * Returns the information of the j-th client in the i-th route. Where j is the
 	 * positionInRoute and i the route. If there is no valid client at the position
 	 * specified, null is returned. Exception is thrown if any position is off

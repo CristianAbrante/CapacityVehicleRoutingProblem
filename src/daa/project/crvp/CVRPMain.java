@@ -5,6 +5,7 @@ import java.io.IOException;
 
 import daa.project.crvp.IO.ReaderFromFile;
 import daa.project.crvp.algorithms.GRASP;
+import daa.project.crvp.algorithms.LargeNeighborhoodSearch;
 import daa.project.crvp.algorithms.Multiboot;
 import daa.project.crvp.algorithms.VariableNeighborhoodSearch;
 import daa.project.crvp.graphic.CVRPGraphic;
@@ -85,14 +86,20 @@ public class CVRPMain {
 		}
 
 		LocalSearch vnd = new VariableNeighborhoodDescent(moveList);
-
+		
+		/** TABU PARAMS */
 		int tabuTenure = (int) (0.2 * problemSpecification.getClients().size());
 		boolean tabuVerbose = false;
 		Move[] tabuMoveList = moveList; // new Move[] {new Relocation(), new IntrarouteSwap()};
 		LocalSearch tabuSearch = new TabuSearch(tabuMoveList, tabuTenure, 10, tabuVerbose);
 
+		/** LNS PARAMS */
+		int maxReconstructions = 100;
+		int minDiffLocalSearch = 10;
+		double destructionPercentage = 0.25;
+		
 		/** ALGORITHM CHOOSER */
-		int choosenAlgortihm = 2;
+		int choosenAlgortihm = 3;
 		switch (choosenAlgortihm) {
 			case 0: // VNS
 				System.out.println("\t*** ALGORITHM USED -> VNS + VND ***");
@@ -123,6 +130,20 @@ public class CVRPMain {
 					//System.out.println("Tabu Solution #" + i + ": " + solution.getTotalDistance());				
 				}
 				System.out.println("Total distance after multiple runs of Tabu Search: " + solution.getTotalDistance());
+				break;
+				
+			case 3: // LNS
+				System.out.println("\t*** ALGORITHM USED -> LNS + VND ***");
+				System.out.println("LNS maxReconstructions: " + maxReconstructions);
+				System.out.println("LNS minDiffLocalSearch: " + minDiffLocalSearch);
+				System.out.println("LNS destructionPercentage: " + destructionPercentage);
+				
+				for (int i = 1; i <= 100; ++i) {
+					solution = LargeNeighborhoodSearch.run(problemSpecification, solution, vnd, 
+									maxReconstructions, minDiffLocalSearch, destructionPercentage);
+				}
+									
+				System.out.println("Total distance after run LNS search: " + solution.getTotalDistance());
 			default:
 				break;
 		}

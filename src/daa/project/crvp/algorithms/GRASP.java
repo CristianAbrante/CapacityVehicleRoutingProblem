@@ -19,17 +19,13 @@ import daa.project.crvp.problem.CVRPSpecification;
  * @since 22 abr. 2018
  */
 public class GRASP {
-
-	/** Problem specification. */
-	private static CVRPSpecification			problemSpecification;
-	/** Size of the restricted candidate list used in the construct phase of GRASP. */
-	private static int										restrictedCandidateListSize;
+    
 	/** Restricted candidate list. */
-	private static ArrayList<CVRPClient>	restrictedCandidateList	= new ArrayList<>();
+    private static ArrayList<CVRPClient> restrictedCandidateList;
 	/** Current client. */
-	private static CVRPClient							currentClient;
+    private static CVRPClient            currentClient;
 	/** Remaining capacity of the current vehicle. */
-	private static int										remainingVehicleCapacity;
+    private static int                   remainingVehicleCapacity;
 
 	/**
 	 * Greedy Randomized Adaptive Search Procedure. A GRASP is an iterative
@@ -58,9 +54,6 @@ public class GRASP {
 			throw new IllegalArgumentException("Invalid number of iterations");
 		}
 
-		GRASP.problemSpecification = problemSpecification;
-		GRASP.restrictedCandidateListSize = restrictedCandidateListSize;
-
 		int iterationsWithoutImprovement = 0;
 		CVRPSolution bestSolution = null;
 		int iterations = 0;
@@ -72,9 +65,9 @@ public class GRASP {
             recorder.aboutToDoNextIteration();
 			// Construction of a new solution, this new solution or one of it's
 			// neighbours can replace the current best solution. This corresponds with
-			// the
-			// construction phase.
-			CVRPSolution newSolution = constructGreedyRandomizedSolution();
+            // the construction phase.
+            CVRPSolution newSolution = constructGreedyRandomizedSolution(problemSpecification,
+                    restrictedCandidateListSize);
 			
 			if (!newSolution.isFeasible()) {
 				System.err.println("GRASP error");
@@ -116,23 +109,26 @@ public class GRASP {
 	}
 
 	/**
-	 * Constructs and returns a solution with the given problem specification. The
-	 * solution is constructed following a greedy strategy with a random
-	 * component.
-	 * 
-	 * @return Constructed solution.
-	 */
-	private static CVRPSolution constructGreedyRandomizedSolution() {
+     * Constructs and returns a solution with the given problem specification. The
+     * solution is constructed following a greedy strategy with a random
+     * component.
+     * 
+     * @param problemSpecification Problem specification.
+     * @param restrictedCandidateListSize Size of the restricted candidate list.
+     * 
+     * @return Constructed solution.
+     */
+    public static CVRPSolution constructGreedyRandomizedSolution(CVRPSpecification problemSpecification, int restrictedCandidateListSize) {
+        restrictedCandidateList = new ArrayList<>();
 		// Solution codification.
 		ArrayList<Integer> solution = new ArrayList<>();
 		// Remaining clients to serve, remove the depot.
-		ArrayList<CVRPClient> remainingClients = new ArrayList<>(
-				GRASP.problemSpecification.getClients());
-		remainingClients.remove(GRASP.problemSpecification.getDepot());
+        ArrayList<CVRPClient> remainingClients = new ArrayList<>(problemSpecification.getClients());
+        remainingClients.remove(problemSpecification.getDepot());
 		// Start from the depot.
-		currentClient = GRASP.problemSpecification.getDepot();
+        currentClient = problemSpecification.getDepot();
 		// Establishes the remaining capacity of the current vehicle or route.
-		remainingVehicleCapacity = GRASP.problemSpecification.getCapacity();
+        remainingVehicleCapacity = problemSpecification.getCapacity();
 		// This object will generate a random number which will specify the
 		// position in the restricted candidate list of the next client to serve
 		// in the current route.
@@ -150,8 +146,7 @@ public class GRASP {
 				}
 				// If the candidate list has available space: introduce properly the
 				// client.
-				else if (restrictedCandidateList
-						.size() < GRASP.restrictedCandidateListSize
+                else if (restrictedCandidateList.size() < restrictedCandidateListSize
 						&& client.getDemand() <= remainingVehicleCapacity) {
 					insertCandidate(client);
 					// If the client is closest to the current client that the last/worst
@@ -176,7 +171,7 @@ public class GRASP {
 				remainingClients.remove(currentClient);
 				restrictedCandidateList.remove(currentClient);
 				solution.add(
-						GRASP.problemSpecification.getClients().indexOf(currentClient));
+                        problemSpecification.getClients().indexOf(currentClient));
 				updateRestrictedCandidateList();
 				
 			}
@@ -187,13 +182,13 @@ public class GRASP {
 			if (remainingVehicleCapacity == 0 || remainingClients.isEmpty()
 					|| restrictedCandidateList.isEmpty()) {
 				solution.add(CVRPSolution.SEPARATOR);
-				currentClient = GRASP.problemSpecification.getDepot();
-				remainingVehicleCapacity = GRASP.problemSpecification.getCapacity();
+                currentClient = problemSpecification.getDepot();
+                remainingVehicleCapacity = problemSpecification.getCapacity();
 			}
 		}
 
 		// Return the generated solution.
-		return new CVRPSolution(GRASP.problemSpecification, solution);
+        return new CVRPSolution(problemSpecification, solution);
 	}
 
 	/**

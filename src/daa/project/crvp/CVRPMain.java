@@ -71,7 +71,7 @@ public class CVRPMain {
 		{
 			case 0: // Grasp
 				System.out.println("\t*** SOLUTION GENERATOR -> GRASP ***");
-				solution = GRASP.grasp(problemSpecification, 100, 100, 3, new BestNeighborLocalSearch(choosenMove));
+				solution = GRASP.grasp(problemSpecification, 100, 100, 3, new BestNeighborLocalSearch(choosenMove), algorithmRecorder);
 				System.out.println("Grasp. Initial solution total distance: " + solution.getTotalDistance());
 				break;
 			case 1: // Multiboot

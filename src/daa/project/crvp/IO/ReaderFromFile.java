@@ -55,7 +55,7 @@ public class ReaderFromFile {
 			while ((line = br.readLine()) != null) {
 				if(lineNumber == 1) {
 					Pattern pattern = Pattern.compile(
-							"(Optimal value)\\s*:\\s*(\\d+)"
+							"(Optimal value|Best value)\\s*:\\s*(\\d+)"
 							);
 					Matcher matcher = pattern.matcher(line);
 					matcher.find();

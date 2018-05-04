@@ -8,18 +8,20 @@ import java.io.PrintWriter;
 
 import daa.project.crvp.IO.ReaderFromFile;
 import daa.project.crvp.algorithms.GRASP;
-import daa.project.crvp.algorithms.LargeNeighborhoodSearch;
 import daa.project.crvp.algorithms.Multiboot;
+import daa.project.crvp.algorithms.VariableNeighborhoodSearch;
 import daa.project.crvp.local_seach.FirstBetterNeighborLocalSearch;
 import daa.project.crvp.local_search.BestNeighborLocalSearch;
 import daa.project.crvp.local_search.LocalSearch;
+import daa.project.crvp.local_search.VariableNeighborhoodDescent;
 import daa.project.crvp.metrics.TimeAndIterationsRecorder;
 import daa.project.crvp.moves.InterrouteSwap;
 import daa.project.crvp.moves.IntrarouteSwap;
+import daa.project.crvp.moves.Move;
 import daa.project.crvp.moves.Relocation;
 import daa.project.crvp.moves.TwoOpt;
+import daa.project.crvp.problem.CVRPSolution;
 import daa.project.crvp.problem.CVRPSpecification;
-import daa.project.crvp.utils.DoubleCompare;
 
 /**
  * Class designed to measure the different algorithms of the VRP and to export
@@ -54,8 +56,8 @@ public class AlgorithmMetrics {
 		// READ SAMPLES
 		CVRPSpecification[] problemSpecifications = readProblemSpecificationFromSamples();
 
-		int numberOfIterations = 10;
-		int algorithmOption = 0;
+        int numberOfIterations = 5;
+        int algorithmOption = 2;
 
 		switch (algorithmOption)
 		{
@@ -66,6 +68,7 @@ public class AlgorithmMetrics {
 				multibootMetrics(problemSpecifications, numberOfIterations);
 				break;
 			case 2: // VNS
+                vnsConstructiveInitialSolutionMetrics(problemSpecifications, numberOfIterations);
 				break;
 			case 3: // TABU
 				break;
@@ -130,6 +133,107 @@ public class AlgorithmMetrics {
 		}
 		writer.close();
 	}
+    
+    public static void vnsConstructiveInitialSolutionMetrics(CVRPSpecification[] problemSpecifications, int numTests)
+            throws IOException {
+        PrintWriter writer = new PrintWriter(new BufferedWriter(new FileWriter(OUTPUT_DIR + "vns_results.csv")), true);
+        
+        int restrictedCandidateListNumbers[] = { 3, 5 };
+        int iterationsWithNoImprovement[] = { 10, 50, 100 };
+        Move movesList[][] = { 
+                { new InterrouteSwap(), new IntrarouteSwap(), new TwoOpt() },
+                { new IntrarouteSwap(), new InterrouteSwap(), new Relocation(), new TwoOpt() },
+                { new InterrouteSwap(), new Relocation(), new IntrarouteSwap(), new TwoOpt() },
+        };
+        String movesNames[] = {
+                "Interroute + Intraroute + TwoOpt",
+                "Intraroute + Interroute + Relocation + TwoOpt",
+                "Interroute + Relocation + Intraroute + TwoOpt",
+        };
+        LocalSearch localSearches[] = { 
+                new BestNeighborLocalSearch(new Relocation()),
+                new BestNeighborLocalSearch(new InterrouteSwap()), 
+                new BestNeighborLocalSearch(new IntrarouteSwap()),
+                new BestNeighborLocalSearch(new TwoOpt()), 
+                new FirstBetterNeighborLocalSearch(new Relocation()),
+                new FirstBetterNeighborLocalSearch(new InterrouteSwap()),
+                new FirstBetterNeighborLocalSearch(new IntrarouteSwap()),
+                new FirstBetterNeighborLocalSearch(new TwoOpt()), 
+                new VariableNeighborhoodDescent(movesList[0]),
+                new VariableNeighborhoodDescent(movesList[1]),
+                new VariableNeighborhoodDescent(movesList[2]),
+        };
+        String localSearchesNames[] = {
+                "BN + Relocation", 
+                "BN + Interroute", 
+                "BN + IntrarouteSwap", 
+                "BN + TwoOpt",
+                "FBN + Relocation", 
+                "FBN + InterrouteSwap", 
+                "FBN + IntrarouteSwap", 
+                "FBN + TwoOpt",
+                "VND + " + movesNames[0],
+                "VND + " + movesNames[1],
+                "VND + " + movesNames[2],
+        };
+        
+        writer.append(TimeAndIterationsRecorder.CSV_SEPARATOR + TimeAndIterationsRecorder.CSV_SEPARATOR
+                + TimeAndIterationsRecorder.CSV_SEPARATOR + TimeAndIterationsRecorder.CSV_SEPARATOR
+                + TimeAndIterationsRecorder.CSV_SEPARATOR + TimeAndIterationsRecorder.CSV_SEPARATOR);
+        for (int i = 0; i < NUM_SAMPLES; ++i) {
+            writer.append(sampleNames[i].split("\\.")[0] + TimeAndIterationsRecorder.CSV_SEPARATOR
+                    + TimeAndIterationsRecorder.CSV_SEPARATOR + TimeAndIterationsRecorder.CSV_SEPARATOR
+                    + TimeAndIterationsRecorder.CSV_SEPARATOR);
+        }
+        writer.append("ALGORITHM" + TimeAndIterationsRecorder.CSV_SEPARATOR 
+                + "R.C.L" + TimeAndIterationsRecorder.CSV_SEPARATOR 
+                + "I.W.I" + TimeAndIterationsRecorder.CSV_SEPARATOR 
+                + "L.S" + TimeAndIterationsRecorder.CSV_SEPARATOR 
+                + "M" + TimeAndIterationsRecorder.CSV_SEPARATOR 
+                + "ITERATION" + TimeAndIterationsRecorder.CSV_SEPARATOR);
+        
+        for (int i = 0; i < NUM_SAMPLES; ++i) {
+            writer.append("I.W.F" + TimeAndIterationsRecorder.CSV_SEPARATOR 
+                    + "T.N.O.I" + TimeAndIterationsRecorder.CSV_SEPARATOR 
+                    + "E.T.F" + TimeAndIterationsRecorder.CSV_SEPARATOR
+                    + "T.E.T" + TimeAndIterationsRecorder.CSV_SEPARATOR 
+                    + "SOL." + TimeAndIterationsRecorder.CSV_SEPARATOR);
+        }
+        
+        for (int rcl : restrictedCandidateListNumbers) {
+            for (int numIterations : iterationsWithNoImprovement) {
+                for (int localSearchPos = 0; localSearchPos < localSearches.length; ++localSearchPos) {
+                    for (int movePos = 0; movePos < movesList.length; ++movePos) {
+                        for (int i = 1; i <= numTests; ++i) {
+                            writer.append("Constructive initial VNS" + TimeAndIterationsRecorder.CSV_SEPARATOR
+                                    + rcl + TimeAndIterationsRecorder.CSV_SEPARATOR 
+                                    + numIterations + TimeAndIterationsRecorder.CSV_SEPARATOR 
+                                    + localSearchesNames[localSearchPos] + TimeAndIterationsRecorder.CSV_SEPARATOR 
+                                    + movesNames[movePos] + TimeAndIterationsRecorder.CSV_SEPARATOR 
+                                    + i + TimeAndIterationsRecorder.CSV_SEPARATOR);
+                            System.out.print("Constructive initial VNS" + TimeAndIterationsRecorder.CSV_SEPARATOR 
+                                    + rcl + TimeAndIterationsRecorder.CSV_SEPARATOR 
+                                    + numIterations + TimeAndIterationsRecorder.CSV_SEPARATOR 
+                                    + localSearchesNames[localSearchPos] + TimeAndIterationsRecorder.CSV_SEPARATOR 
+                                    + movesNames[movePos] + TimeAndIterationsRecorder.CSV_SEPARATOR 
+                                    + i + TimeAndIterationsRecorder.CSV_SEPARATOR);
+                            for (CVRPSpecification problemSpecification : problemSpecifications) {
+                                TimeAndIterationsRecorder algorithmRecorder = new TimeAndIterationsRecorder();
+                                CVRPSolution initialSolution = GRASP.constructGreedyRandomizedSolution(problemSpecification, rcl);
+                                VariableNeighborhoodSearch.run(initialSolution, movesList[movePos], localSearches[localSearchPos], numIterations, algorithmRecorder);
+                                writer.append(algorithmRecorder.toString() + TimeAndIterationsRecorder.CSV_SEPARATOR);
+                                System.out.print(algorithmRecorder.toString() + TimeAndIterationsRecorder.CSV_SEPARATOR);
+                            }
+                            writer.append("\n");
+                            writer.flush();
+                            System.out.println();
+                        }
+                    }
+                }
+            }
+        }
+        writer.close();
+    }
 
 	public static void multibootMetrics(CVRPSpecification[] problemSpecifications, int numTests) throws IOException {
 		PrintWriter writer = new PrintWriter(new BufferedWriter(new FileWriter(OUTPUT_DIR + "multiboot_results.csv")),

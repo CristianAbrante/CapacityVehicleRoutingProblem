@@ -22,6 +22,8 @@ public class CVRPSpecification {
 	private int capacity;
 	/** Minimum vehicle number. */
 	private int minimumVehicles;
+	/** Optimal value */
+	private int optimalValue;
 	
 	/**
      * Create an object holding the given information for a Capacitated Vehicle Routing Problem
@@ -81,6 +83,22 @@ public class CVRPSpecification {
 	 */
 	public void setClients(ArrayList<CVRPClient> clients) {
 		this.clients = clients;
+	}
+	
+	/**
+	 * Setter method for the optimal value attribute.
+	 * @param Best solution for the problem.
+	 */
+	public void setOptimalValue(int optimalValue) {
+		this.optimalValue = optimalValue;
+	}
+	
+	/**
+	 * Setter method for the optimal value attribute.
+	 * @param Best solution for the problem.
+	 */
+	public int getOptimalValue() {
+		return this.optimalValue;
 	}
 	
     /**

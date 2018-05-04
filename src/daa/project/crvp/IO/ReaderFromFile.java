@@ -53,6 +53,14 @@ public class ReaderFromFile {
 
 		try (BufferedReader br = new BufferedReader(new FileReader(fileName))) {
 			while ((line = br.readLine()) != null) {
+				if(lineNumber == 1) {
+					Pattern pattern = Pattern.compile(
+							"(Optimal value)\\s*:\\s*(\\d+)"
+							);
+					Matcher matcher = pattern.matcher(line);
+					matcher.find();
+					problemSpecification.setOptimalValue(Integer.valueOf(matcher.group(2)));
+				}
 				/** Reading problem specification params */
 				if (lineNumber < PARAMS.length) {
 					/** Finds the params we're interested on */

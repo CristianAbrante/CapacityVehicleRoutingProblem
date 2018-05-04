@@ -32,6 +32,7 @@ public class Multiboot {
         CVRPSolution solution = constructRandomSolution(problemInfo);
         CVRPSolution bestSolutionFound = solution;
         int numIterationsNoImprovement = 0;
+        recorder.foundBetterSolution(bestSolutionFound);
         
         while (numIterationsNoImprovement < maxNumIterationsNoImprovement) {
             recorder.aboutToDoNextIteration();

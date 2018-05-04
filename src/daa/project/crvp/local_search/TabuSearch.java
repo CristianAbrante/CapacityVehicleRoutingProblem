@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import daa.project.crvp.metrics.TimeAndIterationsRecorder;
 import daa.project.crvp.moves.Move;
 import daa.project.crvp.moves.MoveState;
 import daa.project.crvp.problem.CVRPSolution;
@@ -32,17 +33,21 @@ public class TabuSearch extends LocalSearch {
 	/** POOL_SIZE */
 	final int POOL_SIZE = 150;
 	private boolean verbose;
+	private TimeAndIterationsRecorder algorithmRecorder;
 
 	/**
+	 * @param algorithmRecorder
 	 * @param iterationsWithoutImprovement
 	 * @param moveToUse
 	 */
-	public TabuSearch(Move[] movesToUse, int tabuTenure, int maxIterationsWithoutImprovement, boolean verbose) {
+	public TabuSearch(Move[] movesToUse, int tabuTenure, int maxIterationsWithoutImprovement, boolean verbose,
+			TimeAndIterationsRecorder algorithmRecorder) {
 		super(null);
 		setMovesToUse(movesToUse);
 		setTabuTenure(tabuTenure);
 		setMaxIterationsWithoutImprovement(maxIterationsWithoutImprovement);
 		setVerbose(verbose);
+		setAlgorithmRecorder(algorithmRecorder);
 	}
 
 	/*
@@ -57,6 +62,7 @@ public class TabuSearch extends LocalSearch {
 		if (baseSolution == null || !baseSolution.isFeasible()) {
 			throw new IllegalAccessError("invalid initial solution, it is null or unfeasible");
 		}
+		
 		// Step 1 : Initialization
 		HashMap<MoveState, Integer> tabuTenureMoveStates = new HashMap<MoveState, Integer>();
 		CVRPSolution bestFeasibleSolution = baseSolution;
@@ -242,6 +248,14 @@ public class TabuSearch extends LocalSearch {
 	 */
 	public void setVerbose(boolean verbose) {
 		this.verbose = verbose;
+	}
+	
+	public TimeAndIterationsRecorder getAlgorithmRecorder() {
+		return algorithmRecorder;
+	}
+
+	public void setAlgorithmRecorder(TimeAndIterationsRecorder algorithmRecorder) {
+		this.algorithmRecorder = algorithmRecorder;
 	}
 
 }

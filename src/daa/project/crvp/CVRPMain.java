@@ -63,7 +63,7 @@ public class CVRPMain {
 		/** SOLUTION CHOOSER */
 		CVRPSolution solution = Multiboot.constructRandomSolution(problemSpecification);
 
-		int choosenSolutionGenerator = 2;
+		int choosenSolutionGenerator = 0;
 		Move choosenMove = new Relocation();
 		switch (choosenSolutionGenerator) {
 			case 0: // Grasp
@@ -94,12 +94,12 @@ public class CVRPMain {
 		LocalSearch tabuSearch = new TabuSearch(tabuMoveList, tabuTenure, 10, tabuVerbose);
 
 		/** LNS PARAMS */
-		int maxReconstructions = 100;
-		int minDiffLocalSearch = 10;
+		int maxReconstructions = 10;
+		int minDiffLocalSearch = 100;
 		double destructionPercentage = 0.25;
 		
 		/** ALGORITHM CHOOSER */
-		int choosenAlgortihm = 3;
+		int choosenAlgortihm = 1;
 		switch (choosenAlgortihm) {
 			case 0: // VNS
 				System.out.println("\t*** ALGORITHM USED -> VNS + VND ***");

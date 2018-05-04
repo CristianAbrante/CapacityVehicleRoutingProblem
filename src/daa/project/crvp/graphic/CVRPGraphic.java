@@ -91,6 +91,7 @@ public class CVRPGraphic extends JPanel {
 	private void initializeWindow() {
 		this.cvrpWindow.setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
 		this.cvrpWindow.setTitle(WINDOW_TITLE);
+		this.cvrpWindow.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		this.cvrpWindow.setBackground(WINDOW_COLOR);
 		this.cvrpWindow.setLocationRelativeTo(null);
 		this.cvrpWindow.setResizable(false);

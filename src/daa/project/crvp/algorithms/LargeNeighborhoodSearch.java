@@ -67,8 +67,7 @@ public class LargeNeighborhoodSearch {
 				// search
 				if (bestConstructedSol.getTotalDistance() - actualConstructedSol
 				      .getTotalDistance() > minDiffLocalSearch) {
-					bestConstructedSol = new CVRPSolution(
-					      localSearch.findLocalOptimum(actualConstructedSol));
+					bestConstructedSol = new CVRPSolution(actualConstructedSol);
 							} else {
 					bestConstructedSol = new CVRPSolution(actualConstructedSol);
 				}

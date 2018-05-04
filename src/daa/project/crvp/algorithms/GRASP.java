@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Random;
 
 import daa.project.crvp.local_search.LocalSearch;
+import daa.project.crvp.metrics.AlgorithmRecorder;
 import daa.project.crvp.problem.CVRPClient;
 import daa.project.crvp.problem.CVRPSolution;
 import daa.project.crvp.problem.CVRPSpecification;
@@ -51,7 +52,7 @@ public class GRASP {
 	 */
 	public static CVRPSolution grasp(CVRPSpecification problemSpecification,
 			int maxIterations, int maxIterationsWithoutImprovement,
-			int restrictedCandidateListSize, LocalSearch localSearchStrategy) {
+            int restrictedCandidateListSize, LocalSearch localSearchStrategy, AlgorithmRecorder recorder) {
 
 		if (maxIterations < 1) {
 			throw new IllegalArgumentException("Invalid number of iterations");
@@ -63,9 +64,12 @@ public class GRASP {
 		int iterationsWithoutImprovement = 0;
 		CVRPSolution bestSolution = null;
 		int iterations = 0;
+        
+        recorder.starting();
 
 		// Apply construction phase and local search phase maxIterations times.
 		while (iterations < maxIterations) {
+            recorder.aboutToDoNextIteration();
 			// Construction of a new solution, this new solution or one of it's
 			// neighbours can replace the current best solution. This corresponds with
 			// the
@@ -86,13 +90,12 @@ public class GRASP {
 			}
 
 			// Solution update. If the new solution or one of it's neighbours it's
-			// better
-			// than the current best solution, replace it.
+            // better than the current best solution, replace it.
 			if (bestSolution == null) {
 				bestSolution = newSolution;
-			} else if (bestSolution.getTotalDistance() > newSolution
-					.getTotalDistance()) {
+            } else if (bestSolution.getTotalDistance() > newSolution.getTotalDistance()) {
 				bestSolution = newSolution;
+                recorder.foundBetterSolution(bestSolution);
 				iterationsWithoutImprovement = 0;
 			} else {
 				iterationsWithoutImprovement++;
@@ -104,6 +107,8 @@ public class GRASP {
 
 			iterations++;
 		}
+        
+        recorder.finishing();
 
 		// Return the better solution found.
 		return bestSolution;

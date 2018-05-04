@@ -12,6 +12,7 @@ import daa.project.crvp.algorithms.GRASP;
 import daa.project.crvp.local_seach.FirstBetterNeighborLocalSearch;
 import daa.project.crvp.local_search.BestNeighborLocalSearch;
 import daa.project.crvp.local_search.LocalSearch;
+import daa.project.crvp.metrics.TimeAndIterationsRecorder;
 import daa.project.crvp.moves.InterrouteSwap;
 import daa.project.crvp.moves.IntrarouteSwap;
 import daa.project.crvp.moves.Move;
@@ -40,7 +41,7 @@ public class GRASPTest {
 			for (int i = 2; i <= GRASP_MAX_RCL_SIZE; ++i) {
 				solution = GRASP.grasp(problemSpecification, GRASP_ITERATIONS,
 						GRASP_MAX_ITERATIONS_WITHOUT_IMPROVE, GRASP_MAX_RCL_SIZE,
-						localSearch);
+                        localSearch, new TimeAndIterationsRecorder());
 				}
 				assertTrue(solution.isFeasible());
 			}

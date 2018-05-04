@@ -4,6 +4,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import daa.project.crvp.IO.ReaderFromFile;
+import daa.project.crvp.algorithms.ConstructiveDeterministic;
 import daa.project.crvp.algorithms.GRASP;
 import daa.project.crvp.algorithms.LargeNeighborhoodSearch;
 import daa.project.crvp.algorithms.Multiboot;
@@ -22,6 +23,7 @@ import daa.project.crvp.moves.TwoOpt;
 import daa.project.crvp.problem.CVRPClient;
 import daa.project.crvp.problem.CVRPSolution;
 import daa.project.crvp.problem.CVRPSpecification;
+import daa.project.crvp.utils.DoubleCompare;
 
 public class CVRPMain {
 
@@ -57,15 +59,16 @@ public class CVRPMain {
 		System.out.println("Total Demand: " + totalDemand);
 
 		// TEST ALGORITHMS
-		TimeAndIterationsRecorder multibootRecorder = new TimeAndIterationsRecorder();
+		TimeAndIterationsRecorder algorithmRecorder = new TimeAndIterationsRecorder();
 		Move[] moveList = new Move[] { new InterrouteSwap(), new Relocation(), new IntrarouteSwap(), new TwoOpt() };
 
 		/** SOLUTION CHOOSER */
 		CVRPSolution solution = Multiboot.constructRandomSolution(problemSpecification);
 
-		int choosenSolutionGenerator = 0;
+		int choosenSolutionGenerator = 2;
 		Move choosenMove = new Relocation();
-		switch (choosenSolutionGenerator) {
+		switch (choosenSolutionGenerator)
+		{
 			case 0: // Grasp
 				System.out.println("\t*** SOLUTION GENERATOR -> GRASP ***");
 				solution = GRASP.grasp(problemSpecification, 100, 100, 3, new BestNeighborLocalSearch(choosenMove));
@@ -74,81 +77,117 @@ public class CVRPMain {
 			case 1: // Multiboot
 				System.out.println("\t*** SOLUTION GENERATOR -> MULTIBOOT ***");
 				solution = Multiboot.multiboot(problemSpecification, new BestNeighborLocalSearch(choosenMove), 100,
-						multibootRecorder);
+						algorithmRecorder);
 				System.out.println("Multiboot. Initial solution total distance: " + solution.getTotalDistance());
-				System.out.println(multibootRecorder.toString());
+				System.out.println(algorithmRecorder.toString());
 				break;
 			case 2: // Multiboot random
 				System.out.println("\t*** SOLUTION GENERATOR -> MULTIBOOT RANDOM ***");
 				solution = Multiboot.constructRandomSolution(problemSpecification);
 				System.out.println("Random solution. Initial solution total distance: " + solution.getTotalDistance());
 				break;
+			case 3: // Multiboot random
+				System.out.println("\t*** SOLUTION GENERATOR -> CONSTRUCTIVE DETERMINISTIC ***");
+				solution = ConstructiveDeterministic.constructDeterministicSolution(problemSpecification);
+				System.out.println("Deterministic solution. Initial solution total distance: " + solution.getTotalDistance());
+				break;
 		}
 
 		LocalSearch vnd = new VariableNeighborhoodDescent(moveList);
-		
+
 		/** TABU PARAMS */
 		int tabuTenure = (int) (0.2 * problemSpecification.getClients().size());
 		boolean tabuVerbose = false;
 		Move[] tabuMoveList = moveList; // new Move[] {new Relocation(), new IntrarouteSwap()};
-		LocalSearch tabuSearch = new TabuSearch(tabuMoveList, tabuTenure, 10, tabuVerbose);
+		LocalSearch tabuSearch = new TabuSearch(tabuMoveList, tabuTenure, 10, tabuVerbose, algorithmRecorder);
 
 		/** LNS PARAMS */
 		int maxReconstructions = 10;
 		int minDiffLocalSearch = 100;
 		double destructionPercentage = 0.25;
-		
+
 		/** ALGORITHM CHOOSER */
+
 		int choosenAlgortihm = 1;
-		switch (choosenAlgortihm) {
+		long maximumSeconds = 10000;
+		CVRPSolution bestSolution = solution;
+		switch (choosenAlgortihm)
+		{
 			case 0: // VNS
 				System.out.println("\t*** ALGORITHM USED -> VNS + VND ***");
+				algorithmRecorder.starting();
 
-				for (int i = 1; i <= 100; ++i) {
+				while (algorithmRecorder.getCurrentTime() < maximumSeconds) {
+					algorithmRecorder.aboutToDoNextIteration();
 					solution = VariableNeighborhoodSearch.run(solution, moveList, vnd);
-					//System.out.println("VNS Solution #" + i + ": " + solution.getTotalDistance());
+					if (DoubleCompare.lessThan(solution.getTotalDistance(), bestSolution.getTotalDistance())) {
+						bestSolution = solution;
+						algorithmRecorder.foundBetterSolution(bestSolution);
+					}
 				}
+				algorithmRecorder.finishing();
 				System.out.println("Is solution feasible after various runs of VNS?: " + solution.isFeasible());
 				System.out.println("Total distance after various runs of VNS: " + solution.getTotalDistance());
 				break;
 			case 1: // VNS + TABU SEARCH
 				System.out.println("\t*** ALGORITHM USED -> VNS + TABU SEARCH ***");
 				System.out.println("Tabu Tenure:" + tabuTenure);
+				algorithmRecorder.starting();
 
-				for (int i = 1; i <= 100; ++i) {
+				while (algorithmRecorder.getCurrentTime() < maximumSeconds) {
+					algorithmRecorder.aboutToDoNextIteration();
 					solution = VariableNeighborhoodSearch.run(solution, moveList, tabuSearch);
-					//System.out.println("Tabu Solution #" + i + ": " + solution.getTotalDistance());
+					if (DoubleCompare.lessThan(solution.getTotalDistance(), bestSolution.getTotalDistance())) {
+						bestSolution = solution;
+						algorithmRecorder.foundBetterSolution(bestSolution);
+					}
 				}
+				algorithmRecorder.finishing();
 				System.out.println("Total distance after multiple runs of Tabu Search: " + solution.getTotalDistance());
 				break;
 			case 2: // TABU
 				System.out.println("\t*** ALGORITHM USED -> TABU SEARCH ***");
 				System.out.println("Tabu Tenure:" + tabuTenure);
+				algorithmRecorder.starting();
 
-				for (int i = 1; i <= 100; ++i) {
+				while (algorithmRecorder.getCurrentTime() < maximumSeconds) {
+					algorithmRecorder.aboutToDoNextIteration();
 					solution = tabuSearch.findLocalOptimum(solution);
-					//System.out.println("Tabu Solution #" + i + ": " + solution.getTotalDistance());				
+					if (DoubleCompare.lessThan(solution.getTotalDistance(), bestSolution.getTotalDistance())) {
+						bestSolution = solution;
+						algorithmRecorder.foundBetterSolution(bestSolution);
+					}
 				}
+				algorithmRecorder.finishing();				
 				System.out.println("Total distance after multiple runs of Tabu Search: " + solution.getTotalDistance());
 				break;
-				
+
 			case 3: // LNS
 				System.out.println("\t*** ALGORITHM USED -> LNS + VND ***");
 				System.out.println("LNS maxReconstructions: " + maxReconstructions);
 				System.out.println("LNS minDiffLocalSearch: " + minDiffLocalSearch);
 				System.out.println("LNS destructionPercentage: " + destructionPercentage);
-				
-				for (int i = 1; i <= 100; ++i) {
-					solution = LargeNeighborhoodSearch.run(problemSpecification, solution, vnd, 
-									maxReconstructions, minDiffLocalSearch, destructionPercentage);
+
+				algorithmRecorder.starting();
+
+				while (algorithmRecorder.getCurrentTime() < maximumSeconds) {
+					algorithmRecorder.aboutToDoNextIteration();
+					solution = LargeNeighborhoodSearch.run(problemSpecification, solution, vnd, maxReconstructions,
+							minDiffLocalSearch, destructionPercentage);
+					if (DoubleCompare.lessThan(solution.getTotalDistance(), bestSolution.getTotalDistance())) {
+						bestSolution = solution;
+						algorithmRecorder.foundBetterSolution(bestSolution);
+					}
 				}
-									
+				algorithmRecorder.finishing();
+				
 				System.out.println("Total distance after run LNS search: " + solution.getTotalDistance());
 			default:
 				break;
 		}
+		System.out.println(algorithmRecorder);
 
-		boolean verbose = true;
+		boolean verbose = false;
 		if (verbose) {
 			CVRPGraphic window = new CVRPGraphic();
 			window.setSolution(solution);

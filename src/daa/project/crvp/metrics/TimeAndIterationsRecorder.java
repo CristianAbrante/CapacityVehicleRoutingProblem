@@ -71,6 +71,10 @@ public class TimeAndIterationsRecorder implements AlgorithmRecorder {
         return this.finishTime - this.startTime;
     }
     
+    public long getCurrentTime() {
+      return System.currentTimeMillis() - this.startTime;
+    }
+    
     public int getNumIterations() {
         return this.numIterations;
     }

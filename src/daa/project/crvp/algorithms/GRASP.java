@@ -93,6 +93,7 @@ public class GRASP {
             // better than the current best solution, replace it.
 			if (bestSolution == null) {
 				bestSolution = newSolution;
+                recorder.foundBetterSolution(bestSolution);
             } else if (bestSolution.getTotalDistance() > newSolution.getTotalDistance()) {
 				bestSolution = newSolution;
                 recorder.foundBetterSolution(bestSolution);

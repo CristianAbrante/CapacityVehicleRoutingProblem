@@ -1,8 +1,5 @@
 package daa.project.crvp.metrics;
 
-import java.util.ArrayList;
-import java.util.stream.Collectors;
-
 import daa.project.crvp.problem.CVRPSolution;
 
 /**
@@ -20,9 +17,9 @@ public class TimeAndIterationsRecorder implements AlgorithmRecorder {
     private long startTime  = 0;
     private long finishTime = 0;
     private int numIterations = 0;
-    private ArrayList<Integer> iterationsWhereBetterSolutionFound = new ArrayList<>();
-    private ArrayList<Long>    timesWhenBestSolutionWasSeen       = new ArrayList<>();
-    private ArrayList<Double>  SolutionsTotalDistance             = new ArrayList<>();
+    private int    iterationsWhereBetterSolutionFound = 0;
+    private long   timesWhenBestSolutionWasSeen       = 0;
+    private double solutionsTotalDistance             = 0.0;
     
     public TimeAndIterationsRecorder() {
         reset();
@@ -46,24 +43,19 @@ public class TimeAndIterationsRecorder implements AlgorithmRecorder {
     
     @Override
     public void foundBetterSolution(CVRPSolution betterSolution) {
-        SolutionsTotalDistance.add(betterSolution.getTotalDistance());
-        iterationsWhereBetterSolutionFound.add(this.numIterations);
-        timesWhenBestSolutionWasSeen.add(System.currentTimeMillis());
+        solutionsTotalDistance = betterSolution.getTotalDistance();
+        iterationsWhereBetterSolutionFound = this.numIterations;
+        timesWhenBestSolutionWasSeen = getCurrentTime();
     }
     
+    public static final String CSV_SEPARATOR = ";";
     @Override
     public String toString() {
-        return ("\n\tTime: "
-                + getElapsedTime() 
-                + "\n\tNumber iterations: "
-                + getNumIterations()
-                + "\n\tIterations when best solution was found: ["
-                + getIterationsWhenBestSolutionWasFound().stream().map(Object::toString).collect(Collectors.joining(", "))
-                + "]\n\tTimes when best solution was found: ["
-                + getTimesWhenBestSolutionWasFound().stream().map(Object::toString).collect(Collectors.joining(", "))
-                + "]\n\tSolutions total distance: ["
-                + getSolutionsTotalDistance().stream().map(Object::toString).collect(Collectors.joining(", ")) 
-                + "]\n"
+        return (getIterationsWhenBestSolutionWasFound() + CSV_SEPARATOR 
+                + getNumIterations() + CSV_SEPARATOR
+                + getTimesWhenBestSolutionWasFound() + CSV_SEPARATOR
+                + getElapsedTime() + CSV_SEPARATOR
+                + getSolutionsTotalDistance()
         );
     }
     
@@ -79,25 +71,25 @@ public class TimeAndIterationsRecorder implements AlgorithmRecorder {
         return this.numIterations;
     }
     
-    public ArrayList<Integer> getIterationsWhenBestSolutionWasFound() {
+    public int getIterationsWhenBestSolutionWasFound() {
         return this.iterationsWhereBetterSolutionFound;
     }
     
-    public ArrayList<Long> getTimesWhenBestSolutionWasFound() {
+    public long getTimesWhenBestSolutionWasFound() {
         return this.timesWhenBestSolutionWasSeen;
     }
     
-    public ArrayList<Double> getSolutionsTotalDistance() {
-        return this.SolutionsTotalDistance;
+    public double getSolutionsTotalDistance() {
+        return this.solutionsTotalDistance;
     }
     
     private void reset() {
         this.startTime = 0;
         this.finishTime = 0;
         this.numIterations = 0;
-        this.iterationsWhereBetterSolutionFound = new ArrayList<>();
-        this.timesWhenBestSolutionWasSeen = new ArrayList<>();
-        this.SolutionsTotalDistance = new ArrayList<>();
+        this.iterationsWhereBetterSolutionFound = 0;
+        this.timesWhenBestSolutionWasSeen = 0;
+        this.solutionsTotalDistance = 0.0;
     }
     
 }

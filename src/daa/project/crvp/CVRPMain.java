@@ -1,7 +1,14 @@
 package daa.project.crvp;
 
+import java.awt.Rectangle;
+import java.awt.Window;
+import java.awt.event.WindowEvent;
+import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+
+import javax.imageio.ImageIO;
 
 import daa.project.crvp.IO.ReaderFromFile;
 import daa.project.crvp.algorithms.ConstructiveDeterministic;
@@ -57,6 +64,7 @@ public class CVRPMain {
 		}
 
 		System.out.println("Total Demand: " + totalDemand);
+		System.out.println("Global Objective function: " + problemSpecification.getOptimalValue());
 
 		// TEST ALGORITHMS
 		TimeAndIterationsRecorder algorithmRecorder = new TimeAndIterationsRecorder();
@@ -67,11 +75,11 @@ public class CVRPMain {
 
 		int choosenSolutionGenerator = 2;
 		Move choosenMove = new Relocation();
-		switch (choosenSolutionGenerator)
-		{
+		switch (choosenSolutionGenerator) {
 			case 0: // Grasp
 				System.out.println("\t*** SOLUTION GENERATOR -> GRASP ***");
-				solution = GRASP.grasp(problemSpecification, 100, 100, 3, new BestNeighborLocalSearch(choosenMove), algorithmRecorder);
+				solution = GRASP.grasp(problemSpecification, 100, 100, 3, new BestNeighborLocalSearch(choosenMove),
+						algorithmRecorder);
 				System.out.println("Grasp. Initial solution total distance: " + solution.getTotalDistance());
 				break;
 			case 1: // Multiboot
@@ -108,11 +116,10 @@ public class CVRPMain {
 
 		/** ALGORITHM CHOOSER */
 
-		int choosenAlgortihm = 1;
-		long maximumSeconds = 10000;
+		int choosenAlgortihm = 2;
+		long maximumSeconds = 1000;
 		CVRPSolution bestSolution = solution;
-		switch (choosenAlgortihm)
-		{
+		switch (choosenAlgortihm) {
 			case 0: // VNS
 				System.out.println("\t*** ALGORITHM USED -> VNS + VND ***");
 				algorithmRecorder.starting();
@@ -158,7 +165,7 @@ public class CVRPMain {
 						algorithmRecorder.foundBetterSolution(bestSolution);
 					}
 				}
-				algorithmRecorder.finishing();				
+				algorithmRecorder.finishing();
 				System.out.println("Total distance after multiple runs of Tabu Search: " + solution.getTotalDistance());
 				break;
 
@@ -180,19 +187,36 @@ public class CVRPMain {
 					}
 				}
 				algorithmRecorder.finishing();
-				
+
 				System.out.println("Total distance after run LNS search: " + solution.getTotalDistance());
 			default:
 				break;
 		}
 		System.out.println(algorithmRecorder);
 
-		boolean verbose = false;
+		boolean verbose = true;
 		if (verbose) {
-			CVRPGraphic window = new CVRPGraphic();
-			window.setSolution(solution);
-			window.showSolution();
+			savePaint(solution, "example.png");
 		}
+	}
+
+	public static void savePaint(CVRPSolution solution, String algorithmName) {
+		CVRPGraphic window = new CVRPGraphic();
+		window.setSolution(solution);
+		window.showSolution();
+
+		Rectangle rect = window.getBounds();
+		try {
+			BufferedImage captureImage = new BufferedImage(rect.width, rect.height, BufferedImage.TYPE_INT_ARGB);
+			window.paint(captureImage.getGraphics());
+			ImageIO.write(captureImage, "png", new File(algorithmName));
+		}
+		catch (Exception exception) {
+			exception.printStackTrace();
+		}
+
+		window.setVisible(false);
+		window.dispose();
 	}
 
 }

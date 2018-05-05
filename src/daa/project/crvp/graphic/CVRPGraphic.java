@@ -212,4 +212,11 @@ public class CVRPGraphic extends JPanel {
 		this.cvrpWindow.setVisible(true);
 		this.cvrpWindow.repaint();
 	}
+
+	/**
+	 * 
+	 */
+	public void dispose() {
+		this.cvrpWindow.dispose();
+	}
 }

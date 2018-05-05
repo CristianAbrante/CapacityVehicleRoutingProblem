@@ -2,7 +2,7 @@
  * InterrouteSwap is an special movement that exchange nodes between routes,
  * avoiding repetitions.
  * 
- * @author Ángel Igareta (angel@igareta.com)
+ * @author Ã�ngel Igareta (angel@igareta.com)
  * @version 1.0
  * @since 20-04-2018
  */
@@ -161,7 +161,8 @@ public class InterrouteSwap extends Move {
 
 	/**
 	 * If there current route is not the one BEFORE the last one, move to the next
-	 * one, reseting the current from route position. It jumps if the next route is empty.
+	 * one, reseting the current from route position. It jumps if the next route is
+	 * empty.
 	 * 
 	 * @return If it was possible to move From Route.
 	 */
@@ -274,31 +275,35 @@ public class InterrouteSwap extends Move {
 	 */
 	@Override
 	public boolean isCurrentNeighborFeasible() {
-		// if (getSolution() == null) {
-		// throw new IllegalAccessError("trying to use move with no base solution set");
-		// }
-		//
-		// int realFromPosition = getClientAbsolutePosition(currentFromRoutePosition,
-		// currentFromRoute);
-		// int realToPosition = getClientAbsolutePosition(currentToRoutePosition,
-		// currentToRoute);
-		//
-		// CVRPClient clientOfFromRoute = getSolution().getClient(realFromPosition);
-		// CVRPClient clientOfToRoute = getSolution().getClient(realToPosition);
-		//
-		// int fromRouteCapacity =
-		// getSolution().getVehicleRemainingCapacity(currentFromRoute) -
-		// clientOfFromRoute.getDemand()
-		// + clientOfToRoute.getDemand();
-		// int toRouteCapacity =
-		// getSolution().getVehicleRemainingCapacity(currentToRoute) -
-		// clientOfToRoute.getDemand()
-		// + clientOfFromRoute.getDemand();
-		//
-		// return ((fromRouteCapacity <= getSolution().getProblemInfo().getCapacity())
-		// &&
-		// (toRouteCapacity <= getSolution().getProblemInfo().getCapacity()));
-		return getCurrentNeighbor().isFeasible();
+		if (getSolution() == null) {
+			throw new IllegalAccessError("trying to use move with no base solution set");
+		}
+		int realFromPosition = getClientAbsolutePosition(currentFromRoutePosition, currentFromRoute);
+		int realToPosition = getClientAbsolutePosition(currentToRoutePosition, currentToRoute);
+
+		CVRPClient clientOfFromRoute = getSolution().getClient(realFromPosition);
+		CVRPClient clientOfToRoute = getSolution().getClient(realToPosition);
+
+		int fromRouteCapacity = getSolution().getVehicleRemainingCapacity(currentFromRoute) + clientOfFromRoute.getDemand()
+				- clientOfToRoute.getDemand();
+		int toRouteCapacity = getSolution().getVehicleRemainingCapacity(currentToRoute) + clientOfToRoute.getDemand()
+				- clientOfFromRoute.getDemand();
+
+		// If they are in the limits, check the rest!
+		if ((fromRouteCapacity >= 0) && (toRouteCapacity >= 0)) {
+			for (int i = 0; i < getSolution().getNumberOfRoutes(); ++i) {
+				if ((i != currentFromRoute) && (i != currentToRoute) && (getSolution().getVehicleRemainingCapacity(i) < 0)) {
+					return false;
+				}
+			}
+			return true;
+		}
+		else {
+			return false;
+		}
+
+		// return (getSolution()(fromRouteCapacity >= 0) && (toRouteCapacity >= 0));
+		// return getCurrentNeighbor().isFeasible();
 	}
 
 	/*
@@ -349,17 +354,19 @@ public class InterrouteSwap extends Move {
 		}
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see daa.project.crvp.moves.Move#getState()
 	 */
 	@Override
 	public MoveState getState() {
 		int realFromPosition = getClientAbsolutePosition(currentFromRoutePosition, currentFromRoute);
 		int realToPosition = getClientAbsolutePosition(currentToRoutePosition, currentToRoute);
-		
+
 		CVRPClient firstClient = getSolution().getClient(realFromPosition);
-		CVRPClient secondClient =  getSolution().getClient(realToPosition);
-		
+		CVRPClient secondClient = getSolution().getClient(realToPosition);
+
 		return new MoveState(firstClient, secondClient, this.getCurrentNeighbor());
 	}
 }

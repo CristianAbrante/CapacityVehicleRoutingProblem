@@ -1,7 +1,7 @@
 /**
  * InterrouteSwapTest.java
  *
- * @author Ángel Igareta (angel@igareta.com)
+ * @author Ã�ngel Igareta (angel@igareta.com)
  * @version 1.0
  * @since 21-04-2018
  */
@@ -183,7 +183,7 @@ public class InterrouteSwapTest {
 		CVRPSolution nextSolution = move.getCurrentNeighbor(); // {2, 1, 3, -1, -1, 8, 7, 6, -1}
 		assertEquals(newSolution.getClientId(0, 0), 2);
 		assertEquals(newSolution.getClientId(2, 0), 8);
-		
+
 		move.nextNeighbor();
 		nextSolution = move.getCurrentNeighbor(); // {2, 1, 3, -1, 4, 5, 0, -1, 8, 7, 6, -1}
 		assertEquals(nextSolution.getClientId(0, 0), 8);
@@ -220,8 +220,30 @@ public class InterrouteSwapTest {
 
 		assertEquals(4, newSolution.getClientId(0));
 		assertEquals(2, newSolution.getClientId(4));
-		
+
 		assertTrue(Math.abs(move.getCurrentNeighborCost() - 579.586) < EPS);
 		assertTrue(Math.abs(move.getLastMoveCost() - 24.114) < EPS);
+	}
+
+	@Test
+	public void testIsFeasible() { // Test if the next neighbor movement is correct.
+		move.setSolution(solution); // {2, 1, 3, -1, 4, 5, 6, -1, 8, 7, 0, -1}
+		move.nextNeighbor(); // {4, 1, 3, -1, 2, 5, 6, -1, 8, 7, 0, -1}
+
+		ArrayList<Boolean> feasibleArray = new ArrayList<Boolean>();
+		System.out.print("{ ");
+		while (move.hasMoreNeighbors()) {
+			//System.out.print(move.isCurrentNeighborFeasible() + ", ");
+			feasibleArray.add(move.isCurrentNeighborFeasible());
+			move.nextNeighbor();
+		}
+		System.out.print(" }");
+		
+		// Array got creating solution.
+		ArrayList<Boolean> correctFeasibleArray = new ArrayList<Boolean>(Arrays
+				.asList(new Boolean[] { false, false, false, false, false, false, false, false, false, false, false, false,
+						false, false, false, false, false, false, false, true, true, false, true, true, false, true, false }));
+		
+		assertEquals(feasibleArray, correctFeasibleArray);
 	}
 }

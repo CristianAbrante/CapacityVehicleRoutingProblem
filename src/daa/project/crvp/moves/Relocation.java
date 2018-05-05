@@ -9,7 +9,6 @@ package daa.project.crvp.moves;
 
 import daa.project.crvp.problem.CVRPClient;
 import daa.project.crvp.problem.CVRPSolution;
-import sun.text.normalizer.CharTrie.FriendAgent;
 
 /**
  * Relocation move is an inter-route move that moves an element from a route to
@@ -221,8 +220,8 @@ public class Relocation extends Move {
 		if (getSolution() == null) {
 			throw new IllegalAccessError("trying to use move with no base solution set");
 		}
-		return getSolution().getTotalDistance() + getLastMoveCost();
-		// return getCurrentNeighbor().getTotalDistance();
+        return getSolution().getTotalDistance() + getLastMoveCost();
+        //        return getCurrentNeighbor().getTotalDistance();
 	}
 
 	/**

@@ -469,7 +469,7 @@ public class CVRPSolution {
 					+ firstIndex + " Second Index: " + secondIndex);
 		}
 		int copyElement = newVehicleRoutes.remove(firstIndex);
-		if (secondIndex - 1 >= 0) {
+        if (secondIndex > firstIndex) {
 			secondIndex -= 1;
 		}
 		

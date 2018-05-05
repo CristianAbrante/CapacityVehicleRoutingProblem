@@ -5,6 +5,7 @@ import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 
 import daa.project.crvp.IO.ReaderFromFile;
 import daa.project.crvp.algorithms.GRASP;
@@ -27,14 +28,14 @@ import daa.project.crvp.problem.CVRPSpecification;
  * Class designed to measure the different algorithms of the VRP and to export
  * the results in csv format.
  */
-public class AlgorithmMetrics {
-	private static final String OUTPUT_DIR = "output/algorithms/";
-	private static final String INPUT_DIR = "input/samples/";
-	private static final String sampleNames[] = { "S-N32-K5.vrp", "S-N43-K6.vrp", "S-N50-K7.vrp", "S-N57-K9.vrp",
+public class AlgorithmMetrics extends Thread {
+	public static final String OUTPUT_DIR = "output/algorithms/";
+	public static final String INPUT_DIR = "input/samples/";
+	public static final String sampleNames[] = { "S-N32-K5.vrp", "S-N43-K6.vrp", "S-N50-K7.vrp", "S-N57-K9.vrp",
 			"S-N62-K8.vrp", "S-N80-K10.vrp" };
-	private static final int NUM_SAMPLES = 6;
+	public static final int NUM_SAMPLES = 6;
 
-	private static CVRPSpecification[] readProblemSpecificationFromSamples() throws FileNotFoundException, IOException {
+    public static CVRPSpecification[] readProblemSpecificationFromSamples() throws FileNotFoundException, IOException {
 		CVRPSpecification[] problemSpecificationArray = new CVRPSpecification[NUM_SAMPLES];
 
 		for (int i = 0; i < NUM_SAMPLES; ++i) {
@@ -56,13 +57,31 @@ public class AlgorithmMetrics {
 		// READ SAMPLES
 		CVRPSpecification[] problemSpecifications = readProblemSpecificationFromSamples();
 
-        int numberOfIterations = 5;
-        int algorithmOption = 2;
+        int numberOfIterations = 10;
+        int algorithmOption = 0;
 
 		switch (algorithmOption)
 		{
 			case 0: // GRASP
-				graspMetrics(problemSpecifications, numberOfIterations);
+                int restrictedCandidateListNumbers[] = { 3, 5 };
+                int iterationsWithNoImprovement[] = { 10, 50 };
+                ArrayList<Thread> threads = new ArrayList<>();
+                for (int rclSize : restrictedCandidateListNumbers) {
+                    for (int numIts : iterationsWithNoImprovement) {
+                        threads.add(new GraspMetrics(readProblemSpecificationFromSamples(), numberOfIterations, rclSize, numIts));
+                    }
+                }
+                for (Thread thread : threads) {
+                    thread.start();
+                }
+                for (Thread thread : threads) {
+                    try {
+                        thread.join();
+                    } catch (InterruptedException e) {
+                        System.err.println("Error joining threads in AlgorithmMetrics: " + e.getMessage());
+                        e.printStackTrace();
+                    }
+                }
 				break;
 			case 1: // MULTIBOOT
 				multibootMetrics(problemSpecifications, numberOfIterations);
@@ -77,62 +96,64 @@ public class AlgorithmMetrics {
 				break;
 		}
 	}
+    
 
-	public static void graspMetrics(CVRPSpecification[] problemSpecifications, int numTests) throws IOException {
-		PrintWriter writer = new PrintWriter(new BufferedWriter(new FileWriter("grasp_results.csv")), true);
-		final int MAX_NUM_ITERATIONS = 1000000;
 
-		int restrictedCandidateListNumbers[] = { 3, 5 };
-		int iterationsWithNoImprovement[] = { 10, 50, 100 };
-		LocalSearch localSearches[] = { new BestNeighborLocalSearch(new Relocation()),
-				new BestNeighborLocalSearch(new InterrouteSwap()), new BestNeighborLocalSearch(new IntrarouteSwap()),
-				new BestNeighborLocalSearch(new TwoOpt()), new FirstBetterNeighborLocalSearch(new Relocation()),
-				new FirstBetterNeighborLocalSearch(new InterrouteSwap()),
-				new FirstBetterNeighborLocalSearch(new IntrarouteSwap()), new FirstBetterNeighborLocalSearch(new TwoOpt()), };
-		String localSearchesnames[] = { "BN + Relocation", "BN + Interroute", "BN + IntrarouteSwap", "BN + TwoOpt",
-				"FBN + Relocation", "FBN + InterrouteSwap", "FBN + IntrarouteSwap", "FBN + TwoOpt", };
-
-		writer.append(TimeAndIterationsRecorder.CSV_SEPARATOR + TimeAndIterationsRecorder.CSV_SEPARATOR
-				+ TimeAndIterationsRecorder.CSV_SEPARATOR + TimeAndIterationsRecorder.CSV_SEPARATOR
-				+ TimeAndIterationsRecorder.CSV_SEPARATOR);
-		for (int i = 0; i < NUM_SAMPLES; ++i) {
-			writer.append(sampleNames[i].split("\\.")[0] + TimeAndIterationsRecorder.CSV_SEPARATOR
-					+ TimeAndIterationsRecorder.CSV_SEPARATOR + TimeAndIterationsRecorder.CSV_SEPARATOR
-					+ TimeAndIterationsRecorder.CSV_SEPARATOR);
-		}
-		writer.append("ALGORITHM" + TimeAndIterationsRecorder.CSV_SEPARATOR + "R.C.L"
-				+ TimeAndIterationsRecorder.CSV_SEPARATOR + "I.W.I" + TimeAndIterationsRecorder.CSV_SEPARATOR + "L.S"
-				+ TimeAndIterationsRecorder.CSV_SEPARATOR + "ITERATION" + TimeAndIterationsRecorder.CSV_SEPARATOR);
-		for (int i = 0; i < NUM_SAMPLES; ++i) {
-			writer.append("I.W.F" + TimeAndIterationsRecorder.CSV_SEPARATOR + "T.N.O.I"
-					+ TimeAndIterationsRecorder.CSV_SEPARATOR + "E.T.F" + TimeAndIterationsRecorder.CSV_SEPARATOR + "T.E.T"
-					+ TimeAndIterationsRecorder.CSV_SEPARATOR + "SOL." + TimeAndIterationsRecorder.CSV_SEPARATOR);
-		}
-
-		for (int rcl : restrictedCandidateListNumbers) {
-			for (int numIterations : iterationsWithNoImprovement) {
-				for (int localSearchPos = 0; localSearchPos < localSearches.length; ++localSearchPos) {
-					for (int i = 1; i <= numTests; ++i) {
-						writer.append(
-								"GRASP" + TimeAndIterationsRecorder.CSV_SEPARATOR + rcl + TimeAndIterationsRecorder.CSV_SEPARATOR
-										+ numIterations + TimeAndIterationsRecorder.CSV_SEPARATOR + localSearchesnames[localSearchPos]
-										+ TimeAndIterationsRecorder.CSV_SEPARATOR + i + TimeAndIterationsRecorder.CSV_SEPARATOR);
-						for (CVRPSpecification problemSpecification : problemSpecifications) {
-							TimeAndIterationsRecorder algorithmRecorder = new TimeAndIterationsRecorder();
-							GRASP.grasp(problemSpecification, MAX_NUM_ITERATIONS, numIterations, rcl, localSearches[localSearchPos],
-									algorithmRecorder);
-							writer.append(algorithmRecorder.toString() + TimeAndIterationsRecorder.CSV_SEPARATOR);
-							// System.out.print(algorithmRecorder.toString() +
-							// TimeAndIterationsRecorder.CSV_SEPARATOR);
-						}
-						writer.append("\n");
-						writer.flush();
-					}
-				}
-			}
-		}
-		writer.close();
-	}
+    //	public static void graspMetrics(CVRPSpecification[] problemSpecifications, int numTests) throws IOException {
+    //		PrintWriter writer = new PrintWriter(new BufferedWriter(new FileWriter("grasp_results.csv")), true);
+    //		final int MAX_NUM_ITERATIONS = 1000000;
+    //
+    //		int restrictedCandidateListNumbers[] = { 3, 5 };
+    //		int iterationsWithNoImprovement[] = { 10, 50, 100 };
+    //		LocalSearch localSearches[] = { new BestNeighborLocalSearch(new Relocation()),
+    //				new BestNeighborLocalSearch(new InterrouteSwap()), new BestNeighborLocalSearch(new IntrarouteSwap()),
+    //				new BestNeighborLocalSearch(new TwoOpt()), new FirstBetterNeighborLocalSearch(new Relocation()),
+    //				new FirstBetterNeighborLocalSearch(new InterrouteSwap()),
+    //				new FirstBetterNeighborLocalSearch(new IntrarouteSwap()), new FirstBetterNeighborLocalSearch(new TwoOpt()), };
+    //		String localSearchesnames[] = { "BN + Relocation", "BN + Interroute", "BN + IntrarouteSwap", "BN + TwoOpt",
+    //				"FBN + Relocation", "FBN + InterrouteSwap", "FBN + IntrarouteSwap", "FBN + TwoOpt", };
+    //
+    //		writer.append(TimeAndIterationsRecorder.CSV_SEPARATOR + TimeAndIterationsRecorder.CSV_SEPARATOR
+    //				+ TimeAndIterationsRecorder.CSV_SEPARATOR + TimeAndIterationsRecorder.CSV_SEPARATOR
+    //				+ TimeAndIterationsRecorder.CSV_SEPARATOR);
+    //		for (int i = 0; i < NUM_SAMPLES; ++i) {
+    //			writer.append(sampleNames[i].split("\\.")[0] + TimeAndIterationsRecorder.CSV_SEPARATOR
+    //					+ TimeAndIterationsRecorder.CSV_SEPARATOR + TimeAndIterationsRecorder.CSV_SEPARATOR
+    //					+ TimeAndIterationsRecorder.CSV_SEPARATOR);
+    //		}
+    //		writer.append("ALGORITHM" + TimeAndIterationsRecorder.CSV_SEPARATOR + "R.C.L"
+    //				+ TimeAndIterationsRecorder.CSV_SEPARATOR + "I.W.I" + TimeAndIterationsRecorder.CSV_SEPARATOR + "L.S"
+    //				+ TimeAndIterationsRecorder.CSV_SEPARATOR + "ITERATION" + TimeAndIterationsRecorder.CSV_SEPARATOR);
+    //		for (int i = 0; i < NUM_SAMPLES; ++i) {
+    //			writer.append("I.W.F" + TimeAndIterationsRecorder.CSV_SEPARATOR + "T.N.O.I"
+    //					+ TimeAndIterationsRecorder.CSV_SEPARATOR + "E.T.F" + TimeAndIterationsRecorder.CSV_SEPARATOR + "T.E.T"
+    //					+ TimeAndIterationsRecorder.CSV_SEPARATOR + "SOL." + TimeAndIterationsRecorder.CSV_SEPARATOR);
+    //		}
+    //
+    //		for (int rcl : restrictedCandidateListNumbers) {
+    //			for (int numIterations : iterationsWithNoImprovement) {
+    //				for (int localSearchPos = 0; localSearchPos < localSearches.length; ++localSearchPos) {
+    //					for (int i = 1; i <= numTests; ++i) {
+    //						writer.append(
+    //								"GRASP" + TimeAndIterationsRecorder.CSV_SEPARATOR + rcl + TimeAndIterationsRecorder.CSV_SEPARATOR
+    //										+ numIterations + TimeAndIterationsRecorder.CSV_SEPARATOR + localSearchesnames[localSearchPos]
+    //										+ TimeAndIterationsRecorder.CSV_SEPARATOR + i + TimeAndIterationsRecorder.CSV_SEPARATOR);
+    //						for (CVRPSpecification problemSpecification : problemSpecifications) {
+    //							TimeAndIterationsRecorder algorithmRecorder = new TimeAndIterationsRecorder();
+    //							GRASP.grasp(problemSpecification, MAX_NUM_ITERATIONS, numIterations, rcl, localSearches[localSearchPos],
+    //									algorithmRecorder);
+    //							writer.append(algorithmRecorder.toString() + TimeAndIterationsRecorder.CSV_SEPARATOR);
+    //							// System.out.print(algorithmRecorder.toString() +
+    //							// TimeAndIterationsRecorder.CSV_SEPARATOR);
+    //						}
+    //						writer.append("\n");
+    //						writer.flush();
+    //					}
+    //				}
+    //			}
+    //		}
+    //		writer.close();
+    //	}
     
     public static void vnsConstructiveInitialSolutionMetrics(CVRPSpecification[] problemSpecifications, int numTests)
             throws IOException {

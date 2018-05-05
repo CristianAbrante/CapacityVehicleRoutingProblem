@@ -19,13 +19,6 @@ import daa.project.crvp.problem.CVRPSpecification;
  * @since 22 abr. 2018
  */
 public class GRASP {
-    
-	/** Restricted candidate list. */
-    private static ArrayList<CVRPClient> restrictedCandidateList;
-	/** Current client. */
-    private static CVRPClient            currentClient;
-	/** Remaining capacity of the current vehicle. */
-    private static int                   remainingVehicleCapacity;
 
 	/**
 	 * Greedy Randomized Adaptive Search Procedure. A GRASP is an iterative
@@ -119,16 +112,22 @@ public class GRASP {
      * @return Constructed solution.
      */
     public static CVRPSolution constructGreedyRandomizedSolution(CVRPSpecification problemSpecification, int restrictedCandidateListSize) {
-        restrictedCandidateList = new ArrayList<>();
+        // Restricted candidate list.
+        ArrayList<CVRPClient> restrictedCandidateList = new ArrayList<>();
+        
 		// Solution codification.
 		ArrayList<Integer> solution = new ArrayList<>();
+        
 		// Remaining clients to serve, remove the depot.
         ArrayList<CVRPClient> remainingClients = new ArrayList<>(problemSpecification.getClients());
         remainingClients.remove(problemSpecification.getDepot());
+        
 		// Start from the depot.
-        currentClient = problemSpecification.getDepot();
+        CVRPClient currentClient = problemSpecification.getDepot();
+        
 		// Establishes the remaining capacity of the current vehicle or route.
-        remainingVehicleCapacity = problemSpecification.getCapacity();
+        int remainingVehicleCapacity = problemSpecification.getCapacity();
+        
 		// This object will generate a random number which will specify the
 		// position in the restricted candidate list of the next client to serve
 		// in the current route.
@@ -148,14 +147,14 @@ public class GRASP {
 				// client.
                 else if (restrictedCandidateList.size() < restrictedCandidateListSize
 						&& client.getDemand() <= remainingVehicleCapacity) {
-					insertCandidate(client);
+                    insertCandidate(restrictedCandidateList, currentClient, client);
 					// If the client is closest to the current client that the last/worst
 					// candidate: introduce properly the client in the candidate list.
 				} else if (CVRPClient.euclideanDistance(currentClient, client) < 
 						       CVRPClient.euclideanDistance(currentClient, restrictedCandidateList.get(restrictedCandidateList.size() - 1)) && 
 						       client.getDemand() <= remainingVehicleCapacity) {
 					restrictedCandidateList.remove(restrictedCandidateList.size() - 1);
-					insertCandidate(client);
+                    insertCandidate(restrictedCandidateList, currentClient, client);
 				}
 			}
 
@@ -172,7 +171,7 @@ public class GRASP {
 				restrictedCandidateList.remove(currentClient);
 				solution.add(
                         problemSpecification.getClients().indexOf(currentClient));
-				updateRestrictedCandidateList();
+                updateRestrictedCandidateList(restrictedCandidateList, remainingVehicleCapacity);
 				
 			}
 
@@ -198,7 +197,7 @@ public class GRASP {
 	 * has a demand higher than the new remaining capacity that client must be
 	 * removed from the list.
 	 */
-	private static void updateRestrictedCandidateList() {
+    private static void updateRestrictedCandidateList(ArrayList<CVRPClient> restrictedCandidateList, int remainingVehicleCapacity) {
 		ArrayList<CVRPClient> clientsToRemove = new ArrayList<>();
 		for (CVRPClient client : restrictedCandidateList) {
 			if (remainingVehicleCapacity < client.getDemand()) {
@@ -214,10 +213,9 @@ public class GRASP {
 	 * @param newCandidate
 	 *          Candidate to insert.
 	 */
-	private static void insertCandidate(CVRPClient newCandidate) {
+	private static void insertCandidate(ArrayList<CVRPClient> restrictedCandidateList, CVRPClient currentClient, CVRPClient newCandidate) {
 		for (int i = 0; i < restrictedCandidateList.size(); ++i) {
-			if (CVRPClient.euclideanDistance(currentClient, newCandidate) < CVRPClient
-					.euclideanDistance(currentClient, restrictedCandidateList.get(i))) {
+			if (CVRPClient.euclideanDistance(currentClient, newCandidate) < CVRPClient.euclideanDistance(currentClient, restrictedCandidateList.get(i))) {
 				restrictedCandidateList.add(i, newCandidate);
 				return;
 			}

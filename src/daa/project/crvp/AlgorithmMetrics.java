@@ -42,7 +42,7 @@ public class AlgorithmMetrics extends Thread {
         int iterationsWithNoImprovement[] = { 10, 50 };
         int numberTests = 10;
         
-        int algorithmOption = 1;
+        int algorithmOption = 0;
 
 		switch (algorithmOption)
 		{

@@ -1,7 +1,7 @@
 /**
  * [DESCRIPTION]
  * 
- * @author Ángel Igareta (angel@igareta.com)
+ * @author Ã�ngel Igareta (angel@igareta.com)
  * @version 1.0
  * @since 20-04-2018
  */
@@ -9,6 +9,7 @@ package daa.project.crvp.moves;
 
 import daa.project.crvp.problem.CVRPClient;
 import daa.project.crvp.problem.CVRPSolution;
+import sun.text.normalizer.CharTrie.FriendAgent;
 
 /**
  * Relocation move is an inter-route move that moves an element from a route to
@@ -29,9 +30,11 @@ public class Relocation extends Move {
 	private int currentToRoutePosition = 0;
 	/** Boolean that denotes if there are more movements. */
 	private boolean canAdvance = true;
-	
+
 	/** If the algorithm has started */
 	private boolean started = false;
+
+	private double lastMoveCost;
 
 	@Override
 	public void setSolution(CVRPSolution solution) {
@@ -72,11 +75,12 @@ public class Relocation extends Move {
 		}
 		if (canAdvance) {
 			if (started) {
-				canAdvance = advanceToPosition();				
+				canAdvance = advanceToPosition();
 			}
 			else {
 				started = true;
 			}
+			calculateLastMoveCost();
 		}
 	}
 
@@ -182,7 +186,25 @@ public class Relocation extends Move {
 		if (getSolution() == null) {
 			throw new IllegalAccessError("trying to use move with no base solution set");
 		}
-		return this.getCurrentNeighbor().isFeasible();
+		int realFromPosition = getClientAbsolutePosition(currentFromRoutePosition, currentFromRoute);
+		CVRPClient clientOfFromRoute = getSolution().getClient(realFromPosition);
+
+		int fromRouteDemand = getSolution().getVehicleRemainingCapacity(currentFromRoute) + clientOfFromRoute.getDemand();
+		int toRouteDemand = getSolution().getVehicleRemainingCapacity(currentToRoute) - clientOfFromRoute.getDemand();
+
+		// If the route is in the limits, check the rest!
+		if ((fromRouteDemand >= 0) && (toRouteDemand >= 0)) {
+			for (int i = 0; i < getSolution().getNumberOfRoutes(); ++i) {
+				if ((i != currentFromRoute) && (i != currentToRoute) && (getSolution().getVehicleRemainingCapacity(i) < 0)) {
+					return false;
+				}
+			}
+			return true;
+		}
+		else {
+			return false;
+		}
+		// return getCurrentNeighbor().isFeasible();
 	}
 
 	@Override
@@ -190,7 +212,8 @@ public class Relocation extends Move {
 		if (getSolution() == null) {
 			throw new IllegalAccessError("trying to use move with no base solution set");
 		}
-		return (this.getCurrentNeighbor().getTotalDistance() - this.getSolution().getTotalDistance());
+		return this.lastMoveCost;
+		// return (getCurrentNeighborCost() - getSolution().getTotalDistance());
 	}
 
 	@Override
@@ -198,7 +221,71 @@ public class Relocation extends Move {
 		if (getSolution() == null) {
 			throw new IllegalAccessError("trying to use move with no base solution set");
 		}
-		return this.getCurrentNeighbor().getTotalDistance();
+		return getSolution().getTotalDistance() + getLastMoveCost();
+		// return getCurrentNeighbor().getTotalDistance();
+	}
+
+	/**
+	 * Method that calculates the last movement distance difference. For doing so,
+	 * It subtracts the the next and last distance to the old nodes and adds the new
+	 * distance to reach the swapped nodes in each route.
+	 */
+	private void calculateLastMoveCost() {
+		try {
+			CVRPClient depot = getSolution().getProblemInfo().getDepot();
+
+			// From route
+			int realFromPosition = getClientAbsolutePosition(currentFromRoutePosition, currentFromRoute);
+			CVRPClient lastClientOfFromRoute = (currentFromRoutePosition == 0) ? depot
+					: getSolution().getClient(realFromPosition - 1);
+			CVRPClient clientOfFromRoute = getSolution().getClient(realFromPosition);
+			CVRPClient nextClientOfFromRoute = (currentFromRoutePosition == (getSolution()
+					.getNumberOfClientsInRoute(currentFromRoute) - 1)) ? depot : getSolution().getClient(realFromPosition + 1);
+
+			this.lastMoveCost = -CVRPClient.euclideanDistance(lastClientOfFromRoute, clientOfFromRoute)
+					- CVRPClient.euclideanDistance(clientOfFromRoute, nextClientOfFromRoute)
+					+ CVRPClient.euclideanDistance(lastClientOfFromRoute, nextClientOfFromRoute); // ¿Good?
+
+			// To Route
+			// If To Route Is Empty
+			if (getSolution().getNumberOfClientsInRoute(currentToRoute) == 0) {
+				this.lastMoveCost += (2.0 * CVRPClient.euclideanDistance(depot, clientOfFromRoute));
+			}
+			else { // If route has more than 1 element.
+				int realToPosition = getClientAbsolutePosition(currentToRoutePosition, currentToRoute);
+				CVRPClient lastClientOfToRoute = (currentToRoutePosition == 0) ? depot
+						: getSolution().getClient(realToPosition - 1);
+				CVRPClient clientOfToRoute = (currentToRoutePosition == (getSolution()
+						.getNumberOfClientsInRoute(currentToRoute))) ? depot : getSolution().getClient(realToPosition);
+
+				this.lastMoveCost = this.lastMoveCost + CVRPClient.euclideanDistance(lastClientOfToRoute, clientOfFromRoute)
+						+ CVRPClient.euclideanDistance(clientOfFromRoute, clientOfToRoute)
+						- CVRPClient.euclideanDistance(lastClientOfToRoute, clientOfToRoute);
+			}
+		}
+		catch (Exception e) {
+			System.err.println("Error in relocation movement calculateLastMoveCost()");
+			System.err.println("currentFromRoutePosition: " + currentFromRoutePosition);
+			System.err.println("currentFromRoute: " + currentFromRoute);
+			System.err.println("currentToRoutePosition: " + currentToRoutePosition);
+			System.err.println("currentToRoute: " + currentToRoute);
+			for (int r = 0; r < getSolution().getNumberOfRoutes(); ++r) {
+				System.out.print("Route " + r + ": ");
+				for (int c = 0; c < getSolution().getNumberOfClientsInRoute(r); ++c) {
+					System.out.print(getSolution().getClientId(r, c) + ", ");
+				}
+				System.out.println();
+			}
+			throw e;
+		}
+		//this.lastMoveCost = (getCurrentNeighbor().getTotalDistance() - getSolution().getTotalDistance());
+	}
+
+	private int getClientAbsolutePosition(int positionInRoute, int route) {
+		if (getSolution() == null) {
+			throw new IllegalAccessError("trying to use move with no base solution set");
+		}
+		return getSolution().getRouteStartingIndex(route) + positionInRoute;
 	}
 
 	@Override
@@ -226,9 +313,7 @@ public class Relocation extends Move {
 	@Override
 	public MoveState getState() {
 		int realFromPosition = getSolution().getRouteStartingIndex(currentFromRoute) + currentFromRoutePosition;
-
 		CVRPClient firstClient = getSolution().getClient(realFromPosition);
-
 		return new MoveState(firstClient, null, this.getCurrentNeighbor());
 	}
 }

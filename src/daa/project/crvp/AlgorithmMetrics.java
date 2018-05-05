@@ -1,27 +1,10 @@
 package daa.project.crvp;
 
-import java.io.BufferedWriter;
 import java.io.FileNotFoundException;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 
 import daa.project.crvp.IO.ReaderFromFile;
-import daa.project.crvp.algorithms.GRASP;
-import daa.project.crvp.algorithms.Multiboot;
-import daa.project.crvp.algorithms.VariableNeighborhoodSearch;
-import daa.project.crvp.local_seach.FirstBetterNeighborLocalSearch;
-import daa.project.crvp.local_search.BestNeighborLocalSearch;
-import daa.project.crvp.local_search.LocalSearch;
-import daa.project.crvp.local_search.VariableNeighborhoodDescent;
-import daa.project.crvp.metrics.TimeAndIterationsRecorder;
-import daa.project.crvp.moves.InterrouteSwap;
-import daa.project.crvp.moves.IntrarouteSwap;
-import daa.project.crvp.moves.Move;
-import daa.project.crvp.moves.Relocation;
-import daa.project.crvp.moves.TwoOpt;
-import daa.project.crvp.problem.CVRPSolution;
 import daa.project.crvp.problem.CVRPSpecification;
 
 /**
@@ -54,47 +37,51 @@ public class AlgorithmMetrics extends Thread {
 	 * @throws IOException
 	 */
 	public static void main(String[] args) throws FileNotFoundException, IOException {
-		// READ SAMPLES
-		CVRPSpecification[] problemSpecifications = readProblemSpecificationFromSamples();
-
-        int numberOfIterations = 10;
-        int algorithmOption = 0;
+        ArrayList<Thread> threads = new ArrayList<>();
+        int restrictedCandidateListNumbers[] = { 3, 5 };
+        int iterationsWithNoImprovement[] = { 10, 50 };
+        int numberTests = 10;
+        
+        int algorithmOption = 1;
 
 		switch (algorithmOption)
 		{
 			case 0: // GRASP
-                int restrictedCandidateListNumbers[] = { 3, 5 };
-                int iterationsWithNoImprovement[] = { 10, 50 };
-                ArrayList<Thread> threads = new ArrayList<>();
                 for (int rclSize : restrictedCandidateListNumbers) {
                     for (int numIts : iterationsWithNoImprovement) {
-                        threads.add(new GraspMetrics(readProblemSpecificationFromSamples(), numberOfIterations, rclSize, numIts));
-                    }
-                }
-                for (Thread thread : threads) {
-                    thread.start();
-                }
-                for (Thread thread : threads) {
-                    try {
-                        thread.join();
-                    } catch (InterruptedException e) {
-                        System.err.println("Error joining threads in AlgorithmMetrics: " + e.getMessage());
-                        e.printStackTrace();
+                        threads.add(new GraspMetrics(readProblemSpecificationFromSamples(), numberTests, rclSize, numIts));
                     }
                 }
 				break;
 			case 1: // MULTIBOOT
-				multibootMetrics(problemSpecifications, numberOfIterations);
+                for (int numIts : iterationsWithNoImprovement) {
+                    threads.add(new MultibootMetrics(readProblemSpecificationFromSamples(), numberTests, numIts));
+                }
 				break;
 			case 2: // VNS
-                vnsConstructiveInitialSolutionMetrics(problemSpecifications, numberOfIterations);
+                // vnsConstructiveInitialSolutionMetrics(problemSpecifications, numberOfIterations);
 				break;
 			case 3: // TABU
 				break;
 			case 4: // LNS
-				largeNeighborhoodSearchMetrics(problemSpecifications, numberOfIterations);
+                // largeNeighborhoodSearchMetrics(problemSpecifications, numberOfIterations);
 				break;
 		}
+        
+        // Start the threads
+        for (Thread thread : threads) {
+            thread.start();
+        }
+        
+        // Wait for the threads to stop
+        for (Thread thread : threads) {
+            try {
+                thread.join();
+            } catch (InterruptedException e) {
+                System.err.println("Error joining threads in AlgorithmMetrics: " + e.getMessage());
+                e.printStackTrace();
+            }
+        }
 	}
     
 
@@ -155,210 +142,210 @@ public class AlgorithmMetrics extends Thread {
     //		writer.close();
     //	}
     
-    public static void vnsConstructiveInitialSolutionMetrics(CVRPSpecification[] problemSpecifications, int numTests)
-            throws IOException {
-        PrintWriter writer = new PrintWriter(new BufferedWriter(new FileWriter(OUTPUT_DIR + "vns_results.csv")), true);
-        
-        int restrictedCandidateListNumbers[] = { 3, 5 };
-        int iterationsWithNoImprovement[] = { 10, 50, 100 };
-        Move movesList[][] = { 
-                { new InterrouteSwap(), new IntrarouteSwap(), new TwoOpt() },
-                { new IntrarouteSwap(), new InterrouteSwap(), new Relocation(), new TwoOpt() },
-                { new InterrouteSwap(), new Relocation(), new IntrarouteSwap(), new TwoOpt() },
-        };
-        String movesNames[] = {
-                "Interroute + Intraroute + TwoOpt",
-                "Intraroute + Interroute + Relocation + TwoOpt",
-                "Interroute + Relocation + Intraroute + TwoOpt",
-        };
-        LocalSearch localSearches[] = { 
-                new BestNeighborLocalSearch(new Relocation()),
-                new BestNeighborLocalSearch(new InterrouteSwap()), 
-                new BestNeighborLocalSearch(new IntrarouteSwap()),
-                new BestNeighborLocalSearch(new TwoOpt()), 
-                new FirstBetterNeighborLocalSearch(new Relocation()),
-                new FirstBetterNeighborLocalSearch(new InterrouteSwap()),
-                new FirstBetterNeighborLocalSearch(new IntrarouteSwap()),
-                new FirstBetterNeighborLocalSearch(new TwoOpt()), 
-                new VariableNeighborhoodDescent(movesList[0]),
-                new VariableNeighborhoodDescent(movesList[1]),
-                new VariableNeighborhoodDescent(movesList[2]),
-        };
-        String localSearchesNames[] = {
-                "BN + Relocation", 
-                "BN + Interroute", 
-                "BN + IntrarouteSwap", 
-                "BN + TwoOpt",
-                "FBN + Relocation", 
-                "FBN + InterrouteSwap", 
-                "FBN + IntrarouteSwap", 
-                "FBN + TwoOpt",
-                "VND + " + movesNames[0],
-                "VND + " + movesNames[1],
-                "VND + " + movesNames[2],
-        };
-        
-        writer.append(TimeAndIterationsRecorder.CSV_SEPARATOR + TimeAndIterationsRecorder.CSV_SEPARATOR
-                + TimeAndIterationsRecorder.CSV_SEPARATOR + TimeAndIterationsRecorder.CSV_SEPARATOR
-                + TimeAndIterationsRecorder.CSV_SEPARATOR + TimeAndIterationsRecorder.CSV_SEPARATOR);
-        for (int i = 0; i < NUM_SAMPLES; ++i) {
-            writer.append(sampleNames[i].split("\\.")[0] + TimeAndIterationsRecorder.CSV_SEPARATOR
-                    + TimeAndIterationsRecorder.CSV_SEPARATOR + TimeAndIterationsRecorder.CSV_SEPARATOR
-                    + TimeAndIterationsRecorder.CSV_SEPARATOR);
-        }
-        writer.append("ALGORITHM" + TimeAndIterationsRecorder.CSV_SEPARATOR 
-                + "R.C.L" + TimeAndIterationsRecorder.CSV_SEPARATOR 
-                + "I.W.I" + TimeAndIterationsRecorder.CSV_SEPARATOR 
-                + "L.S" + TimeAndIterationsRecorder.CSV_SEPARATOR 
-                + "M" + TimeAndIterationsRecorder.CSV_SEPARATOR 
-                + "ITERATION" + TimeAndIterationsRecorder.CSV_SEPARATOR);
-        
-        for (int i = 0; i < NUM_SAMPLES; ++i) {
-            writer.append("I.W.F" + TimeAndIterationsRecorder.CSV_SEPARATOR 
-                    + "T.N.O.I" + TimeAndIterationsRecorder.CSV_SEPARATOR 
-                    + "E.T.F" + TimeAndIterationsRecorder.CSV_SEPARATOR
-                    + "T.E.T" + TimeAndIterationsRecorder.CSV_SEPARATOR 
-                    + "SOL." + TimeAndIterationsRecorder.CSV_SEPARATOR);
-        }
-        
-        for (int rcl : restrictedCandidateListNumbers) {
-            for (int numIterations : iterationsWithNoImprovement) {
-                for (int localSearchPos = 0; localSearchPos < localSearches.length; ++localSearchPos) {
-                    for (int movePos = 0; movePos < movesList.length; ++movePos) {
-                        for (int i = 1; i <= numTests; ++i) {
-                            writer.append("Constructive initial VNS" + TimeAndIterationsRecorder.CSV_SEPARATOR
-                                    + rcl + TimeAndIterationsRecorder.CSV_SEPARATOR 
-                                    + numIterations + TimeAndIterationsRecorder.CSV_SEPARATOR 
-                                    + localSearchesNames[localSearchPos] + TimeAndIterationsRecorder.CSV_SEPARATOR 
-                                    + movesNames[movePos] + TimeAndIterationsRecorder.CSV_SEPARATOR 
-                                    + i + TimeAndIterationsRecorder.CSV_SEPARATOR);
-                            System.out.print("Constructive initial VNS" + TimeAndIterationsRecorder.CSV_SEPARATOR 
-                                    + rcl + TimeAndIterationsRecorder.CSV_SEPARATOR 
-                                    + numIterations + TimeAndIterationsRecorder.CSV_SEPARATOR 
-                                    + localSearchesNames[localSearchPos] + TimeAndIterationsRecorder.CSV_SEPARATOR 
-                                    + movesNames[movePos] + TimeAndIterationsRecorder.CSV_SEPARATOR 
-                                    + i + TimeAndIterationsRecorder.CSV_SEPARATOR);
-                            for (CVRPSpecification problemSpecification : problemSpecifications) {
-                                TimeAndIterationsRecorder algorithmRecorder = new TimeAndIterationsRecorder();
-                                CVRPSolution initialSolution = GRASP.constructGreedyRandomizedSolution(problemSpecification, rcl);
-                                VariableNeighborhoodSearch.run(initialSolution, movesList[movePos], localSearches[localSearchPos], numIterations, algorithmRecorder);
-                                writer.append(algorithmRecorder.toString() + TimeAndIterationsRecorder.CSV_SEPARATOR);
-                                System.out.print(algorithmRecorder.toString() + TimeAndIterationsRecorder.CSV_SEPARATOR);
-                            }
-                            writer.append("\n");
-                            writer.flush();
-                            System.out.println();
-                        }
-                    }
-                }
-            }
-        }
-        writer.close();
-    }
-
-	public static void multibootMetrics(CVRPSpecification[] problemSpecifications, int numTests) throws IOException {
-		PrintWriter writer = new PrintWriter(new BufferedWriter(new FileWriter(OUTPUT_DIR + "multiboot_results.csv")),
-				true);
-		final int NUM_SAMPLES = 6;
-
-		int iterationsWithNoImprovement[] = { 10, 50, 100 };
-		LocalSearch localSearches[] = { new BestNeighborLocalSearch(new Relocation()),
-				new BestNeighborLocalSearch(new InterrouteSwap()), new BestNeighborLocalSearch(new IntrarouteSwap()),
-				new BestNeighborLocalSearch(new TwoOpt()), new FirstBetterNeighborLocalSearch(new Relocation()),
-				new FirstBetterNeighborLocalSearch(new InterrouteSwap()),
-				new FirstBetterNeighborLocalSearch(new IntrarouteSwap()), new FirstBetterNeighborLocalSearch(new TwoOpt()), };
-		String localSearchesnames[] = { "BN + Relocation", "BN + Interroute", "BN + IntrarouteSwap", "BN + TwoOpt",
-				"FBN + Relocation", "FBN + InterrouteSwap", "FBN + IntrarouteSwap", "FBN + TwoOpt", };
-
-		writer.append(TimeAndIterationsRecorder.CSV_SEPARATOR + TimeAndIterationsRecorder.CSV_SEPARATOR
-				+ TimeAndIterationsRecorder.CSV_SEPARATOR + TimeAndIterationsRecorder.CSV_SEPARATOR
-				+ TimeAndIterationsRecorder.CSV_SEPARATOR);
-		for (int i = 0; i < NUM_SAMPLES; ++i) {
-			writer.append(sampleNames[i].split("\\.")[0] + TimeAndIterationsRecorder.CSV_SEPARATOR
-					+ TimeAndIterationsRecorder.CSV_SEPARATOR + TimeAndIterationsRecorder.CSV_SEPARATOR
-					+ TimeAndIterationsRecorder.CSV_SEPARATOR);
-		}
-		writer.append("ALGORITHM" + TimeAndIterationsRecorder.CSV_SEPARATOR + "I.W.I"
-				+ TimeAndIterationsRecorder.CSV_SEPARATOR + "ITERATION" + TimeAndIterationsRecorder.CSV_SEPARATOR);
-		// COMMON
-		for (int i = 0; i < NUM_SAMPLES; ++i) {
-			writer.append("I.W.F" + TimeAndIterationsRecorder.CSV_SEPARATOR + "T.N.O.I"
-					+ TimeAndIterationsRecorder.CSV_SEPARATOR + "E.T.F" + TimeAndIterationsRecorder.CSV_SEPARATOR + "T.E.T"
-					+ TimeAndIterationsRecorder.CSV_SEPARATOR + "SOL." + TimeAndIterationsRecorder.CSV_SEPARATOR);
-		}
-
-		for (int numIterations : iterationsWithNoImprovement) {
-			for (int localSearchPos = 0; localSearchPos < localSearches.length; ++localSearchPos) {
-				for (int i = 1; i <= numTests; ++i) {
-					writer.append("MULTIBOOT" + TimeAndIterationsRecorder.CSV_SEPARATOR + numIterations
-							+ TimeAndIterationsRecorder.CSV_SEPARATOR + localSearchesnames[localSearchPos]
-							+ TimeAndIterationsRecorder.CSV_SEPARATOR + i + TimeAndIterationsRecorder.CSV_SEPARATOR);
-					for (CVRPSpecification problemSpecification : problemSpecifications) {
-						TimeAndIterationsRecorder algorithmRecorder = new TimeAndIterationsRecorder();
-						Multiboot.multiboot(problemSpecification, localSearches[localSearchPos], 100, algorithmRecorder);
-						writer.append(algorithmRecorder.toString() + TimeAndIterationsRecorder.CSV_SEPARATOR);
-						// System.out.print(algorithmRecorder.toString() +
-						// TimeAndIterationsRecorder.CSV_SEPARATOR);
-					}
-					writer.append("\n");
-					writer.flush();
-				}
-			}
-		}
-		writer.close();
-	}
-	
-	public static void largeNeighborhoodSearchMetrics(CVRPSpecification[] problemSpecifications, int numTests) throws IOException {
-		PrintWriter writer = new PrintWriter(new BufferedWriter(new FileWriter(OUTPUT_DIR + "multiboot_results.csv")),
-				true);
-		final int NUM_SAMPLES = 6;
-
-		int destroyPercentages[] = { 20, 25, 30, 40 };
-		LocalSearch localSearches[] = { new BestNeighborLocalSearch(new Relocation()),
-				new BestNeighborLocalSearch(new InterrouteSwap()), new BestNeighborLocalSearch(new IntrarouteSwap()),
-				new BestNeighborLocalSearch(new TwoOpt()), new FirstBetterNeighborLocalSearch(new Relocation()),
-				new FirstBetterNeighborLocalSearch(new InterrouteSwap()),
-				new FirstBetterNeighborLocalSearch(new IntrarouteSwap()), new FirstBetterNeighborLocalSearch(new TwoOpt()), };
-		String localSearchesnames[] = { "BN + Relocation", "BN + Interroute", "BN + IntrarouteSwap", "BN + TwoOpt",
-				"FBN + Relocation", "FBN + InterrouteSwap", "FBN + IntrarouteSwap", "FBN + TwoOpt", };
-
-		writer.append(TimeAndIterationsRecorder.CSV_SEPARATOR + TimeAndIterationsRecorder.CSV_SEPARATOR
-				+ TimeAndIterationsRecorder.CSV_SEPARATOR + TimeAndIterationsRecorder.CSV_SEPARATOR
-				+ TimeAndIterationsRecorder.CSV_SEPARATOR);
-		for (int i = 0; i < NUM_SAMPLES; ++i) {
-			writer.append(sampleNames[i].split("\\.")[0] + TimeAndIterationsRecorder.CSV_SEPARATOR
-					+ TimeAndIterationsRecorder.CSV_SEPARATOR + TimeAndIterationsRecorder.CSV_SEPARATOR
-					+ TimeAndIterationsRecorder.CSV_SEPARATOR);
-		}
-		writer.append("ALGORITHM" + TimeAndIterationsRecorder.CSV_SEPARATOR + "D.P"
-				+ TimeAndIterationsRecorder.CSV_SEPARATOR + "ITERATION" + TimeAndIterationsRecorder.CSV_SEPARATOR);
-		// COMMON
-		for (int i = 0; i < NUM_SAMPLES; ++i) {
-			writer.append("I.W.F" + TimeAndIterationsRecorder.CSV_SEPARATOR + "T.N.O.I"
-					+ TimeAndIterationsRecorder.CSV_SEPARATOR + "E.T.F" + TimeAndIterationsRecorder.CSV_SEPARATOR + "T.E.T"
-					+ TimeAndIterationsRecorder.CSV_SEPARATOR + "SOL." + TimeAndIterationsRecorder.CSV_SEPARATOR);
-		}
-
-		for (int destroyPercentage : destroyPercentages) {
-			for (int localSearchPos = 0; localSearchPos < localSearches.length; ++localSearchPos) {
-				for (int i = 1; i <= numTests; ++i) {
-					writer.append("LNS" + TimeAndIterationsRecorder.CSV_SEPARATOR + destroyPercentage
-							+ TimeAndIterationsRecorder.CSV_SEPARATOR + localSearchesnames[localSearchPos]
-							+ TimeAndIterationsRecorder.CSV_SEPARATOR + i + TimeAndIterationsRecorder.CSV_SEPARATOR);
-					for (CVRPSpecification problemSpecification : problemSpecifications) {
-						TimeAndIterationsRecorder algorithmRecorder = new TimeAndIterationsRecorder();
-						
-						// TODO -> Execute LNS with different base solutions...
-						
-						// System.out.print(algorithmRecorder.toString() +
-						// TimeAndIterationsRecorder.CSV_SEPARATOR);
-					}
-					writer.append("\n");
-					writer.flush();
-				}
-			}
-		}
-		writer.close();
-	}
+    //    public static void vnsConstructiveInitialSolutionMetrics(CVRPSpecification[] problemSpecifications, int numTests)
+    //            throws IOException {
+    //        PrintWriter writer = new PrintWriter(new BufferedWriter(new FileWriter(OUTPUT_DIR + "vns_results.csv")), true);
+    //        
+    //        int restrictedCandidateListNumbers[] = { 3, 5 };
+    //        int iterationsWithNoImprovement[] = { 10, 50, 100 };
+    //        Move movesList[][] = { 
+    //                { new InterrouteSwap(), new IntrarouteSwap(), new TwoOpt() },
+    //                { new IntrarouteSwap(), new InterrouteSwap(), new Relocation(), new TwoOpt() },
+    //                { new InterrouteSwap(), new Relocation(), new IntrarouteSwap(), new TwoOpt() },
+    //        };
+    //        String movesNames[] = {
+    //                "Interroute + Intraroute + TwoOpt",
+    //                "Intraroute + Interroute + Relocation + TwoOpt",
+    //                "Interroute + Relocation + Intraroute + TwoOpt",
+    //        };
+    //        LocalSearch localSearches[] = { 
+    //                new BestNeighborLocalSearch(new Relocation()),
+    //                new BestNeighborLocalSearch(new InterrouteSwap()), 
+    //                new BestNeighborLocalSearch(new IntrarouteSwap()),
+    //                new BestNeighborLocalSearch(new TwoOpt()), 
+    //                new FirstBetterNeighborLocalSearch(new Relocation()),
+    //                new FirstBetterNeighborLocalSearch(new InterrouteSwap()),
+    //                new FirstBetterNeighborLocalSearch(new IntrarouteSwap()),
+    //                new FirstBetterNeighborLocalSearch(new TwoOpt()), 
+    //                new VariableNeighborhoodDescent(movesList[0]),
+    //                new VariableNeighborhoodDescent(movesList[1]),
+    //                new VariableNeighborhoodDescent(movesList[2]),
+    //        };
+    //        String localSearchesNames[] = {
+    //                "BN + Relocation", 
+    //                "BN + Interroute", 
+    //                "BN + IntrarouteSwap", 
+    //                "BN + TwoOpt",
+    //                "FBN + Relocation", 
+    //                "FBN + InterrouteSwap", 
+    //                "FBN + IntrarouteSwap", 
+    //                "FBN + TwoOpt",
+    //                "VND + " + movesNames[0],
+    //                "VND + " + movesNames[1],
+    //                "VND + " + movesNames[2],
+    //        };
+    //        
+    //        writer.append(TimeAndIterationsRecorder.CSV_SEPARATOR + TimeAndIterationsRecorder.CSV_SEPARATOR
+    //                + TimeAndIterationsRecorder.CSV_SEPARATOR + TimeAndIterationsRecorder.CSV_SEPARATOR
+    //                + TimeAndIterationsRecorder.CSV_SEPARATOR + TimeAndIterationsRecorder.CSV_SEPARATOR);
+    //        for (int i = 0; i < NUM_SAMPLES; ++i) {
+    //            writer.append(sampleNames[i].split("\\.")[0] + TimeAndIterationsRecorder.CSV_SEPARATOR
+    //                    + TimeAndIterationsRecorder.CSV_SEPARATOR + TimeAndIterationsRecorder.CSV_SEPARATOR
+    //                    + TimeAndIterationsRecorder.CSV_SEPARATOR);
+    //        }
+    //        writer.append("ALGORITHM" + TimeAndIterationsRecorder.CSV_SEPARATOR 
+    //                + "R.C.L" + TimeAndIterationsRecorder.CSV_SEPARATOR 
+    //                + "I.W.I" + TimeAndIterationsRecorder.CSV_SEPARATOR 
+    //                + "L.S" + TimeAndIterationsRecorder.CSV_SEPARATOR 
+    //                + "M" + TimeAndIterationsRecorder.CSV_SEPARATOR 
+    //                + "ITERATION" + TimeAndIterationsRecorder.CSV_SEPARATOR);
+    //        
+    //        for (int i = 0; i < NUM_SAMPLES; ++i) {
+    //            writer.append("I.W.F" + TimeAndIterationsRecorder.CSV_SEPARATOR 
+    //                    + "T.N.O.I" + TimeAndIterationsRecorder.CSV_SEPARATOR 
+    //                    + "E.T.F" + TimeAndIterationsRecorder.CSV_SEPARATOR
+    //                    + "T.E.T" + TimeAndIterationsRecorder.CSV_SEPARATOR 
+    //                    + "SOL." + TimeAndIterationsRecorder.CSV_SEPARATOR);
+    //        }
+    //        
+    //        for (int rcl : restrictedCandidateListNumbers) {
+    //            for (int numIterations : iterationsWithNoImprovement) {
+    //                for (int localSearchPos = 0; localSearchPos < localSearches.length; ++localSearchPos) {
+    //                    for (int movePos = 0; movePos < movesList.length; ++movePos) {
+    //                        for (int i = 1; i <= numTests; ++i) {
+    //                            writer.append("Constructive initial VNS" + TimeAndIterationsRecorder.CSV_SEPARATOR
+    //                                    + rcl + TimeAndIterationsRecorder.CSV_SEPARATOR 
+    //                                    + numIterations + TimeAndIterationsRecorder.CSV_SEPARATOR 
+    //                                    + localSearchesNames[localSearchPos] + TimeAndIterationsRecorder.CSV_SEPARATOR 
+    //                                    + movesNames[movePos] + TimeAndIterationsRecorder.CSV_SEPARATOR 
+    //                                    + i + TimeAndIterationsRecorder.CSV_SEPARATOR);
+    //                            System.out.print("Constructive initial VNS" + TimeAndIterationsRecorder.CSV_SEPARATOR 
+    //                                    + rcl + TimeAndIterationsRecorder.CSV_SEPARATOR 
+    //                                    + numIterations + TimeAndIterationsRecorder.CSV_SEPARATOR 
+    //                                    + localSearchesNames[localSearchPos] + TimeAndIterationsRecorder.CSV_SEPARATOR 
+    //                                    + movesNames[movePos] + TimeAndIterationsRecorder.CSV_SEPARATOR 
+    //                                    + i + TimeAndIterationsRecorder.CSV_SEPARATOR);
+    //                            for (CVRPSpecification problemSpecification : problemSpecifications) {
+    //                                TimeAndIterationsRecorder algorithmRecorder = new TimeAndIterationsRecorder();
+    //                                CVRPSolution initialSolution = GRASP.constructGreedyRandomizedSolution(problemSpecification, rcl);
+    //                                VariableNeighborhoodSearch.run(initialSolution, movesList[movePos], localSearches[localSearchPos], numIterations, algorithmRecorder);
+    //                                writer.append(algorithmRecorder.toString() + TimeAndIterationsRecorder.CSV_SEPARATOR);
+    //                                System.out.print(algorithmRecorder.toString() + TimeAndIterationsRecorder.CSV_SEPARATOR);
+    //                            }
+    //                            writer.append("\n");
+    //                            writer.flush();
+    //                            System.out.println();
+    //                        }
+    //                    }
+    //                }
+    //            }
+    //        }
+    //        writer.close();
+    //    }
+    //
+    //	public static void multibootMetrics(CVRPSpecification[] problemSpecifications, int numTests) throws IOException {
+    //		PrintWriter writer = new PrintWriter(new BufferedWriter(new FileWriter(OUTPUT_DIR + "multiboot_results.csv")),
+    //				true);
+    //		final int NUM_SAMPLES = 6;
+    //
+    //		int iterationsWithNoImprovement[] = { 10, 50, 100 };
+    //		LocalSearch localSearches[] = { new BestNeighborLocalSearch(new Relocation()),
+    //				new BestNeighborLocalSearch(new InterrouteSwap()), new BestNeighborLocalSearch(new IntrarouteSwap()),
+    //				new BestNeighborLocalSearch(new TwoOpt()), new FirstBetterNeighborLocalSearch(new Relocation()),
+    //				new FirstBetterNeighborLocalSearch(new InterrouteSwap()),
+    //				new FirstBetterNeighborLocalSearch(new IntrarouteSwap()), new FirstBetterNeighborLocalSearch(new TwoOpt()), };
+    //		String localSearchesnames[] = { "BN + Relocation", "BN + Interroute", "BN + IntrarouteSwap", "BN + TwoOpt",
+    //				"FBN + Relocation", "FBN + InterrouteSwap", "FBN + IntrarouteSwap", "FBN + TwoOpt", };
+    //
+    //		writer.append(TimeAndIterationsRecorder.CSV_SEPARATOR + TimeAndIterationsRecorder.CSV_SEPARATOR
+    //				+ TimeAndIterationsRecorder.CSV_SEPARATOR + TimeAndIterationsRecorder.CSV_SEPARATOR
+    //				+ TimeAndIterationsRecorder.CSV_SEPARATOR);
+    //		for (int i = 0; i < NUM_SAMPLES; ++i) {
+    //			writer.append(sampleNames[i].split("\\.")[0] + TimeAndIterationsRecorder.CSV_SEPARATOR
+    //					+ TimeAndIterationsRecorder.CSV_SEPARATOR + TimeAndIterationsRecorder.CSV_SEPARATOR
+    //					+ TimeAndIterationsRecorder.CSV_SEPARATOR);
+    //		}
+    //		writer.append("ALGORITHM" + TimeAndIterationsRecorder.CSV_SEPARATOR + "I.W.I"
+    //				+ TimeAndIterationsRecorder.CSV_SEPARATOR + "ITERATION" + TimeAndIterationsRecorder.CSV_SEPARATOR);
+    //		// COMMON
+    //		for (int i = 0; i < NUM_SAMPLES; ++i) {
+    //			writer.append("I.W.F" + TimeAndIterationsRecorder.CSV_SEPARATOR + "T.N.O.I"
+    //					+ TimeAndIterationsRecorder.CSV_SEPARATOR + "E.T.F" + TimeAndIterationsRecorder.CSV_SEPARATOR + "T.E.T"
+    //					+ TimeAndIterationsRecorder.CSV_SEPARATOR + "SOL." + TimeAndIterationsRecorder.CSV_SEPARATOR);
+    //		}
+    //
+    //		for (int numIterations : iterationsWithNoImprovement) {
+    //			for (int localSearchPos = 0; localSearchPos < localSearches.length; ++localSearchPos) {
+    //				for (int i = 1; i <= numTests; ++i) {
+    //					writer.append("MULTIBOOT" + TimeAndIterationsRecorder.CSV_SEPARATOR + numIterations
+    //							+ TimeAndIterationsRecorder.CSV_SEPARATOR + localSearchesnames[localSearchPos]
+    //							+ TimeAndIterationsRecorder.CSV_SEPARATOR + i + TimeAndIterationsRecorder.CSV_SEPARATOR);
+    //					for (CVRPSpecification problemSpecification : problemSpecifications) {
+    //						TimeAndIterationsRecorder algorithmRecorder = new TimeAndIterationsRecorder();
+    //						Multiboot.multiboot(problemSpecification, localSearches[localSearchPos], 100, algorithmRecorder);
+    //						writer.append(algorithmRecorder.toString() + TimeAndIterationsRecorder.CSV_SEPARATOR);
+    //						// System.out.print(algorithmRecorder.toString() +
+    //						// TimeAndIterationsRecorder.CSV_SEPARATOR);
+    //					}
+    //					writer.append("\n");
+    //					writer.flush();
+    //				}
+    //			}
+    //		}
+    //		writer.close();
+    //	}
+    //	
+    //	public static void largeNeighborhoodSearchMetrics(CVRPSpecification[] problemSpecifications, int numTests) throws IOException {
+    //		PrintWriter writer = new PrintWriter(new BufferedWriter(new FileWriter(OUTPUT_DIR + "multiboot_results.csv")),
+    //				true);
+    //		final int NUM_SAMPLES = 6;
+    //
+    //		int destroyPercentages[] = { 20, 25, 30, 40 };
+    //		LocalSearch localSearches[] = { new BestNeighborLocalSearch(new Relocation()),
+    //				new BestNeighborLocalSearch(new InterrouteSwap()), new BestNeighborLocalSearch(new IntrarouteSwap()),
+    //				new BestNeighborLocalSearch(new TwoOpt()), new FirstBetterNeighborLocalSearch(new Relocation()),
+    //				new FirstBetterNeighborLocalSearch(new InterrouteSwap()),
+    //				new FirstBetterNeighborLocalSearch(new IntrarouteSwap()), new FirstBetterNeighborLocalSearch(new TwoOpt()), };
+    //		String localSearchesnames[] = { "BN + Relocation", "BN + Interroute", "BN + IntrarouteSwap", "BN + TwoOpt",
+    //				"FBN + Relocation", "FBN + InterrouteSwap", "FBN + IntrarouteSwap", "FBN + TwoOpt", };
+    //
+    //		writer.append(TimeAndIterationsRecorder.CSV_SEPARATOR + TimeAndIterationsRecorder.CSV_SEPARATOR
+    //				+ TimeAndIterationsRecorder.CSV_SEPARATOR + TimeAndIterationsRecorder.CSV_SEPARATOR
+    //				+ TimeAndIterationsRecorder.CSV_SEPARATOR);
+    //		for (int i = 0; i < NUM_SAMPLES; ++i) {
+    //			writer.append(sampleNames[i].split("\\.")[0] + TimeAndIterationsRecorder.CSV_SEPARATOR
+    //					+ TimeAndIterationsRecorder.CSV_SEPARATOR + TimeAndIterationsRecorder.CSV_SEPARATOR
+    //					+ TimeAndIterationsRecorder.CSV_SEPARATOR);
+    //		}
+    //		writer.append("ALGORITHM" + TimeAndIterationsRecorder.CSV_SEPARATOR + "D.P"
+    //				+ TimeAndIterationsRecorder.CSV_SEPARATOR + "ITERATION" + TimeAndIterationsRecorder.CSV_SEPARATOR);
+    //		// COMMON
+    //		for (int i = 0; i < NUM_SAMPLES; ++i) {
+    //			writer.append("I.W.F" + TimeAndIterationsRecorder.CSV_SEPARATOR + "T.N.O.I"
+    //					+ TimeAndIterationsRecorder.CSV_SEPARATOR + "E.T.F" + TimeAndIterationsRecorder.CSV_SEPARATOR + "T.E.T"
+    //					+ TimeAndIterationsRecorder.CSV_SEPARATOR + "SOL." + TimeAndIterationsRecorder.CSV_SEPARATOR);
+    //		}
+    //
+    //		for (int destroyPercentage : destroyPercentages) {
+    //			for (int localSearchPos = 0; localSearchPos < localSearches.length; ++localSearchPos) {
+    //				for (int i = 1; i <= numTests; ++i) {
+    //					writer.append("LNS" + TimeAndIterationsRecorder.CSV_SEPARATOR + destroyPercentage
+    //							+ TimeAndIterationsRecorder.CSV_SEPARATOR + localSearchesnames[localSearchPos]
+    //							+ TimeAndIterationsRecorder.CSV_SEPARATOR + i + TimeAndIterationsRecorder.CSV_SEPARATOR);
+    //					for (CVRPSpecification problemSpecification : problemSpecifications) {
+    //						TimeAndIterationsRecorder algorithmRecorder = new TimeAndIterationsRecorder();
+    //						
+    //						// TODO -> Execute LNS with different base solutions...
+    //						
+    //						// System.out.print(algorithmRecorder.toString() +
+    //						// TimeAndIterationsRecorder.CSV_SEPARATOR);
+    //					}
+    //					writer.append("\n");
+    //					writer.flush();
+    //				}
+    //			}
+    //		}
+    //		writer.close();
+    //	}
 
 }

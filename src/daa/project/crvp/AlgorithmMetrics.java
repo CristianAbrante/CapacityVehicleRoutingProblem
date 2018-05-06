@@ -42,7 +42,7 @@ public class AlgorithmMetrics extends Thread {
         int iterationsWithNoImprovement[] = { 10, 50 };
         int numberTests = 10;
         
-        int algorithmOption = 0;
+        int algorithmOption = 2;
 
 		switch (algorithmOption)
 		{
@@ -58,8 +58,12 @@ public class AlgorithmMetrics extends Thread {
                     threads.add(new MultibootMetrics(readProblemSpecificationFromSamples(), numberTests, numIts));
                 }
 				break;
-			case 2: // VNS
-                // vnsConstructiveInitialSolutionMetrics(problemSpecifications, numberOfIterations);
+			case 2: // VNS with constructive phase of GRASP as initial solution
+                for (int rclSize : restrictedCandidateListNumbers) {
+                    for (int numIts : iterationsWithNoImprovement) {
+                        threads.add(new VnsGraspConstructiveMetrics(readProblemSpecificationFromSamples(), numberTests, rclSize, numIts));
+                    }
+                }
 				break;
 			case 3: // TABU
 				break;

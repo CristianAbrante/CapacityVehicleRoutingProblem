@@ -18,7 +18,7 @@ import daa.project.crvp.problem.CVRPSpecification;
 public class MultibootMetrics extends Thread {
     
     private final String FILE_PATH_PREFIX = AlgorithmMetrics.OUTPUT_DIR + "/multiboot_results";
-    private final String FILE_PATH_SUFIX = ".cvs";
+    private final String FILE_PATH_SUFIX = ".csv";
     private final LocalSearch LOCAL_SEARCHES[] = { 
             new BestNeighborLocalSearch(new Relocation()),
             new BestNeighborLocalSearch(new InterrouteSwap()),
@@ -104,6 +104,7 @@ public class MultibootMetrics extends Thread {
                     + TimeAndIterationsRecorder.CSV_SEPARATOR
             );
         }
+        writer.append("\n");
         
         writer.append("ALGORITHM" + TimeAndIterationsRecorder.CSV_SEPARATOR 
                 + "I.W.I" + TimeAndIterationsRecorder.CSV_SEPARATOR
@@ -118,6 +119,7 @@ public class MultibootMetrics extends Thread {
                     + "SOL." + TimeAndIterationsRecorder.CSV_SEPARATOR
             );
         }
+        writer.append("\n");
         
         return writer.toString();
     }

@@ -5,6 +5,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 import daa.project.crvp.IO.ReaderFromFile;
+import daa.project.crvp.csv_generators.GraspCsvGenerator;
+import daa.project.crvp.csv_generators.MultibootCsvGenerator;
+import daa.project.crvp.csv_generators.VnsGraspConstructiveCsvGenerator;
+import daa.project.crvp.csv_generators.VnsRandomConstructiveCsvGenerator;
 import daa.project.crvp.problem.CVRPSpecification;
 
 /**
@@ -42,32 +46,37 @@ public class AlgorithmMetrics extends Thread {
         int iterationsWithNoImprovement[] = { 10, 50 };
         int numberTests = 10;
         
-        int algorithmOption = 2;
+        int algorithmOption = 3;
 
 		switch (algorithmOption)
 		{
 			case 0: // GRASP
                 for (int rclSize : restrictedCandidateListNumbers) {
                     for (int numIts : iterationsWithNoImprovement) {
-                        threads.add(new GraspMetrics(readProblemSpecificationFromSamples(), numberTests, rclSize, numIts));
+                        threads.add(new GraspCsvGenerator(readProblemSpecificationFromSamples(), numberTests, rclSize, numIts));
                     }
                 }
 				break;
 			case 1: // MULTIBOOT
                 for (int numIts : iterationsWithNoImprovement) {
-                    threads.add(new MultibootMetrics(readProblemSpecificationFromSamples(), numberTests, numIts));
+                    threads.add(new MultibootCsvGenerator(readProblemSpecificationFromSamples(), numberTests, numIts));
                 }
 				break;
 			case 2: // VNS with constructive phase of GRASP as initial solution
-                for (int rclSize : restrictedCandidateListNumbers) {
+			    for (int rclSize : restrictedCandidateListNumbers) {
+			        for (int numIts : iterationsWithNoImprovement) {
+			            threads.add(new VnsGraspConstructiveCsvGenerator(readProblemSpecificationFromSamples(), numberTests, rclSize, numIts));
+			        }
+			    }
+			    break;
+            case 3: // VNS with random initial solution
                     for (int numIts : iterationsWithNoImprovement) {
-                        threads.add(new VnsGraspConstructiveMetrics(readProblemSpecificationFromSamples(), numberTests, rclSize, numIts));
+                        threads.add(new VnsRandomConstructiveCsvGenerator(readProblemSpecificationFromSamples(), numberTests, numIts));
                     }
-                }
+                break;
+			case 5: // TABU
 				break;
-			case 3: // TABU
-				break;
-			case 4: // LNS
+			case 6: // LNS
                 // largeNeighborhoodSearchMetrics(problemSpecifications, numberOfIterations);
 				break;
 		}

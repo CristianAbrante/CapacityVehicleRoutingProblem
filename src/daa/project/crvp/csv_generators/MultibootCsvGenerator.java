@@ -1,9 +1,10 @@
-package daa.project.crvp;
+package daa.project.crvp.csv_generators;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.PrintWriter;
 
+import daa.project.crvp.AlgorithmMetrics;
 import daa.project.crvp.algorithms.Multiboot;
 import daa.project.crvp.local_seach.FirstBetterNeighborLocalSearch;
 import daa.project.crvp.local_search.BestNeighborLocalSearch;
@@ -15,7 +16,7 @@ import daa.project.crvp.moves.Relocation;
 import daa.project.crvp.moves.TwoOpt;
 import daa.project.crvp.problem.CVRPSpecification;
 
-public class MultibootMetrics extends Thread {
+public class MultibootCsvGenerator extends Thread {
     
     private final String FILE_PATH_PREFIX = AlgorithmMetrics.OUTPUT_DIR + "/multiboot_results";
     private final String FILE_PATH_SUFIX = ".csv";
@@ -43,7 +44,7 @@ public class MultibootMetrics extends Thread {
     private int numTests;
     private String filePath;
 
-    public MultibootMetrics(CVRPSpecification[] problemSpecifications, int numTests, int numIterationsWithNoImprovement) {
+    public MultibootCsvGenerator(CVRPSpecification[] problemSpecifications, int numTests, int numIterationsWithNoImprovement) {
         super();
         this.problemSpecifications = problemSpecifications;
         this.numTests = numTests;

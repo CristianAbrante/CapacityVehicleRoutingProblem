@@ -1,9 +1,10 @@
-package daa.project.crvp;
+package daa.project.crvp.csv_generators;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.PrintWriter;
 
+import daa.project.crvp.AlgorithmMetrics;
 import daa.project.crvp.algorithms.GRASP;
 import daa.project.crvp.algorithms.VariableNeighborhoodSearch;
 import daa.project.crvp.local_seach.FirstBetterNeighborLocalSearch;
@@ -19,7 +20,7 @@ import daa.project.crvp.moves.TwoOpt;
 import daa.project.crvp.problem.CVRPSolution;
 import daa.project.crvp.problem.CVRPSpecification;
 
-public class VnsGraspConstructiveMetrics extends Thread {
+public class VnsGraspConstructiveCsvGenerator extends Thread {
     
     private final String FILE_PATH_PREFIX = AlgorithmMetrics.OUTPUT_DIR + "/vns_rcl_random_results";
     private final String FILE_PATH_SUFIX = ".csv";
@@ -65,7 +66,7 @@ public class VnsGraspConstructiveMetrics extends Thread {
     private int numTests;
     private String filePath;
 
-    public VnsGraspConstructiveMetrics(CVRPSpecification[] problemSpecifications, int numTests, int rclSize, int numIterationsWithNoImprovement) {
+    public VnsGraspConstructiveCsvGenerator(CVRPSpecification[] problemSpecifications, int numTests, int rclSize, int numIterationsWithNoImprovement) {
         super();
         this.problemSpecifications = problemSpecifications;
         this.numTests = numTests;

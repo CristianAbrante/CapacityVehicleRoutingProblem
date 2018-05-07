@@ -204,6 +204,6 @@ public class TwoOpt extends Move {
 		CVRPClient firstSolutionClient = getSolution().getClient(realFromPosition);
 		CVRPClient secondSolutionClient =  getSolution().getClient(realToPosition);
 		
-		return new MoveState(firstSolutionClient, secondSolutionClient, this.getCurrentNeighbor());
+		return new MoveState(firstSolutionClient, secondSolutionClient);
 	}
 }

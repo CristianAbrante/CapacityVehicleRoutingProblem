@@ -10,6 +10,7 @@ package daa.project.crvp.utils;
  *
  */
 public class DoubleCompare {
+    
     /** Epsilon: threshold value. We will accept comparisons as true with this as error margin*/
     public static final double EPSILON = 10E-6;
     

@@ -15,6 +15,7 @@ import daa.project.crvp.moves.IntrarouteSwap;
 import daa.project.crvp.moves.Relocation;
 import daa.project.crvp.moves.TwoOpt;
 import daa.project.crvp.problem.CVRPSpecification;
+import daa.project.crvp.utils.DoubleFormatter;
 
 public class GraspCsvGenerator extends Thread {
     
@@ -84,20 +85,21 @@ public class GraspCsvGenerator extends Thread {
                     }
                     timeSum /= numTests;
                     sumObjectiveValues /= numTests;
-                    writer.append(timeSum + TimeAndIterationsRecorder.CSV_SEPARATOR
-                            + sumObjectiveValues + TimeAndIterationsRecorder.CSV_SEPARATOR
-                            + minTime + TimeAndIterationsRecorder.CSV_SEPARATOR 
-                            + minObjectiveValue + TimeAndIterationsRecorder.CSV_SEPARATOR);
+                    writer.append(DoubleFormatter.format(timeSum) + TimeAndIterationsRecorder.CSV_SEPARATOR
+                            + DoubleFormatter.format(sumObjectiveValues) + TimeAndIterationsRecorder.CSV_SEPARATOR
+                            + DoubleFormatter.format(minTime) + TimeAndIterationsRecorder.CSV_SEPARATOR
+                            + DoubleFormatter.format(minObjectiveValue) + TimeAndIterationsRecorder.CSV_SEPARATOR);
                     System.out.println("GRASP"
                             + " RCL size: " + this.rclSize
                             + " Num its no improvement: " + this.numIterationsWithNoImprovement
                             + " Local search: " + LOCAL_SEARCHES_NAMES[localSearchPos]
-                            + " Avg time: " + timeSum
-                            + " Avg obj value: " + sumObjectiveValues
-                            + " Min time: " + minTime
-                            + " Min objetive value: " + minObjectiveValue
+                            + " Avg time: " + DoubleFormatter.format(timeSum)
+                            + " Avg obj value: " + DoubleFormatter.format(sumObjectiveValues)
+                            + " Min time: " + DoubleFormatter.format(minTime)
+                            + " Min objetive value: " + DoubleFormatter.format(minObjectiveValue)
                     );
                 }
+
                 writer.println();
             }
             

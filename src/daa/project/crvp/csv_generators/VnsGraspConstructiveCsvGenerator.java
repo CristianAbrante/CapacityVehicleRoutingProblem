@@ -19,144 +19,137 @@ import daa.project.crvp.moves.Relocation;
 import daa.project.crvp.moves.TwoOpt;
 import daa.project.crvp.problem.CVRPSolution;
 import daa.project.crvp.problem.CVRPSpecification;
+import daa.project.crvp.utils.DoubleFormatter;
 
 public class VnsGraspConstructiveCsvGenerator extends Thread {
-    
-    private final String FILE_PATH_PREFIX = AlgorithmMetrics.OUTPUT_DIR + "/vns_rcl_random_results";
-    private final String FILE_PATH_SUFIX = ".csv";
-    private final Move movesList[][] = { 
-            { new InterrouteSwap(), new IntrarouteSwap(), new TwoOpt() },
-            { new IntrarouteSwap(), new InterrouteSwap(), new Relocation(), new TwoOpt() },
-            { new InterrouteSwap(), new Relocation(), new IntrarouteSwap(), new TwoOpt() },
-    };
-    private final String movesNames[] = {
-            "Interroute + Intraroute + TwoOpt",
-            "Intraroute + Interroute + Relocation + TwoOpt",
-            "Interroute + Relocation + Intraroute + TwoOpt",
-    };
-    private final LocalSearch LOCAL_SEARCHES[] = { 
-            new BestNeighborLocalSearch(new Relocation()),
-            new BestNeighborLocalSearch(new InterrouteSwap()),
-            new BestNeighborLocalSearch(new IntrarouteSwap()), 
-            new BestNeighborLocalSearch(new TwoOpt()),
-            new FirstBetterNeighborLocalSearch(new Relocation()),
-            new FirstBetterNeighborLocalSearch(new InterrouteSwap()),
-            new FirstBetterNeighborLocalSearch(new IntrarouteSwap()),
-            new FirstBetterNeighborLocalSearch(new TwoOpt()),
-            new VariableNeighborhoodDescent(movesList[0]),
-            new VariableNeighborhoodDescent(movesList[1]),
-            new VariableNeighborhoodDescent(movesList[2]),
-    };
-    private final String LOCAL_SEARCHES_NAMES[] = { 
-            "BN + Relocation", 
-            "BN + Interroute", 
-            "BN + IntrarouteSwap", 
-            "BN + TwoOpt",
-            "FBN + Relocation", 
-            "FBN + InterrouteSwap", 
-            "FBN + IntrarouteSwap", 
-            "FBN + TwoOpt",
-            "VND + " + movesNames[0],
-            "VND + " + movesNames[1],
-            "VND + " + movesNames[2],
-    };
-    private int rclSize;
-    private int numIterationsWithNoImprovement;
-    private CVRPSpecification[] problemSpecifications;
-    private int numTests;
-    private String filePath;
 
-    public VnsGraspConstructiveCsvGenerator(CVRPSpecification[] problemSpecifications, int numTests, int rclSize, int numIterationsWithNoImprovement) {
-        super();
-        this.problemSpecifications = problemSpecifications;
-        this.numTests = numTests;
-        this.rclSize = rclSize;
-        this.numIterationsWithNoImprovement = numIterationsWithNoImprovement;
-        this.filePath = FILE_PATH_PREFIX + "_rcl_" + rclSize + "_numIts_" + numIterationsWithNoImprovement + FILE_PATH_SUFIX;
-    }
-    
-    @Override
-    public void run() {
-        super.run();
-        try (PrintWriter writer = new PrintWriter(new BufferedWriter(new FileWriter(this.filePath)), true)) {
-            writer.append(getCsvHeader());
-            
-            for (int localSearchPos = 0; localSearchPos < LOCAL_SEARCHES.length; ++localSearchPos) {
-                for (int movesPos = 0; movesPos < movesList.length; ++movesPos) {
-                    for (int i = 1; i <= numTests; ++i) {
-                        writer.append("VNS GRASP constructive phase" + TimeAndIterationsRecorder.CSV_SEPARATOR
-                                + this.rclSize + TimeAndIterationsRecorder.CSV_SEPARATOR 
-                                + this.numIterationsWithNoImprovement + TimeAndIterationsRecorder.CSV_SEPARATOR 
-                                + LOCAL_SEARCHES_NAMES[localSearchPos] + TimeAndIterationsRecorder.CSV_SEPARATOR 
-                                + movesNames[movesPos] + TimeAndIterationsRecorder.CSV_SEPARATOR 
-                                + i + TimeAndIterationsRecorder.CSV_SEPARATOR
-                                );
-                        for (CVRPSpecification problemSpecification : problemSpecifications) {
-                            CVRPSolution initialSolution = GRASP.constructGreedyRandomizedSolution(problemSpecification, this.rclSize);
-                            TimeAndIterationsRecorder algorithmRecorder = new TimeAndIterationsRecorder();
-                            VariableNeighborhoodSearch.run(initialSolution, movesList[movesPos], LOCAL_SEARCHES[localSearchPos], this.numIterationsWithNoImprovement, algorithmRecorder);
-                            writer.append(algorithmRecorder.toString() + TimeAndIterationsRecorder.CSV_SEPARATOR);
-                            System.out.println("VNS GRASP constructive phase "
-                                    + "RCL size: " + this.rclSize 
-                                    + " Num iterations no improvement: " + this.numIterationsWithNoImprovement 
-                                    + " " + LOCAL_SEARCHES_NAMES[localSearchPos] 
-                                    + " " + movesNames[movesPos] + TimeAndIterationsRecorder.CSV_SEPARATOR 
-                                    + " Test number: " + i
-                                    + " Recorder info: " + algorithmRecorder.toString() + TimeAndIterationsRecorder.CSV_SEPARATOR
-                            );
-                        }
-                        writer.append("\n");
-                        writer.flush();
-                    }
-                }
-            }
-            
-            writer.close();
-        } catch (Exception e) {
-            System.err.println("Error: " + e.getMessage());
-            e.printStackTrace();
-        }
-    }
-    
-    private String getCsvHeader() {
-        StringBuilder writer = new StringBuilder();
-        
-        writer.append(TimeAndIterationsRecorder.CSV_SEPARATOR 
-                + TimeAndIterationsRecorder.CSV_SEPARATOR
-                + TimeAndIterationsRecorder.CSV_SEPARATOR 
-                + TimeAndIterationsRecorder.CSV_SEPARATOR
-                + TimeAndIterationsRecorder.CSV_SEPARATOR
-                + TimeAndIterationsRecorder.CSV_SEPARATOR
-        );
-        for (int i = 0; i < AlgorithmMetrics.NUM_SAMPLES; ++i) {
-            writer.append(AlgorithmMetrics.sampleNames[i].split("\\.")[0] 
-                    + TimeAndIterationsRecorder.CSV_SEPARATOR
-                    + TimeAndIterationsRecorder.CSV_SEPARATOR 
-                    + TimeAndIterationsRecorder.CSV_SEPARATOR
-                    + TimeAndIterationsRecorder.CSV_SEPARATOR
-                    + TimeAndIterationsRecorder.CSV_SEPARATOR
-            );
-        }
-        writer.append("\n");
-        
-        writer.append("ALGORITHM" + TimeAndIterationsRecorder.CSV_SEPARATOR 
-                + "R.C.L" + TimeAndIterationsRecorder.CSV_SEPARATOR 
-                + "I.W.I" + TimeAndIterationsRecorder.CSV_SEPARATOR
-                + "L.S" + TimeAndIterationsRecorder.CSV_SEPARATOR 
-                + "MOVES" + TimeAndIterationsRecorder.CSV_SEPARATOR 
-                + "ITERATION" + TimeAndIterationsRecorder.CSV_SEPARATOR
-        );
-        for (int i = 0; i < AlgorithmMetrics.NUM_SAMPLES; ++i) {
-            writer.append("I.W.F" + TimeAndIterationsRecorder.CSV_SEPARATOR 
-                    + "T.N.O.I" + TimeAndIterationsRecorder.CSV_SEPARATOR 
-                    + "E.T.F" + TimeAndIterationsRecorder.CSV_SEPARATOR
-                    + "T.E.T" + TimeAndIterationsRecorder.CSV_SEPARATOR 
-                    + "SOL." + TimeAndIterationsRecorder.CSV_SEPARATOR
-            );
-        }
-        writer.append("\n");
-        
-        return writer.toString();
-    }
+	private final String FILE_PATH_PREFIX = AlgorithmMetrics.OUTPUT_DIR + "/vns_rcl_random_results";
+	private final String FILE_PATH_SUFIX = ".csv";
+
+	private LocalSearch LOCAL_SEARCHES[] = { new BestNeighborLocalSearch(new Relocation()),
+			new BestNeighborLocalSearch(new InterrouteSwap()), new BestNeighborLocalSearch(new IntrarouteSwap()),
+			new BestNeighborLocalSearch(new TwoOpt()), new FirstBetterNeighborLocalSearch(new Relocation()),
+			new FirstBetterNeighborLocalSearch(new InterrouteSwap()),
+			new FirstBetterNeighborLocalSearch(new IntrarouteSwap()), new FirstBetterNeighborLocalSearch(new TwoOpt()),
+			new VariableNeighborhoodDescent(new Move[] { new IntrarouteSwap(), new TwoOpt() }),
+			new VariableNeighborhoodDescent(
+					new Move[] { new IntrarouteSwap(), new InterrouteSwap(), new Relocation(), new TwoOpt() }),
+			new VariableNeighborhoodDescent(
+					new Move[] { new InterrouteSwap(), new Relocation(), new IntrarouteSwap(), new TwoOpt() }) };
+
+	private final String LOCAL_SEARCHES_NAMES[] = { "BN + Relocation", "BN + Interroute", "BN + IntrarouteSwap",
+			"BN + TwoOpt", "FBN + Relocation", "FBN + InterrouteSwap", "FBN + IntrarouteSwap", "FBN + TwoOpt",
+			"VND + Intraroute + TwoOpt", "VND + Intraroute + Interroute + Relocation + TwoOpt",
+			"VND + Interroute + Relocation + Intraroute + TwoOpt" };
+
+	private int rclSize;
+	private int numIterationsWithNoImprovement;
+	private CVRPSpecification[] problemSpecifications;
+	private int numTests;
+	private String filePath;
+	private Move[] shakingMoves;
+	private String moveName;
+
+	public VnsGraspConstructiveCsvGenerator(CVRPSpecification[] problemSpecifications, int numTests, int rclSize,
+			int numIterationsWithNoImprovement, Move[] shakingMoves, String moveName) {
+		super();
+
+		this.problemSpecifications = problemSpecifications;
+		this.numTests = numTests;
+		this.rclSize = rclSize;
+		this.numIterationsWithNoImprovement = numIterationsWithNoImprovement;
+		this.shakingMoves = shakingMoves;
+		this.moveName = moveName;
+
+		this.filePath = FILE_PATH_PREFIX + "_rcl_" + rclSize + "_numIts_" + numIterationsWithNoImprovement + "_move_"
+				+ moveName + FILE_PATH_SUFIX;
+	}
+
+	@Override
+	public void run() {
+		super.run();
+		try (PrintWriter writer = new PrintWriter(new BufferedWriter(new FileWriter(this.filePath)), true)) {
+			writer.append(getCsvHeader());
+
+			for (int localSearchPos = 0; localSearchPos < LOCAL_SEARCHES.length; ++localSearchPos) {
+				writer.append("VNS GRASP CONSTRUCTIVE" + TimeAndIterationsRecorder.CSV_SEPARATOR + this.rclSize
+						+ TimeAndIterationsRecorder.CSV_SEPARATOR + this.numIterationsWithNoImprovement
+						+ TimeAndIterationsRecorder.CSV_SEPARATOR + LOCAL_SEARCHES_NAMES[localSearchPos]
+						+ TimeAndIterationsRecorder.CSV_SEPARATOR + moveName + TimeAndIterationsRecorder.CSV_SEPARATOR);
+
+				for (CVRPSpecification problemSpecification : problemSpecifications) {
+					long timeSum = 0;
+					long minTime = Long.MAX_VALUE;
+					double sumObjectiveValues = 0;
+					double minObjectiveValue = Double.MAX_VALUE;
+
+					for (int i = 1; i <= numTests; ++i) {
+						CVRPSolution initialSolution = GRASP.constructGreedyRandomizedSolution(problemSpecification, this.rclSize);
+
+						TimeAndIterationsRecorder algorithmRecorder = new TimeAndIterationsRecorder();
+						VariableNeighborhoodSearch.run(initialSolution, shakingMoves, LOCAL_SEARCHES[localSearchPos],
+								this.numIterationsWithNoImprovement, algorithmRecorder);
+
+						timeSum += algorithmRecorder.getElapsedTime();
+						sumObjectiveValues += algorithmRecorder.getSolutionsTotalDistance();
+						minTime = Math.min(minTime, algorithmRecorder.getElapsedTime());
+						minObjectiveValue = Math.min(minObjectiveValue, algorithmRecorder.getSolutionsTotalDistance());
+					}
+
+					timeSum /= numTests;
+					sumObjectiveValues /= numTests;
+					writer.append(DoubleFormatter.format(timeSum) + TimeAndIterationsRecorder.CSV_SEPARATOR
+							+ DoubleFormatter.format(sumObjectiveValues) + TimeAndIterationsRecorder.CSV_SEPARATOR
+							+ DoubleFormatter.format(minTime) + TimeAndIterationsRecorder.CSV_SEPARATOR
+							+ DoubleFormatter.format(minObjectiveValue) + TimeAndIterationsRecorder.CSV_SEPARATOR);
+					// System.out.println("VNS GRASP CONSTRUCTIVE" + " RCL size: " + this.rclSize +
+					// " Num its no improvement: "
+					// + this.numIterationsWithNoImprovement + " Local search: " +
+					// LOCAL_SEARCHES_NAMES[localSearchPos]
+					// + " Avg time: " + DoubleFormatter.format(timeSum) + " Avg obj value: "
+					// + DoubleFormatter.format(sumObjectiveValues) + " Min time: " +
+					// DoubleFormatter.format(minTime)
+					// + " Min objetive value: " + DoubleFormatter.format(minObjectiveValue));
+				}
+				System.out.println(
+						"VNS GRASP CONSTRUCTIVE " + "RCL: " + this.rclSize + " I.W.I: " + this.numIterationsWithNoImprovement
+								+ " Move: " + this.moveName + " LS: " + LOCAL_SEARCHES_NAMES[localSearchPos] + " finished.");
+
+				writer.println();
+				writer.flush();
+			}
+
+			writer.close();
+		}
+		catch (Exception e) {
+			System.err.println("Error: " + e.getMessage());
+			e.printStackTrace();
+		}
+	}
+
+	private String getCsvHeader() {
+		StringBuilder writer = new StringBuilder();
+
+		writer.append(TimeAndIterationsRecorder.CSV_SEPARATOR + TimeAndIterationsRecorder.CSV_SEPARATOR
+				+ TimeAndIterationsRecorder.CSV_SEPARATOR + TimeAndIterationsRecorder.CSV_SEPARATOR);
+		for (int i = 0; i < AlgorithmMetrics.NUM_SAMPLES; ++i) {
+			writer.append(AlgorithmMetrics.sampleNames[i].split("\\.")[0] + TimeAndIterationsRecorder.CSV_SEPARATOR
+					+ TimeAndIterationsRecorder.CSV_SEPARATOR + TimeAndIterationsRecorder.CSV_SEPARATOR
+					+ TimeAndIterationsRecorder.CSV_SEPARATOR);
+		}
+		writer.append("\n");
+
+		writer.append("ALGORITHM" + TimeAndIterationsRecorder.CSV_SEPARATOR + "R.C.L"
+				+ TimeAndIterationsRecorder.CSV_SEPARATOR + "I.W.I" + TimeAndIterationsRecorder.CSV_SEPARATOR + "L.S"
+				+ TimeAndIterationsRecorder.CSV_SEPARATOR + "S.M" + TimeAndIterationsRecorder.CSV_SEPARATOR);
+		for (int i = 0; i < AlgorithmMetrics.NUM_SAMPLES; ++i) {
+			writer.append("AvgTime" + TimeAndIterationsRecorder.CSV_SEPARATOR + "AvgSol"
+					+ TimeAndIterationsRecorder.CSV_SEPARATOR + "MinTime" + TimeAndIterationsRecorder.CSV_SEPARATOR + "MinSol"
+					+ TimeAndIterationsRecorder.CSV_SEPARATOR);
+		}
+		writer.append("\n");
+
+		return writer.toString();
+	}
 
 }

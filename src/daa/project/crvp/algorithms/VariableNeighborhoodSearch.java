@@ -38,8 +38,7 @@ public class VariableNeighborhoodSearch {
         }
         
         recorder.starting();
-        CVRPSolution bestSolutionFoundSoFar = initialSolution;
-        CVRPSolution currentSolution = initialSolution;
+        CVRPSolution bestSolutionFoundSoFar = localSearch.findLocalOptimum(initialSolution);
         recorder.foundBetterSolution(bestSolutionFoundSoFar);
         
         int numIterationsWithNoImprovement = 0;
@@ -48,7 +47,7 @@ public class VariableNeighborhoodSearch {
             int currentMoveIndex = 0;
             while (currentMoveIndex < moves.length) {
                 // Make a random move in the neighborhood to try to get out of the local optimum
-                CVRPSolution shakedSolution = shakeSolution(currentSolution, moves[currentMoveIndex]);
+                CVRPSolution shakedSolution = shakeSolution(bestSolutionFoundSoFar, moves[currentMoveIndex]);
                 
                 if (!shakedSolution.isFeasible()) {
                     System.err.println("Current move index" + currentMoveIndex);

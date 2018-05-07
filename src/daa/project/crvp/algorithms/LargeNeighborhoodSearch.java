@@ -1,19 +1,19 @@
 package daa.project.crvp.algorithms;
 
 import java.util.ArrayList;
+import java.util.Random;
 
 import daa.project.crvp.local_search.LocalSearch;
 import daa.project.crvp.problem.CVRPSolution;
 import daa.project.crvp.problem.CVRPSpecification;
 import daa.project.crvp.utils.DoubleCompare;
-import java.util.*;
 
 
 public class LargeNeighborhoodSearch {
 
-	private static CVRPSolution initialSolution;
-	private static CVRPSpecification problemSpecification;
-	private static ArrayList<Integer> removedClients;
+    //	private static CVRPSolution initialSolution;
+    //	private static CVRPSpecification problemSpecification;
+    //	private static ArrayList<Integer> removedClients;
 
 	/**
 	 * Runs the LargeNeighborhoodSearch algorithm
@@ -45,18 +45,16 @@ public class LargeNeighborhoodSearch {
 			);
 		}
 
-		LargeNeighborhoodSearch.removedClients = new ArrayList<>();
-		LargeNeighborhoodSearch.problemSpecification = problemSpecification;
-		LargeNeighborhoodSearch.initialSolution =
-		      new CVRPSolution(initialSolution);
+        ArrayList<Integer> removedClients = new ArrayList<>();
+        //		LargeNeighborhoodSearch.problemSpecification = problemSpecification;
+        //        LargeNeighborhoodSearch.initialSolution = new CVRPSolution(initialSolution);
 		CVRPSolution bestConstructedSol = new CVRPSolution(initialSolution);
 
 		for (int i = 0; i < maxReconstructions; i++) {
 			CVRPSolution destroyedSolution = new CVRPSolution(
-			      getDestroyedSolution(initialSolution, destructionPercentage)
+                    getDestroyedSolution(initialSolution, destructionPercentage, removedClients, problemSpecification)
 			);
-			CVRPSolution actualConstructedSol =
-			      new CVRPSolution(constructNewSolution(destroyedSolution));
+			CVRPSolution actualConstructedSol = new CVRPSolution(constructNewSolution(destroyedSolution, removedClients));
 
 			// If the reconstructed solution is feasible and better than previous
 			// solution
@@ -76,16 +74,14 @@ public class LargeNeighborhoodSearch {
 			} else {
 				destroyedSolution = new CVRPSolution(initialSolution);
 			}
-			destroyedSolution =
-			      new CVRPSolution(LargeNeighborhoodSearch.initialSolution);
+            destroyedSolution = new CVRPSolution(initialSolution);
 			removedClients.clear();
 		}
 
 		return new CVRPSolution(localSearch.findLocalOptimum(bestConstructedSol));
 	}
 
-	private static CVRPSolution
-	        constructNewSolution(CVRPSolution destroyedSolution) {
+	private static CVRPSolution constructNewSolution(CVRPSolution destroyedSolution, ArrayList<Integer> removedClients) {
 
 		CVRPSolution init = new CVRPSolution(destroyedSolution);
 		CVRPSolution bestSolution = null;
@@ -130,7 +126,8 @@ public class LargeNeighborhoodSearch {
 	 */
 	private static CVRPSolution
 	        getDestroyedSolution(CVRPSolution initialSolution,
-	                             double destructionPercentage) {
+                    double destructionPercentage, ArrayList<Integer> removedClients,
+                    CVRPSpecification problemSpecification) {
 
 		int vehicleRoutesSize = initialSolution.getNumberOfClients()
 		      + initialSolution.getNumberOfRoutes();

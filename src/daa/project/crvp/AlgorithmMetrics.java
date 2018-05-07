@@ -43,10 +43,10 @@ public class AlgorithmMetrics extends Thread {
 	public static void main(String[] args) throws FileNotFoundException, IOException {
         ArrayList<Thread> threads = new ArrayList<>();
         int restrictedCandidateListNumbers[] = { 3, 5 };
-        int iterationsWithNoImprovement[] = { 10, 50 };
-        int numberTests = 10;
+        int iterationsWithNoImprovement[] = { 5, 10, 25 };
+        int numberTests = 5;
         
-        int algorithmOption = 3;
+        int algorithmOption = 0;
 
 		switch (algorithmOption)
 		{

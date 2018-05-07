@@ -15,6 +15,7 @@ import daa.project.crvp.moves.IntrarouteSwap;
 import daa.project.crvp.moves.Relocation;
 import daa.project.crvp.moves.TwoOpt;
 import daa.project.crvp.problem.CVRPSpecification;
+import daa.project.crvp.utils.DoubleFormatter;
 
 public class MultibootCsvGenerator extends Thread {
     
@@ -23,7 +24,7 @@ public class MultibootCsvGenerator extends Thread {
     private final LocalSearch LOCAL_SEARCHES[] = { 
             new BestNeighborLocalSearch(new Relocation()),
             new BestNeighborLocalSearch(new InterrouteSwap()),
-            new BestNeighborLocalSearch(new IntrarouteSwap()),
+            new BestNeighborLocalSearch(new IntrarouteSwap()), 
             new BestNeighborLocalSearch(new TwoOpt()),
             new FirstBetterNeighborLocalSearch(new Relocation()),
             new FirstBetterNeighborLocalSearch(new InterrouteSwap()),
@@ -31,10 +32,12 @@ public class MultibootCsvGenerator extends Thread {
             new FirstBetterNeighborLocalSearch(new TwoOpt()), 
     };
     private final String LOCAL_SEARCHES_NAMES[] = { 
-            "BN + Relocation", "BN + Interroute",
+            "BN + Relocation", 
+            "BN + Interroute", 
             "BN + IntrarouteSwap", 
             "BN + TwoOpt",
-            "FBN + Relocation", "FBN + InterrouteSwap", 
+            "FBN + Relocation", 
+            "FBN + InterrouteSwap", 
             "FBN + IntrarouteSwap", 
             "FBN + TwoOpt", 
     };
@@ -59,26 +62,40 @@ public class MultibootCsvGenerator extends Thread {
             writer.append(getCsvHeader());
             
             for (int localSearchPos = 0; localSearchPos < LOCAL_SEARCHES.length; ++localSearchPos) {
-                for (int i = 1; i <= numTests; ++i) {
-                    writer.append("MULTIBOOT" + TimeAndIterationsRecorder.CSV_SEPARATOR
-                            + this.numIterationsWithNoImprovement + TimeAndIterationsRecorder.CSV_SEPARATOR 
-                            + LOCAL_SEARCHES_NAMES[localSearchPos] + TimeAndIterationsRecorder.CSV_SEPARATOR 
-                            + i + TimeAndIterationsRecorder.CSV_SEPARATOR
-                    );
-                    for (CVRPSpecification problemSpecification : problemSpecifications) {
+                writer.append("MULTIBOOT" + TimeAndIterationsRecorder.CSV_SEPARATOR 
+                        + this.numIterationsWithNoImprovement + TimeAndIterationsRecorder.CSV_SEPARATOR 
+                        + LOCAL_SEARCHES_NAMES[localSearchPos] + TimeAndIterationsRecorder.CSV_SEPARATOR 
+                );
+                for (CVRPSpecification problemSpecification : problemSpecifications) {
+                    long timeSum = 0;
+                    long minTime = Long.MAX_VALUE;
+                    double sumObjectiveValues = 0;
+                    double minObjectiveValue = Double.MAX_VALUE;
+                    for (int i = 1; i <= numTests; ++i) {
                         TimeAndIterationsRecorder algorithmRecorder = new TimeAndIterationsRecorder();
                         Multiboot.multiboot(problemSpecification, LOCAL_SEARCHES[localSearchPos], this.numIterationsWithNoImprovement, algorithmRecorder);
-                        writer.append(algorithmRecorder.toString() + TimeAndIterationsRecorder.CSV_SEPARATOR);
-                        System.out.println("MULTIBOOT "
-                                + " Num iterations no improvement: " + this.numIterationsWithNoImprovement 
-                                + " " + LOCAL_SEARCHES_NAMES[localSearchPos] 
-                                + " Test number: " + i
-                                + " Recorder info: " + algorithmRecorder.toString() + TimeAndIterationsRecorder.CSV_SEPARATOR
-                                );
+                        timeSum += algorithmRecorder.getElapsedTime();
+                        sumObjectiveValues += algorithmRecorder.getSolutionsTotalDistance();
+                        minTime = Math.min(minTime, algorithmRecorder.getElapsedTime());
+                        minObjectiveValue = Math.min(minObjectiveValue, algorithmRecorder.getSolutionsTotalDistance());
                     }
-                    writer.append("\n");
-                    writer.flush();
+                    timeSum /= numTests;
+                    sumObjectiveValues /= numTests;
+                    writer.append(DoubleFormatter.format(timeSum) + TimeAndIterationsRecorder.CSV_SEPARATOR
+                            + DoubleFormatter.format(sumObjectiveValues) + TimeAndIterationsRecorder.CSV_SEPARATOR
+                            + DoubleFormatter.format(minTime) + TimeAndIterationsRecorder.CSV_SEPARATOR
+                            + DoubleFormatter.format(minObjectiveValue) + TimeAndIterationsRecorder.CSV_SEPARATOR);
+                    System.out.println("MULTIBOOT"
+                            + " Num its no improvement: " + this.numIterationsWithNoImprovement
+                            + " Local search: " + LOCAL_SEARCHES_NAMES[localSearchPos]
+                            + " Avg time: " + DoubleFormatter.format(timeSum)
+                            + " Avg obj value: " + DoubleFormatter.format(sumObjectiveValues)
+                            + " Min time: " + DoubleFormatter.format(minTime)
+                            + " Min objetive value: " + DoubleFormatter.format(minObjectiveValue)
+                    );
                 }
+
+                writer.println();
             }
             
             writer.close();
@@ -93,7 +110,6 @@ public class MultibootCsvGenerator extends Thread {
         
         writer.append(TimeAndIterationsRecorder.CSV_SEPARATOR 
                 + TimeAndIterationsRecorder.CSV_SEPARATOR
-                + TimeAndIterationsRecorder.CSV_SEPARATOR 
                 + TimeAndIterationsRecorder.CSV_SEPARATOR
         );
         for (int i = 0; i < AlgorithmMetrics.NUM_SAMPLES; ++i) {
@@ -101,28 +117,26 @@ public class MultibootCsvGenerator extends Thread {
                     + TimeAndIterationsRecorder.CSV_SEPARATOR
                     + TimeAndIterationsRecorder.CSV_SEPARATOR 
                     + TimeAndIterationsRecorder.CSV_SEPARATOR
-                    + TimeAndIterationsRecorder.CSV_SEPARATOR
-                    + TimeAndIterationsRecorder.CSV_SEPARATOR
+                    + TimeAndIterationsRecorder.CSV_SEPARATOR 
             );
         }
         writer.append("\n");
         
-        writer.append("ALGORITHM" + TimeAndIterationsRecorder.CSV_SEPARATOR 
+        writer.append("ALGORITHM" + TimeAndIterationsRecorder.CSV_SEPARATOR
                 + "I.W.I" + TimeAndIterationsRecorder.CSV_SEPARATOR
-                + "L.S" + TimeAndIterationsRecorder.CSV_SEPARATOR 
-                + "ITERATION" + TimeAndIterationsRecorder.CSV_SEPARATOR
+                + "L.S" + TimeAndIterationsRecorder.CSV_SEPARATOR
         );
         for (int i = 0; i < AlgorithmMetrics.NUM_SAMPLES; ++i) {
-            writer.append("I.W.F" + TimeAndIterationsRecorder.CSV_SEPARATOR 
-                    + "T.N.O.I" + TimeAndIterationsRecorder.CSV_SEPARATOR 
-                    + "E.T.F" + TimeAndIterationsRecorder.CSV_SEPARATOR
-                    + "T.E.T" + TimeAndIterationsRecorder.CSV_SEPARATOR 
-                    + "SOL." + TimeAndIterationsRecorder.CSV_SEPARATOR
+            writer.append(
+                    "AvgTime" + TimeAndIterationsRecorder.CSV_SEPARATOR
+                    + "AvgSol" + TimeAndIterationsRecorder.CSV_SEPARATOR
+                    + "MinTime" + TimeAndIterationsRecorder.CSV_SEPARATOR
+                    + "MinSol" + TimeAndIterationsRecorder.CSV_SEPARATOR
             );
         }
         writer.append("\n");
         
         return writer.toString();
     }
-
+    
 }

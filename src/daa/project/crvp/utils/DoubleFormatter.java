@@ -12,7 +12,8 @@ public class DoubleFormatter {
     private static final DecimalFormat FORMATTER = (DecimalFormat) NumberFormat.getNumberInstance(Locale.GERMANY);
     
     public static String format(double numberToFormat) {
-        FORMATTER.setMaximumFractionDigits(MAXIMUM_DECIMAL_DIGITS_TO_DISPLAY);
-        return FORMATTER.format(numberToFormat);
+        //FORMATTER.setMaximumFractionDigits(MAXIMUM_DECIMAL_DIGITS_TO_DISPLAY);
+        //return FORMATTER.format(numberToFormat);
+    	return String.valueOf(numberToFormat);
     }
 }

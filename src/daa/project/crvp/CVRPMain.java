@@ -1,8 +1,6 @@
 package daa.project.crvp;
 
 import java.awt.Rectangle;
-import java.awt.Window;
-import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -75,7 +73,8 @@ public class CVRPMain {
 
 		int choosenSolutionGenerator = 2;
 		Move choosenMove = new Relocation();
-		switch (choosenSolutionGenerator) {
+		switch (choosenSolutionGenerator)
+		{
 			case 0: // Grasp
 				System.out.println("\t*** SOLUTION GENERATOR -> GRASP ***");
 				solution = GRASP.grasp(problemSpecification, 100, 100, 3, new BestNeighborLocalSearch(choosenMove),
@@ -104,10 +103,12 @@ public class CVRPMain {
 		LocalSearch vnd = new VariableNeighborhoodDescent(moveList);
 
 		/** TABU PARAMS */
-		int tabuTenure = (int) (0.2 * problemSpecification.getClients().size());
+		int tabuTenure = (int) (0.25 * problemSpecification.getClients().size());
+		int maxIterationsWithoutImprovement = 50;
 		boolean tabuVerbose = false;
 		Move[] tabuMoveList = moveList; // new Move[] {new Relocation(), new IntrarouteSwap()};
-		LocalSearch tabuSearch = new TabuSearch(tabuMoveList, tabuTenure, 10, tabuVerbose, algorithmRecorder);
+		LocalSearch tabuSearch = new TabuSearch(tabuMoveList, tabuTenure, maxIterationsWithoutImprovement, tabuVerbose,
+				algorithmRecorder);
 
 		/** LNS PARAMS */
 		int maxReconstructions = 10;
@@ -117,16 +118,17 @@ public class CVRPMain {
 		/** ALGORITHM CHOOSER */
 
 		int choosenAlgortihm = 2;
-		long maximumSeconds = 1000;
+		long maximumSeconds = 3000;
 		CVRPSolution bestSolution = solution;
-		switch (choosenAlgortihm) {
+		switch (choosenAlgortihm)
+		{
 			case 0: // VNS
 				System.out.println("\t*** ALGORITHM USED -> VNS + VND ***");
 				algorithmRecorder.starting();
 
 				while (algorithmRecorder.getCurrentTime() < maximumSeconds) {
 					algorithmRecorder.aboutToDoNextIteration();
-					solution = VariableNeighborhoodSearch.run(solution, moveList, vnd);
+					solution = VariableNeighborhoodSearch.run(solution, moveList, vnd, choosenAlgortihm, algorithmRecorder);
 					if (DoubleCompare.lessThan(solution.getTotalDistance(), bestSolution.getTotalDistance())) {
 						bestSolution = solution;
 						algorithmRecorder.foundBetterSolution(bestSolution);
@@ -143,7 +145,8 @@ public class CVRPMain {
 
 				while (algorithmRecorder.getCurrentTime() < maximumSeconds) {
 					algorithmRecorder.aboutToDoNextIteration();
-					solution = VariableNeighborhoodSearch.run(solution, moveList, tabuSearch);
+					solution = VariableNeighborhoodSearch.run(solution, moveList, tabuSearch, choosenAlgortihm,
+							algorithmRecorder);
 					if (DoubleCompare.lessThan(solution.getTotalDistance(), bestSolution.getTotalDistance())) {
 						bestSolution = solution;
 						algorithmRecorder.foundBetterSolution(bestSolution);
@@ -164,6 +167,7 @@ public class CVRPMain {
 						bestSolution = solution;
 						algorithmRecorder.foundBetterSolution(bestSolution);
 					}
+					// System.out.println("DISTANCE" + solution.getTotalDistance());
 				}
 				algorithmRecorder.finishing();
 				System.out.println("Total distance after multiple runs of Tabu Search: " + solution.getTotalDistance());
@@ -194,7 +198,7 @@ public class CVRPMain {
 		}
 		System.out.println(algorithmRecorder);
 
-		boolean verbose = true;
+		boolean verbose = false;
 		if (verbose) {
 			savePaint(solution, "example.png");
 		}

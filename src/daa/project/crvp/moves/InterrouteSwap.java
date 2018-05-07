@@ -367,6 +367,6 @@ public class InterrouteSwap extends Move {
 		CVRPClient firstClient = getSolution().getClient(realFromPosition);
 		CVRPClient secondClient = getSolution().getClient(realToPosition);
 
-		return new MoveState(firstClient, secondClient, this.getCurrentNeighbor());
+		return new MoveState(firstClient, secondClient);
 	}
 }

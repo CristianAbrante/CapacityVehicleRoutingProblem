@@ -27,12 +27,12 @@ public class MoveStateTest {
 		CVRPClient firstClient = new CVRPClient(50, 50, 30);
 		CVRPClient secondClient = new CVRPClient(30, 100, 30);
 		
-		MoveState firstState = new MoveState(firstClient, secondClient, null);
-		MoveState secondState = new MoveState(secondClient, firstClient, null);
+		MoveState firstState = new MoveState(firstClient, secondClient);
+		MoveState secondState = new MoveState(secondClient, firstClient);
 		assertEquals(firstState, secondState);
 		
-		firstState = new MoveState(firstClient, secondClient, null);
-		secondState = new MoveState(firstClient, secondClient, null);		
+		firstState = new MoveState(firstClient, secondClient);
+		secondState = new MoveState(firstClient, secondClient);		
 		assertEquals(firstState, secondState);
 	}
 	
@@ -41,8 +41,8 @@ public class MoveStateTest {
 		CVRPClient firstClient = new CVRPClient(50, 50, 30);
 		CVRPClient secondClient = new CVRPClient(30, 100, 30);
 		
-		MoveState firstState = new MoveState(firstClient, firstClient, null);
-		MoveState secondState = new MoveState(secondClient, firstClient, null);
+		MoveState firstState = new MoveState(firstClient, firstClient);
+		MoveState secondState = new MoveState(secondClient, firstClient);
 		assertNotEquals(firstState, secondState);
 	}
 

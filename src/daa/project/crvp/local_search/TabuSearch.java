@@ -23,6 +23,7 @@ import daa.project.crvp.utils.DoubleCompare;
  */
 public class TabuSearch extends LocalSearch {
 
+	private static final double PROBABILITY_TO_TAKE = 0.05;
 	/** List of moves to use */
 	private Move[] movesToUse;
 	/** Tabu tenure to use. */
@@ -62,56 +63,68 @@ public class TabuSearch extends LocalSearch {
 		if (baseSolution == null || !baseSolution.isFeasible()) {
 			throw new IllegalAccessError("invalid initial solution, it is null or unfeasible");
 		}
-		
+
 		// Step 1 : Initialization
 		HashMap<MoveState, Integer> tabuTenureMoveStates = new HashMap<MoveState, Integer>();
 		CVRPSolution bestFeasibleSolution = baseSolution;
+		CVRPSolution nextSolution = baseSolution;
+		CVRPSolution randomNextSolution = baseSolution;
+		MoveState nextMoveState = null;
 		double bestCost = baseSolution.getTotalDistance();
 
 		boolean solutionImproved = false;
 		boolean lookingForFeasible = false;
 		int iterationsWithoutImprovement = 0;
-		MoveState nextMoveState = new MoveState(null, null, baseSolution);
 		do {
 			solutionImproved = false;
 
 			// Finding local optimum of the pool of possible moves. And not tabu.
-			ArrayList<MoveState> nextMoveStatePool = generateNextMoveStatePool(nextMoveState.getMoveSolution());
-			for (MoveState poolNextMoveState : nextMoveStatePool) {
-				double poolSolutionDistance = poolNextMoveState.getMoveSolution().getTotalDistance();
+			int randomIndex = (int) (Math.random() * this.getMovesToUse().length);
+			Move randomMove = this.getMovesToUse()[randomIndex];
+			randomMove.setSolution(nextSolution);
 
-				if (DoubleCompare.lessThan(poolSolutionDistance, nextMoveState.getMoveSolution().getTotalDistance())
-						&& (!tabuTenureMoveStates.containsKey(poolNextMoveState)
+			while (randomMove.hasMoreNeighbors()) {
+				randomMove.nextNeighbor();
+				double poolSolutionDistance = randomMove.getCurrentNeighborCost();
+				MoveState randomMoveState = randomMove.getState();
+
+				if (randomNextSolution.equals(nextSolution) || DoubleCompare.lessThan(Math.random(), PROBABILITY_TO_TAKE)) {
+					randomNextSolution = randomMove.getCurrentNeighbor();
+				}
+
+				if (DoubleCompare.lessThan(poolSolutionDistance, nextSolution.getTotalDistance())
+						&& (!tabuTenureMoveStates.containsKey(randomMoveState)
 								|| DoubleCompare.lessThan(poolSolutionDistance, bestCost)) // Aspiration criteria
-						&& (poolNextMoveState.getMoveSolution().isFeasible() || !lookingForFeasible)) { // With no feasible option
-					nextMoveState = poolNextMoveState;
+						&& (randomMove.isCurrentNeighborFeasible() || !lookingForFeasible)) { // With no feasible option
+					nextMoveState = randomMove.getState();
+					nextSolution = randomMove.getCurrentNeighbor();
 					solutionImproved = true;
 				}
 			}
 
 			// Found a better solution
 			if (solutionImproved) { // Found Optimum local
-				if (nextMoveState.getMoveSolution().isFeasible()
-						&& DoubleCompare.lessThan(nextMoveState.getMoveSolution().getTotalDistance(), bestCost)) {
-					bestFeasibleSolution = nextMoveState.getMoveSolution();
-					bestCost = nextMoveState.getMoveSolution().getTotalDistance();
+				if (nextSolution.isFeasible() && DoubleCompare.lessThan(nextSolution.getTotalDistance(), bestCost)) {
+					bestFeasibleSolution = nextSolution;
+					bestCost = nextSolution.getTotalDistance();
 				}
 
-				lookingForFeasible = !nextMoveState.getMoveSolution().isFeasible(); // Change looking method
+				lookingForFeasible = !nextSolution.isFeasible(); // Change looking method
 				tabuTenureMoveStates.put(nextMoveState, getTabuTenure()); // Tabu the current state
 				if (isVerbose()) {
-					System.out.println("IMPROVED " + nextMoveState.getMoveSolution().getTotalDistance());
-					System.out.println("FEASIBLE " + nextMoveState.getMoveSolution().isFeasible());
+					System.out.println("IMPROVED " + nextSolution.getTotalDistance());
+					System.out.println("FEASIBLE " + nextSolution.isFeasible());
 				}
 			}
 			else { // Another opportunity
 				iterationsWithoutImprovement++;
 
 				if (iterationsWithoutImprovement < maxIterationsWithoutImprovement) { // Choose next solution randomly.
-					nextMoveState = nextMoveStatePool.get((int) (Math.random() * nextMoveStatePool.size()));
+					nextSolution = randomNextSolution;
 					if (isVerbose()) {
-						System.out.println("NO IMPROVED " + nextMoveState.getMoveSolution().getTotalDistance());
-						System.out.println("FEASIBLE " + nextMoveState.getMoveSolution().isFeasible());
+						System.out.println("NEXT RANDOM: " + randomNextSolution.getTotalDistance());
+						System.out.println("NO IMPROVED " + nextSolution.getTotalDistance());
+						System.out.println("FEASIBLE " + nextSolution.isFeasible());
 					}
 
 					solutionImproved = true;
@@ -134,8 +147,9 @@ public class TabuSearch extends LocalSearch {
 		// Subtracting 1 of tabu tenure and determine the moves to remove.
 		for (Map.Entry<MoveState, Integer> tabuTenure : tabuTenureMoveStates.entrySet()) {
 			tabuTenure.setValue(tabuTenure.getValue() - 1);
-			// System.out.println("Tabu Tenure of: " + tabuTenure.getKey() + " -> " +
-			// tabuTenure.getValue());
+			if (verbose) {
+				System.out.println("Tabu Tenure of: " + tabuTenure.getKey() + " -> " + tabuTenure.getValue());
+			}
 			if (tabuTenure.getValue() == 0) {
 				movesToRemove.add(tabuTenure.getKey());
 			}
@@ -145,45 +159,6 @@ public class TabuSearch extends LocalSearch {
 		for (MoveState moveState : movesToRemove) {
 			tabuTenureMoveStates.remove(moveState);
 		}
-	}
-
-	/**
-	 * Method that generates a pool of solutions combining the avaliable movements
-	 * randomly.
-	 * 
-	 * @param currentSolution
-	 * @return
-	 */
-	private ArrayList<MoveState> generateNextMoveStatePool(CVRPSolution currentSolution) {
-		ArrayList<MoveState> nextMoveStatePool = new ArrayList<MoveState>();
-
-		// Initializing avaliableMoves
-		for (Move move : getMovesToUse()) {
-			move.setSolution(currentSolution);
-		}
-
-		// Fill the pool with solutions of random moves.
-		if (false) { // IN ORDER TO TEST -> THIS IS WORSE BUT..
-			for (int i = 0; i < POOL_SIZE; ++i) {
-				int randomIndex = (int) (Math.random() * this.getMovesToUse().length);
-				Move randomMove = this.getMovesToUse()[randomIndex];
-
-				if (randomMove.hasMoreNeighbors()) {
-					randomMove.nextNeighbor();
-					nextMoveStatePool.add(randomMove.getState());
-				}
-			}
-		}
-		else {
-			int randomIndex = (int) (Math.random() * this.getMovesToUse().length);
-			Move randomMove = this.getMovesToUse()[randomIndex];
-			while (randomMove.hasMoreNeighbors()) {
-				randomMove.nextNeighbor();
-				nextMoveStatePool.add(randomMove.getState());
-			}
-		}
-
-		return nextMoveStatePool;
 	}
 
 	/** @return The moves to use */
@@ -249,7 +224,7 @@ public class TabuSearch extends LocalSearch {
 	public void setVerbose(boolean verbose) {
 		this.verbose = verbose;
 	}
-	
+
 	public TimeAndIterationsRecorder getAlgorithmRecorder() {
 		return algorithmRecorder;
 	}

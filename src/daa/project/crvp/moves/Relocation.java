@@ -313,6 +313,6 @@ public class Relocation extends Move {
 	public MoveState getState() {
 		int realFromPosition = getSolution().getRouteStartingIndex(currentFromRoute) + currentFromRoutePosition;
 		CVRPClient firstClient = getSolution().getClient(realFromPosition);
-		return new MoveState(firstClient, null, this.getCurrentNeighbor());
+		return new MoveState(firstClient, null);
 	}
 }

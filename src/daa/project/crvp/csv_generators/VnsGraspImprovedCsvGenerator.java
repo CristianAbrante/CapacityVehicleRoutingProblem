@@ -21,9 +21,11 @@ import daa.project.crvp.problem.CVRPSolution;
 import daa.project.crvp.problem.CVRPSpecification;
 import daa.project.crvp.utils.DoubleFormatter;
 
-public class VnsGraspConstructiveCsvGenerator extends Thread {
+public class VnsGraspImprovedCsvGenerator extends Thread {
 
-	private final String FILE_PATH_PREFIX = AlgorithmMetrics.OUTPUT_DIR + "/vns_rcl_random_results";
+	private final int MAX_NUM_ITERATIONS = 1000;
+
+	private final String FILE_PATH_PREFIX = AlgorithmMetrics.OUTPUT_DIR + "/vns_rcl_improved_results";
 	private final String FILE_PATH_SUFIX = ".csv";
 
 	private LocalSearch LOCAL_SEARCHES[] = { new BestNeighborLocalSearch(new Relocation()),
@@ -47,17 +49,20 @@ public class VnsGraspConstructiveCsvGenerator extends Thread {
 	private CVRPSpecification[] problemSpecifications;
 	private int numTests;
 	private String filePath;
+	private LocalSearch graspLocalSearch;
+
 	private Move[] shakingMoves;
 	private String moveName;
 
-	public VnsGraspConstructiveCsvGenerator(CVRPSpecification[] problemSpecifications, int numTests, int rclSize,
-			int numIterationsWithNoImprovement, Move[] shakingMoves, String moveName) {
+	public VnsGraspImprovedCsvGenerator(CVRPSpecification[] problemSpecifications, int numTests, LocalSearch localSearch,
+			int rclSize, int numIterationsWithNoImprovement, Move[] shakingMoves, String moveName) {
 		super();
-
 		this.problemSpecifications = problemSpecifications;
 		this.numTests = numTests;
 		this.rclSize = rclSize;
 		this.numIterationsWithNoImprovement = numIterationsWithNoImprovement;
+		this.graspLocalSearch = localSearch;
+
 		this.shakingMoves = shakingMoves;
 		this.moveName = moveName;
 
@@ -84,9 +89,10 @@ public class VnsGraspConstructiveCsvGenerator extends Thread {
 					double minObjectiveValue = Double.MAX_VALUE;
 
 					for (int i = 1; i <= numTests; ++i) {
-						CVRPSolution initialSolution = GRASP.constructGreedyRandomizedSolution(problemSpecification, this.rclSize);
-
 						TimeAndIterationsRecorder algorithmRecorder = new TimeAndIterationsRecorder();
+						CVRPSolution initialSolution = GRASP.grasp(problemSpecification, MAX_NUM_ITERATIONS,
+								this.numIterationsWithNoImprovement, this.rclSize, this.graspLocalSearch, algorithmRecorder);
+
 						VariableNeighborhoodSearch.run(initialSolution, shakingMoves, LOCAL_SEARCHES[localSearchPos],
 								this.numIterationsWithNoImprovement, algorithmRecorder);
 
@@ -103,9 +109,8 @@ public class VnsGraspConstructiveCsvGenerator extends Thread {
 							+ DoubleFormatter.format(minTime) + TimeAndIterationsRecorder.CSV_SEPARATOR
 							+ DoubleFormatter.format(minObjectiveValue) + TimeAndIterationsRecorder.CSV_SEPARATOR);
 				}
-				
-				System.out.println(
-						"VNS GRASP CONSTRUCTIVE " + "RCL: " + this.rclSize + " I.W.I: " + this.numIterationsWithNoImprovement
+				System.out
+						.println("VNS GRASP IMPROVED " + "RCL: " + this.rclSize + " I.W.I: " + this.numIterationsWithNoImprovement
 								+ " Move: " + this.moveName + " LS: " + LOCAL_SEARCHES_NAMES[localSearchPos] + " finished.");
 
 				writer.println();
@@ -114,7 +119,9 @@ public class VnsGraspConstructiveCsvGenerator extends Thread {
 
 			writer.close();
 		}
-		catch (Exception e) {
+		catch (
+
+		Exception e) {
 			System.err.println("Error: " + e.getMessage());
 			e.printStackTrace();
 		}
@@ -124,18 +131,19 @@ public class VnsGraspConstructiveCsvGenerator extends Thread {
 		StringBuilder writer = new StringBuilder();
 
 		writer.append(TimeAndIterationsRecorder.CSV_SEPARATOR + TimeAndIterationsRecorder.CSV_SEPARATOR
+				+ TimeAndIterationsRecorder.CSV_SEPARATOR + TimeAndIterationsRecorder.CSV_SEPARATOR
 				+ TimeAndIterationsRecorder.CSV_SEPARATOR + TimeAndIterationsRecorder.CSV_SEPARATOR);
 		for (int i = 0; i < AlgorithmMetrics.NUM_SAMPLES; ++i) {
 			writer.append(AlgorithmMetrics.sampleNames[i].split("\\.")[0] + TimeAndIterationsRecorder.CSV_SEPARATOR
 					+ TimeAndIterationsRecorder.CSV_SEPARATOR + TimeAndIterationsRecorder.CSV_SEPARATOR
-					+ TimeAndIterationsRecorder.CSV_SEPARATOR);
+					+ TimeAndIterationsRecorder.CSV_SEPARATOR + TimeAndIterationsRecorder.CSV_SEPARATOR);
 		}
 		writer.append("\n");
 
 		writer.append("ALGORITHM" + TimeAndIterationsRecorder.CSV_SEPARATOR + "R.C.L"
 				+ TimeAndIterationsRecorder.CSV_SEPARATOR + "I.W.I" + TimeAndIterationsRecorder.CSV_SEPARATOR + "L.S"
-				+ TimeAndIterationsRecorder.CSV_SEPARATOR + "S.M" + TimeAndIterationsRecorder.CSV_SEPARATOR);
-		
+				+ TimeAndIterationsRecorder.CSV_SEPARATOR + "MOVES" + TimeAndIterationsRecorder.CSV_SEPARATOR);
+
 		for (int i = 0; i < AlgorithmMetrics.NUM_SAMPLES; ++i) {
 			writer.append("AvgTime" + TimeAndIterationsRecorder.CSV_SEPARATOR + "AvgSol"
 					+ TimeAndIterationsRecorder.CSV_SEPARATOR + "MinTime" + TimeAndIterationsRecorder.CSV_SEPARATOR + "MinSol"
@@ -145,5 +153,4 @@ public class VnsGraspConstructiveCsvGenerator extends Thread {
 
 		return writer.toString();
 	}
-
 }

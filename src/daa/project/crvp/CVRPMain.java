@@ -194,7 +194,7 @@ public class CVRPMain {
         
         boolean verbose = false;
         if (verbose) {
-            savePaint(solution, "example.png");
+            //savePaint(solution, "example.png");
         }
     }
 }

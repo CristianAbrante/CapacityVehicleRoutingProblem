@@ -49,7 +49,7 @@ public class LNSConstructiveCsvGenerator extends Thread {
 		private double destructionPercentage;
 
 		public LNSConstructiveCsvGenerator(CVRPSpecification[] problemSpecifications, int numTests, LocalSearch graspLocalSearch,
-				int graspRclSize, int graspNumIterations, int numIterations, int maxReconstructions, int minDiffLocalSearch,
+				int graspRclSize, int graspNumIterations, int maxReconstructions, int minDiffLocalSearch,
 	           double destructionPercentage) {
 			super();
 			this.problemSpecifications = problemSpecifications;

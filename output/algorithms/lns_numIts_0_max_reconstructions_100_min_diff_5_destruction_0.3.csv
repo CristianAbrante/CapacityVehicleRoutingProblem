@@ -1,0 +1,3 @@
+;;;;;;;;;S-N32-K5;;;;;S-N43-K6;;;;;S-N50-K7;;;;;S-N57-K9;;;;;S-N62-K8;;;;;S-N80-K10;;;;;
+ALGORITHM;GRASP.R.C.L;GRASP.I.W.I;GRASP.LocalSearch;Num.Iterations;MaxReconstruction;MinDiff;DestructionPercent;LocalSearch;AvgTime;AvgSol;MinTime;MinSol;AvgTime;AvgSol;MinTime;MinSol;AvgTime;AvgSol;MinTime;MinSol;AvgTime;AvgSol;MinTime;MinSol;AvgTime;AvgSol;MinTime;MinSol;AvgTime;AvgSol;MinTime;MinSol;
+LNS GRASP CONSTRUCTIVE;5;0;GraspLocalSearch;0;100;5;0.3;BN + Relocation;

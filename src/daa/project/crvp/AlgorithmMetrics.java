@@ -5,7 +5,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 import daa.project.crvp.IO.ReaderFromFile;
+import daa.project.crvp.algorithms.GRASP;
 import daa.project.crvp.csv_generators.GraspCsvGenerator;
+import daa.project.crvp.csv_generators.LNSConstructiveCsvGenerator;
 import daa.project.crvp.csv_generators.MultibootCsvGenerator;
 import daa.project.crvp.csv_generators.TabuConstructiveCsvGenerator;
 import daa.project.crvp.csv_generators.VnsGraspConstructiveCsvGenerator;
@@ -118,11 +120,20 @@ public class AlgorithmMetrics extends Thread {
 				}
 				break;
 			case 6: // LNS
-				for (int rclSize : restrictedCandidateListNumbers) {
-					for (int numIts : iterationsWithNoImprovement) {
-							threads.add(new LNS);
-					}
-				}
+				LocalSearch graspLocalSearch = new BestNeighborLocalSearch(new Relocation());
+				int bestRclSize = 5;
+				int minDiffLocalSearch = 5;
+				double destructionPercentage[] = {0.25, 0.30};
+				
+//				for(int k = 0; k < destructionPercentage.length; k++) {
+//					for (int rclSize : restrictedCandidateListNumbers) {
+//						for (int numIts : iterationsWithNoImprovement) {
+							threads.add(new LNSConstructiveCsvGenerator(readProblemSpecificationFromSamples(), numberTests, 
+									graspLocalSearch, bestRclSize, 10,
+									100, minDiffLocalSearch, destructionPercentage[0]));
+//						}
+//					}
+//				}
 				break;
 		}
 

@@ -56,24 +56,32 @@ public class LargeNeighborhoodSearch {
 			CVRPSolution destroyedSolution = new CVRPSolution(getDestroyedSolution(initialSolution, destructionPercentage, removedClients, problemSpecification));
 			CVRPSolution actualConstructedSol = new CVRPSolution(constructNewSolution(destroyedSolution, removedClients));
 
-			// If the reconstructed solution is feasible and better than previous solution
-			if (actualConstructedSol.isFeasible() && actualConstructedSol.getTotalDistance() < bestConstructedSol.getTotalDistance()) {
-				// If there is a difference of minDiffLocalSearch to apply local search
-				if (bestConstructedSol.getTotalDistance() - actualConstructedSol.getTotalDistance() > minDiffLocalSearch) {
-					bestConstructedSol = new CVRPSolution(localSearch.findLocalOptimum(actualConstructedSol));
-				} else {
+			if (actualConstructedSol.isFeasible() && actualConstructedSol
+			      .getTotalDistance() < bestConstructedSol.getTotalDistance()) {
+
+				// If there is a difference of minDiffLocalSearch to apply local
+				// search
+				if (bestConstructedSol.getTotalDistance() - actualConstructedSol
+				      .getTotalDistance() > minDiffLocalSearch) {
+					bestConstructedSol = new CVRPSolution(
+					      localSearch.findLocalOptimum(actualConstructedSol));
+							} else {
 					bestConstructedSol = new CVRPSolution(actualConstructedSol);
 				}
+				destroyedSolution = new CVRPSolution(initialSolution);
 				recorder.foundBetterSolution(bestConstructedSol);
+			} else {
+				destroyedSolution = new CVRPSolution(initialSolution);
 			}
+            destroyedSolution = new CVRPSolution(initialSolution);
 			removedClients.clear();
 		}
 
-		bestConstructedSol = localSearch.findLocalOptimum(bestConstructedSol);
+		bestConstructedSol = new CVRPSolution(localSearch.findLocalOptimum(bestConstructedSol));
 		recorder.foundBetterSolution(bestConstructedSol);
 		recorder.finishing();
 		
-		return bestConstructedSol;
+		return new CVRPSolution(bestConstructedSol);
 	}
 
 	private static CVRPSolution constructNewSolution(CVRPSolution destroyedSolution, ArrayList<Integer> removedClients) {

@@ -75,6 +75,9 @@ public class TabuSearch extends LocalSearch {
 		boolean solutionImproved = false;
 		boolean lookingForFeasible = false;
 		int iterationsWithoutImprovement = 0;
+		
+		algorithmRecorder.starting();
+		algorithmRecorder.foundBetterSolution(baseSolution);
 		do {
 			solutionImproved = false;
 
@@ -105,6 +108,7 @@ public class TabuSearch extends LocalSearch {
 			// Found a better solution
 			if (solutionImproved) { // Found Optimum local
 				if (nextSolution.isFeasible() && DoubleCompare.lessThan(nextSolution.getTotalDistance(), bestCost)) {
+					algorithmRecorder.foundBetterSolution(nextSolution);
 					bestFeasibleSolution = nextSolution;
 					bestCost = nextSolution.getTotalDistance();
 				}
@@ -133,7 +137,8 @@ public class TabuSearch extends LocalSearch {
 			updateTabuTenures(tabuTenureMoveStates);
 		}
 		while (solutionImproved);
-
+		algorithmRecorder.finishing();
+		
 		return bestFeasibleSolution;
 	}
 

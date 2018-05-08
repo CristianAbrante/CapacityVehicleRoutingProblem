@@ -89,23 +89,16 @@ public class TabuConstructiveCsvGenerator extends Thread {
 						TimeAndIterationsRecorder algorithmRecorder = new TimeAndIterationsRecorder();
 						CVRPSolution currentSolution = GRASP.grasp(problemSpecification, MAX_NUM_ITERATIONS,
 								this.numIterationsWithNoImprovement, this.rclSize, this.graspLocalSearch, algorithmRecorder);
-
-						CVRPSolution lastSolution = currentSolution;
+						
 						LocalSearch tabuSearch = new TabuSearch(tabuMoves[movesPos], this.tabuTenurePercentage, MAX_NUM_ITERATIONS,
 								false, algorithmRecorder);
-
-						algorithmRecorder.starting();
-						algorithmRecorder.foundBetterSolution(currentSolution);
-						while (algorithmRecorder.getCurrentTime() < this.timeToImprove) {
-							algorithmRecorder.aboutToDoNextIteration();
+						
+						long seconds = 0;
+						long startTime = System.currentTimeMillis();
+						while (seconds < this.timeToImprove) {
 							currentSolution = tabuSearch.findLocalOptimum(currentSolution);
-
-							if (DoubleCompare.lessThan(currentSolution.getTotalDistance(), lastSolution.getTotalDistance())) {
-								lastSolution = currentSolution;
-								algorithmRecorder.foundBetterSolution(currentSolution);
-							}
-						}
-						algorithmRecorder.finishing();
+							seconds = System.currentTimeMillis() - startTime;
+						}						 
 
 						timeSum += algorithmRecorder.getElapsedTime();
 						sumObjectiveValues += algorithmRecorder.getSolutionsTotalDistance();

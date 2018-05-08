@@ -61,7 +61,7 @@ public class AlgorithmMetrics extends Thread {
 		final String shakingMoveNames[] = { "Intraroute + TwoOpt", "Intraroute + Interroute + Relocation + TwoOpt",
 				"Interroute + Relocation + Intraroute + TwoOpt", };
 
-		int algorithmOption = 6;
+		int algorithmOption = 4;
 
 		switch (algorithmOption) {
 			case 0: // GRASP

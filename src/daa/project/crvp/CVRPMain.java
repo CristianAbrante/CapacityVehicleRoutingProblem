@@ -152,18 +152,11 @@ public class CVRPMain {
             case 2: // TABU
                 System.out.println("\t*** ALGORITHM USED -> TABU SEARCH ***");
                 System.out.println("Tabu Tenure:" + tabuTenure);
-                algorithmRecorder.starting();
                 
                 while (algorithmRecorder.getCurrentTime() < maximumSeconds) {
-                    algorithmRecorder.aboutToDoNextIteration();
                     solution = tabuSearch.findLocalOptimum(solution);
-                    if (DoubleCompare.lessThan(solution.getTotalDistance(), bestSolution.getTotalDistance())) {
-                        bestSolution = solution;
-                        algorithmRecorder.foundBetterSolution(bestSolution);
-                    }
                     // System.out.println("DISTANCE" + solution.getTotalDistance());
                 }
-                algorithmRecorder.finishing();
                 System.out.println("Total distance after multiple runs of Tabu Search: " + solution.getTotalDistance());
                 break;
             
@@ -173,18 +166,10 @@ public class CVRPMain {
                 System.out.println("LNS minDiffLocalSearch: " + minDiffLocalSearch);
                 System.out.println("LNS destructionPercentage: " + destructionPercentage);
                 
-                algorithmRecorder.starting();
-                
                 while (algorithmRecorder.getCurrentTime() < maximumSeconds) {
-                    algorithmRecorder.aboutToDoNextIteration();
                     solution = LargeNeighborhoodSearch.run(problemSpecification, solution, vnd, maxReconstructions,
-                            minDiffLocalSearch, destructionPercentage);
-                    if (DoubleCompare.lessThan(solution.getTotalDistance(), bestSolution.getTotalDistance())) {
-                        bestSolution = solution;
-                        algorithmRecorder.foundBetterSolution(bestSolution);
-                    }
+                            minDiffLocalSearch, destructionPercentage, algorithmRecorder);
                 }
-                algorithmRecorder.finishing();
                 
                 System.out.println("Total distance after run LNS search: " + solution.getTotalDistance());
             default:

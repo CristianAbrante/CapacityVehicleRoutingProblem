@@ -60,7 +60,7 @@ public class AlgorithmMetrics extends Thread {
 		final String shakingMoveNames[] = { "Intraroute + TwoOpt", "Intraroute + Interroute + Relocation + TwoOpt",
 				"Interroute + Relocation + Intraroute + TwoOpt", };
 
-		int algorithmOption = 4;
+		int algorithmOption = 6;
 
 		switch (algorithmOption) {
 			case 0: // GRASP
@@ -118,7 +118,11 @@ public class AlgorithmMetrics extends Thread {
 				}
 				break;
 			case 6: // LNS
-							// largeNeighborhoodSearchMetrics(problemSpecifications, numberOfIterations);
+				for (int rclSize : restrictedCandidateListNumbers) {
+					for (int numIts : iterationsWithNoImprovement) {
+							threads.add(new LNS);
+					}
+				}
 				break;
 		}
 

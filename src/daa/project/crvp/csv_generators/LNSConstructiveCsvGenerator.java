@@ -75,8 +75,17 @@ public class LNSConstructiveCsvGenerator extends Thread {
 				writer.append(getCsvHeader());
 
 				for (int localSearchPos = 0; localSearchPos < LOCAL_SEARCHES.length; ++localSearchPos) {
-					writer.append("LNS GRASP CONSTRUCTIVE" + TimeAndIterationsRecorder.CSV_SEPARATOR + LOCAL_SEARCHES_NAMES[localSearchPos]
-							+ TimeAndIterationsRecorder.CSV_SEPARATOR);
+					writer.append(
+							"LNS GRASP CONSTRUCTIVE" + TimeAndIterationsRecorder.CSV_SEPARATOR
+							+ this.graspRclSize + TimeAndIterationsRecorder.CSV_SEPARATOR
+							+ this.graspNumIterationsWithNoImprovement + TimeAndIterationsRecorder.CSV_SEPARATOR
+							+ "GraspLocalSearch" + TimeAndIterationsRecorder.CSV_SEPARATOR
+							+ this.numIterations + TimeAndIterationsRecorder.CSV_SEPARATOR
+							+ this.maxReconstructions + TimeAndIterationsRecorder.CSV_SEPARATOR
+							+ this.minDiffLocalSearch + TimeAndIterationsRecorder.CSV_SEPARATOR
+							+ DoubleFormatter.format(this.destructionPercentage) + TimeAndIterationsRecorder.CSV_SEPARATOR
+							+ LOCAL_SEARCHES_NAMES[localSearchPos] + TimeAndIterationsRecorder.CSV_SEPARATOR
+					);
 
 					for (CVRPSpecification problemSpecification : problemSpecifications) {
 						long timeSum = 0;
@@ -86,11 +95,9 @@ public class LNSConstructiveCsvGenerator extends Thread {
 
 						for (int i = 1; i <= numTests; ++i) {
 							TimeAndIterationsRecorder algorithmRecorder = new TimeAndIterationsRecorder();
-							CVRPSolution initialSolution = GRASP.grasp(problemSpecification, MAX_NUM_ITERATIONS,
-									this.graspNumIterationsWithNoImprovement, this.graspRclSize, this.graspLocalSearch, algorithmRecorder);
+							CVRPSolution initialSolution = GRASP.grasp(problemSpecification, MAX_NUM_ITERATIONS, this.graspNumIterationsWithNoImprovement, this.graspRclSize, this.graspLocalSearch, algorithmRecorder);
 
-							LargeNeighborhoodSearch.run(problemSpecification, initialSolution, LOCAL_SEARCHES[localSearchPos],
-									maxReconstructions, minDiffLocalSearch, destructionPercentage);
+							LargeNeighborhoodSearch.run(problemSpecification, initialSolution, LOCAL_SEARCHES[localSearchPos], maxReconstructions, minDiffLocalSearch, destructionPercentage, algorithmRecorder);
 
 							timeSum += algorithmRecorder.getElapsedTime();
 							sumObjectiveValues += algorithmRecorder.getSolutionsTotalDistance();
@@ -128,7 +135,9 @@ public class LNSConstructiveCsvGenerator extends Thread {
 
 			writer.append(TimeAndIterationsRecorder.CSV_SEPARATOR + TimeAndIterationsRecorder.CSV_SEPARATOR
 					+ TimeAndIterationsRecorder.CSV_SEPARATOR + TimeAndIterationsRecorder.CSV_SEPARATOR
-					+ TimeAndIterationsRecorder.CSV_SEPARATOR + TimeAndIterationsRecorder.CSV_SEPARATOR);
+					+ TimeAndIterationsRecorder.CSV_SEPARATOR + TimeAndIterationsRecorder.CSV_SEPARATOR
+					+ TimeAndIterationsRecorder.CSV_SEPARATOR + TimeAndIterationsRecorder.CSV_SEPARATOR
+					+ TimeAndIterationsRecorder.CSV_SEPARATOR);
 			for (int i = 0; i < AlgorithmMetrics.NUM_SAMPLES; ++i) {
 				writer.append(AlgorithmMetrics.sampleNames[i].split("\\.")[0] + TimeAndIterationsRecorder.CSV_SEPARATOR
 						+ TimeAndIterationsRecorder.CSV_SEPARATOR + TimeAndIterationsRecorder.CSV_SEPARATOR
@@ -136,9 +145,16 @@ public class LNSConstructiveCsvGenerator extends Thread {
 			}
 			writer.append("\n");
 
-			writer.append("ALGORITHM" + TimeAndIterationsRecorder.CSV_SEPARATOR + "R.C.L"
-					+ TimeAndIterationsRecorder.CSV_SEPARATOR + "I.W.I" + TimeAndIterationsRecorder.CSV_SEPARATOR + "L.S"
-					+ TimeAndIterationsRecorder.CSV_SEPARATOR + "MOVES" + TimeAndIterationsRecorder.CSV_SEPARATOR);
+			writer.append("ALGORITHM" + TimeAndIterationsRecorder.CSV_SEPARATOR 
+					+ "GRASP.R.C.L" + TimeAndIterationsRecorder.CSV_SEPARATOR
+					+ "GRASP.I.W.I" + TimeAndIterationsRecorder.CSV_SEPARATOR
+					+ "GRASP.LocalSearch" + TimeAndIterationsRecorder.CSV_SEPARATOR
+					+ "Num.Iterations" + TimeAndIterationsRecorder.CSV_SEPARATOR
+					+ "MaxReconstruction" + TimeAndIterationsRecorder.CSV_SEPARATOR
+					+ "MinDiff" + TimeAndIterationsRecorder.CSV_SEPARATOR
+					+ "DestructionPercent" + TimeAndIterationsRecorder.CSV_SEPARATOR
+					+ "LocalSearch" + TimeAndIterationsRecorder.CSV_SEPARATOR
+			);
 
 			for (int i = 0; i < AlgorithmMetrics.NUM_SAMPLES; ++i) {
 				writer.append("AvgTime" + TimeAndIterationsRecorder.CSV_SEPARATOR + "AvgSol"

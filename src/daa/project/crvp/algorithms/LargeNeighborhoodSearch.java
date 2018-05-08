@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Random;
 
 import daa.project.crvp.local_search.LocalSearch;
+import daa.project.crvp.metrics.AlgorithmRecorder;
 import daa.project.crvp.problem.CVRPSolution;
 import daa.project.crvp.problem.CVRPSpecification;
 import daa.project.crvp.utils.DoubleCompare;
@@ -37,48 +38,42 @@ public class LargeNeighborhoodSearch {
 	       run(CVRPSpecification problemSpecification,
 	           CVRPSolution initialSolution, LocalSearch localSearch,
 	           int maxReconstructions, int minDiffLocalSearch,
-	           double destructionPercentage) {
+	           double destructionPercentage, AlgorithmRecorder recorder) {
 
 		if (!initialSolution.isFeasible()) {
 			throw new IllegalArgumentException(
 			      "initial solution for LNS is not feasible"
 			);
 		}
-
-        ArrayList<Integer> removedClients = new ArrayList<>();
-        //		LargeNeighborhoodSearch.problemSpecification = problemSpecification;
-        //        LargeNeighborhoodSearch.initialSolution = new CVRPSolution(initialSolution);
-		CVRPSolution bestConstructedSol = new CVRPSolution(initialSolution);
+		recorder.starting();
+		
+		ArrayList<Integer> removedClients = new ArrayList<>();
+      CVRPSolution bestConstructedSol = new CVRPSolution(initialSolution);
+      recorder.foundBetterSolution(bestConstructedSol);
 
 		for (int i = 0; i < maxReconstructions; i++) {
-			CVRPSolution destroyedSolution = new CVRPSolution(
-                    getDestroyedSolution(initialSolution, destructionPercentage, removedClients, problemSpecification)
-			);
+			recorder.aboutToDoNextIteration();
+			CVRPSolution destroyedSolution = new CVRPSolution(getDestroyedSolution(initialSolution, destructionPercentage, removedClients, problemSpecification));
 			CVRPSolution actualConstructedSol = new CVRPSolution(constructNewSolution(destroyedSolution, removedClients));
 
-			// If the reconstructed solution is feasible and better than previous
-			// solution
-			if (actualConstructedSol.isFeasible() && actualConstructedSol
-			      .getTotalDistance() < bestConstructedSol.getTotalDistance()) {
-
-				// If there is a difference of minDiffLocalSearch to apply local
-				// search
-				if (bestConstructedSol.getTotalDistance() - actualConstructedSol
-				      .getTotalDistance() > minDiffLocalSearch) {
-					bestConstructedSol = new CVRPSolution(
-					      localSearch.findLocalOptimum(actualConstructedSol));
-							} else {
+			// If the reconstructed solution is feasible and better than previous solution
+			if (actualConstructedSol.isFeasible() && actualConstructedSol.getTotalDistance() < bestConstructedSol.getTotalDistance()) {
+				// If there is a difference of minDiffLocalSearch to apply local search
+				if (bestConstructedSol.getTotalDistance() - actualConstructedSol.getTotalDistance() > minDiffLocalSearch) {
+					bestConstructedSol = new CVRPSolution(localSearch.findLocalOptimum(actualConstructedSol));
+				} else {
 					bestConstructedSol = new CVRPSolution(actualConstructedSol);
 				}
-				destroyedSolution = new CVRPSolution(initialSolution);
-			} else {
-				destroyedSolution = new CVRPSolution(initialSolution);
+				recorder.foundBetterSolution(bestConstructedSol);
 			}
-            destroyedSolution = new CVRPSolution(initialSolution);
 			removedClients.clear();
 		}
 
-		return new CVRPSolution(localSearch.findLocalOptimum(bestConstructedSol));
+		bestConstructedSol = localSearch.findLocalOptimum(bestConstructedSol);
+		recorder.foundBetterSolution(bestConstructedSol);
+		recorder.finishing();
+		
+		return bestConstructedSol;
 	}
 
 	private static CVRPSolution constructNewSolution(CVRPSolution destroyedSolution, ArrayList<Integer> removedClients) {

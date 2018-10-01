@@ -14,6 +14,6 @@ All the implementation of the different algorithms is placed on the folder `src/
 
 * **Carlos Dominguez García** - [carlosdg](https://github.com/carlosdg)
 * **Ángel Luis Igareta Herráiz** - [angeligareta](https://github.com/angeligareta)
-* **Daute Rodríguez Rodríguez** - [alu0100973914](https://github.com/alu0100973914)
+* **Daute Rodríguez Rodríguez** - [DauteRR](https://github.com/DauteRR)
 * **Cristian Manuel Abrante Dorta** - [CristianAbrante](https://github.com/CristianAbrante)
 * **Alberto Jesús González Álvarez** - [AlberTJ97](https://github.com/AlberTJ97)
